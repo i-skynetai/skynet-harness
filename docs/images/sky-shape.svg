@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+    <style>
+      .bx{fill:#fff;stroke:#cbd5e1;stroke-width:1.5}
+      .pkg{fill:#f0fdf4;stroke:#86efac;stroke-width:2}
+      .cfg{fill:#fff7ed;stroke:#fdba74;stroke-width:2}
+      .kb{fill:#eef2ff;stroke:#a5b4fc;stroke-width:2}
+      .pers{fill:#fdf2f8;stroke:#f9a8d4;stroke-width:2;stroke-dasharray:6 4}
+      .t{font-size:15px;fill:#0f172a;font-weight:600}
+      .s{font-size:12.5px;fill:#475569}
+      .lbl{font-size:12px;fill:#64748b;font-style:italic}
+      .ln{stroke:#64748b;stroke-width:1.6;fill:none;marker-end:url(#a)}
+      .ln2{stroke:#94a3b8;stroke-width:1.4;fill:none;stroke-dasharray:5 4;marker-end:url(#a)}
+    </style>
+  </defs>
+  <rect width="1000" height="640" fill="#fafafa"/>
+  <text x="34" y="38" font-size="19" font-weight="700" fill="#0f172a">Two packages, one contract</text>
+  <text x="34" y="60" class="s">Everyone installs the harness. Some people add Ethan. Both use the same KB map and policy. No secret is stored in the repository.</text>
+
+  <rect class="bx" x="300" y="84" width="400" height="60" rx="10"/>
+  <text x="500" y="109" class="t" text-anchor="middle">Skynet Harness release repository</text>
+  <text x="500" y="129" class="s" text-anchor="middle">versioned source · tags · maintained outside the installed product contract</text>
+  <path class="ln" d="M430,144 L300,186"/>
+  <path class="ln" d="M570,144 L700,186"/>
+
+  <rect class="pkg" x="60" y="190" width="400" height="86" rx="10"/>
+  <text x="260" y="216" class="t" text-anchor="middle">STAGE 1 · Skynet Harness plugin · per host</text>
+  <text x="260" y="238" class="s" text-anchor="middle">10 skills · 4 role agents · 1 guard hook · no secrets inside</text>
+  <text x="260" y="257" class="s" text-anchor="middle">alone: one default KB, host of your choice</text>
+
+  <rect class="bx" x="60" y="300" width="124" height="48" rx="8"/><text x="122" y="329" class="t" text-anchor="middle">Claude</text>
+  <rect class="bx" x="198" y="300" width="124" height="48" rx="8"/><text x="260" y="322" class="t" text-anchor="middle">Codex</text><text x="260" y="339" class="lbl" text-anchor="middle">roles = prose</text>
+  <rect class="bx" x="336" y="300" width="124" height="48" rx="8"/><text x="398" y="322" class="t" text-anchor="middle">Kimi</text><text x="398" y="339" class="lbl" text-anchor="middle">read roles only</text>
+  <path class="ln" d="M122,276 L122,298"/><path class="ln" d="M260,276 L260,298"/><path class="ln" d="M398,276 L398,298"/>
+
+  <rect class="pkg" x="540" y="190" width="400" height="86" rx="10"/>
+  <text x="740" y="216" class="t" text-anchor="middle">STAGE 2 · Ethan · per user, optional</text>
+  <text x="740" y="238" class="s" text-anchor="middle">ethan init → many KBs, many hands, your own agent names</text>
+  <text x="740" y="257" class="s" text-anchor="middle">chooses and coordinates · core launches now · write broker is next</text>
+  <path class="ln" d="M740,276 L740,300"/>
+  <rect class="bx" x="590" y="302" width="300" height="46" rx="8"/>
+  <text x="740" y="322" class="t" text-anchor="middle">router → approval → hand → harvest</text>
+  <text x="740" y="339" class="lbl" text-anchor="middle">hands: claude / codex / kimi, run with a scrubbed env</text>
+
+  <rect class="cfg" x="200" y="392" width="600" height="70" rx="10"/>
+  <text x="500" y="417" class="t" text-anchor="middle">~/.config/sky/   env (0600, one token per KB instance)  +  kb-map.json</text>
+  <text x="500" y="438" class="s" text-anchor="middle">Stage 1: one entry marked default · Stage 2: more entries · written in a terminal, never inside a host</text>
+  <text x="500" y="455" class="s" text-anchor="middle">harness and Ethan both read it · Ethan names the task KB and core builds the hand environment</text>
+  <path class="ln2" d="M260,348 L300,390"/><path class="ln2" d="M740,348 L700,390"/>
+
+  <rect class="kb" x="120" y="506" width="360" height="86" rx="10"/>
+  <text x="300" y="532" class="t" text-anchor="middle">KB · SKY_KB  (new tenant on example-kb)</text>
+  <text x="300" y="553" class="s" text-anchor="middle">sky_sdlc · agent_context · sky_skill · platform code_structure</text>
+  <text x="300" y="571" class="s" text-anchor="middle">context + memory · never a queue, lock, approval or status</text>
+  <path class="ln" d="M400,462 L330,504"/>
+
+  <rect class="pers" x="540" y="506" width="360" height="86" rx="10"/>
+  <text x="720" y="532" class="t" text-anchor="middle">Personal KB  (localhost, Ethan only)</text>
+  <text x="720" y="553" class="s" text-anchor="middle">privacy: personal · reachable from the console door only</text>
+  <text x="720" y="571" class="s" text-anchor="middle">never named in any shared artefact</text>
+  <path class="ln2" d="M620,462 L690,504"/>
+
+  <rect class="pkg" x="60" y="612" width="14" height="14" rx="3"/><text x="82" y="623" class="lbl">distributed package</text>
+  <rect class="cfg" x="230" y="612" width="14" height="14" rx="3"/><text x="252" y="623" class="lbl">per-user config, the shared contract</text>
+  <rect class="kb" x="500" y="612" width="14" height="14" rx="3"/><text x="522" y="623" class="lbl">shared memory</text>
+  <rect class="pers" x="660" y="612" width="14" height="14" rx="3"/><text x="682" y="623" class="lbl">private, local only</text>
+</svg>

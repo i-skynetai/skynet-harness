@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 660" width="1060" height="660" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <defs><style>
+    .kb{fill:#eef2ff;stroke:#6366f1;stroke-width:2.5}
+    .harn{fill:#f0fdf4;stroke:#16a34a;stroke-width:2.5}
+    .hand{fill:#fff7ed;stroke:#ea580c;stroke-width:2.5}
+    .user{fill:#fdf4ff;stroke:#a855f7;stroke-width:2.5}
+    .ethan{fill:#f0f9ff;stroke:#0ea5e9;stroke-width:2.5}
+    .n{font-size:10.5px;fill:#94a3b8;font-weight:700}
+    .t{font-size:13px;fill:#0f172a;font-weight:700}
+    .s{font-size:10.5px;fill:#475569}
+    .k{font-size:11px;fill:#334155;font-weight:600}
+  </style></defs>
+  <rect width="1060" height="660" fill="#fafafa"/>
+  <text x="34" y="36" font-size="19" font-weight="700" fill="#0f172a">A brain is assembled, not built</text>
+  <text x="34" y="58" class="s">Ten things a brain does. Four suppliers, plus Ethan in Wave 2. The KB is one of the ten — it is not the brain.</text>
+
+  <!-- legend -->
+  <rect class="kb"  x="34"  y="76" width="14" height="14" rx="3"/><text x="54"  y="88" class="k">KB</text>
+  <rect class="harn"  x="120" y="76" width="14" height="14" rx="3"/><text x="140" y="88" class="k">Harness</text>
+  <rect class="hand"  x="220" y="76" width="14" height="14" rx="3"/><text x="240" y="88" class="k">Hand</text>
+  <rect class="user"  x="310" y="76" width="14" height="14" rx="3"/><text x="330" y="88" class="k">User</text>
+  <rect class="ethan" x="392" y="76" width="14" height="14" rx="3"/><text x="412" y="88" class="k">Ethan (Wave 2)</text>
+
+  <!-- row 1 : IN -->
+  <text x="36" y="124" class="n">TAKES IN</text>
+  <rect class="ethan" x="34" y="132" width="238" height="96" rx="10"/>
+  <text x="153" y="156" class="t" text-anchor="middle">1 · Inputs</text>
+  <text x="153" y="176" class="s" text-anchor="middle">Ethan doors · the terminal</text>
+  <text x="153" y="192" class="s" text-anchor="middle">user's Jira / git / CI adapters</text>
+  <text x="153" y="214" class="s" text-anchor="middle" font-style="italic">partial today</text>
+
+  <rect class="kb" x="288" y="132" width="238" height="96" rx="10"/>
+  <text x="407" y="156" class="t" text-anchor="middle">2 · Focus</text>
+  <text x="407" y="176" class="s" text-anchor="middle">KB retrieval + ranking</text>
+  <text x="407" y="192" class="s" text-anchor="middle">harness context-retriever</text>
+  <text x="407" y="214" class="s" text-anchor="middle" font-style="italic">present, mid</text>
+
+  <rect class="kb" x="542" y="132" width="238" height="96" rx="10"/>
+  <text x="661" y="156" class="t" text-anchor="middle">5 · Knowledge — the KB</text>
+  <text x="661" y="176" class="s" text-anchor="middle">documents · vectors · graph</text>
+  <text x="661" y="192" class="s" text-anchor="middle">+ the indexed code</text>
+  <text x="661" y="214" class="s" text-anchor="middle" font-style="italic">strongest</text>
+
+  <rect class="kb" x="796" y="132" width="230" height="96" rx="10"/>
+  <text x="911" y="156" class="t" text-anchor="middle">4 · Remembering</text>
+  <text x="911" y="176" class="s" text-anchor="middle">ingest, embed, extract</text>
+  <text x="911" y="192" class="s" text-anchor="middle">harvest + redaction gate</text>
+  <text x="911" y="214" class="s" text-anchor="middle" font-style="italic">fragile — extractor down</text>
+
+  <!-- row 2 : THINKS -->
+  <text x="36" y="272" class="n">THINKS</text>
+  <rect class="hand" x="34" y="280" width="238" height="96" rx="10"/>
+  <text x="153" y="304" class="t" text-anchor="middle">3 · Short-term memory</text>
+  <text x="153" y="324" class="s" text-anchor="middle">the hand's context window</text>
+  <text x="153" y="340" class="s" text-anchor="middle">Ethan session state</text>
+  <text x="153" y="362" class="s" text-anchor="middle" font-style="italic">basic</text>
+
+  <rect class="hand" x="288" y="280" width="238" height="96" rx="10"/>
+  <text x="407" y="304" class="t" text-anchor="middle">6 · Thinking</text>
+  <text x="407" y="324" class="s" text-anchor="middle">the hand's own LLM</text>
+  <text x="407" y="340" class="s" text-anchor="middle">Ethan's router plans</text>
+  <text x="407" y="362" class="s" text-anchor="middle" font-style="italic">thin — by design</text>
+
+  <rect class="harn" x="542" y="280" width="238" height="96" rx="10"/>
+  <text x="661" y="304" class="t" text-anchor="middle">8 · Habits</text>
+  <text x="661" y="324" class="s" text-anchor="middle">skills, role agents, routing</text>
+  <text x="661" y="340" class="s" text-anchor="middle">+ the user's own skills</text>
+  <text x="661" y="362" class="s" text-anchor="middle" font-style="italic">present</text>
+
+  <rect class="harn" x="796" y="280" width="230" height="96" rx="10"/>
+  <text x="911" y="304" class="t" text-anchor="middle">7 · Safety</text>
+  <text x="911" y="324" class="s" text-anchor="middle">policy, guard, redaction</text>
+  <text x="911" y="340" class="s" text-anchor="middle">what must never happen</text>
+  <text x="911" y="362" text-anchor="middle" style="font-size:11px;font-style:italic;font-weight:700;fill:#b91c1c">mostly missing</text>
+
+  <!-- row 3 : ACTS -->
+  <text x="36" y="420" class="n">ACTS</text>
+  <rect class="hand" x="34" y="428" width="366" height="96" rx="10"/>
+  <text x="217" y="452" class="t" text-anchor="middle">9 · Quality control</text>
+  <text x="217" y="472" class="s" text-anchor="middle">hand runtime · harness validator · Ethan watchdogs</text>
+  <text x="217" y="488" class="s" text-anchor="middle">execute, check, retry, feed back</text>
+  <text x="217" y="510" class="s" text-anchor="middle" font-style="italic">partial — no evidence check</text>
+
+  <rect class="user" x="416" y="428" width="610" height="96" rx="10"/>
+  <text x="721" y="452" class="t" text-anchor="middle">10 · Actions</text>
+  <text x="721" y="472" class="s" text-anchor="middle">hand built-ins (shell, edit, browser) · KB tool proxy · the user's own MCP servers and adapters</text>
+  <text x="721" y="488" class="s" text-anchor="middle">most of this is configured by the user at onboarding</text>
+  <text x="721" y="510" class="s" text-anchor="middle" font-style="italic">strong — and unguarded today</text>
+
+  <!-- bottom rule -->
+  <rect x="34" y="556" width="992" height="72" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="530" y="584" class="t" text-anchor="middle">A brain can be partly assembled — so readiness is per task kind, not one green light</text>
+  <text x="530" y="608" class="s" text-anchor="middle">question needs Focus, Short-term memory, Knowledge, Thinking · review adds Quality control · build adds Safety, Habits, Actions — no Safety means no building</text>
+</svg>

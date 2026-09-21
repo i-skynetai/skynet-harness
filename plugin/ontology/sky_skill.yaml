@@ -1,0 +1,203 @@
+name: sky_skill
+description: >
+  Ontology for SKILL DOCUMENTS — the reusable procedures an agent retrieves and
+  follows. One document describes one skill: what it is for, when it applies,
+  what it needs, the steps it runs, the tools those steps call, the gates where
+  a human or a verdict is required, what it must never do, and what it produces.
+  This ontology parses that structure. It does NOT record usage — which agent
+  ran which skill on which task lives in the agent_context ontology, and the two
+  are joined by the knowledge base's cross-ontology name-resolution pass, which
+  links records that share an exact skill name.
+  Built so the graph can answer: "which skill covers this situation", "what are
+  this skill's steps and in what order", "which skills call this tool", "what is
+  this skill forbidden from doing", "which skill produces a solution design",
+  "which skills does an orchestrator delegate to", "what does this skill need
+  before it can start".
+
+  EXTRACTION GUIDANCE — NAMING. A skill document states its own name on a
+  "Skill:" header line. Use that value VERBATIM, including any leading slash and
+  namespace: for a skill called "/sky:code" the name is "/sky:code" and never
+  "code", "sky code" or "Code". If there is no Skill: line in the text in front
+  of you, fall back to the name in the document's main heading. If NEITHER is
+  present in the text in front of you, do not extract a Skill at all — never
+  invent a descriptive title. A name of the shape "... Process", "... Procedure"
+  or "... Workflow" that does not appear in the text is always wrong.
+  The exact name matters beyond this ontology: skills are joined to their usage
+  records by an exact, case-insensitive name match, so a name written one way
+  here and another way in a session summary produces two unlinked nodes.
+
+  EXTRACTION GUIDANCE — SKILL VERSUS TOOL. A tool invocation name is a Tool,
+  never a Skill. Any name beginning "mcp__" is always a Tool. A shell command,
+  CLI binary or API endpoint the skill calls is a Tool. No name may be extracted
+  as both a Skill and a Tool — decide which it is. A Skill named in a
+  DELEGATES_TO relation is still a Skill.
+
+  EXTRACTION GUIDANCE — WHAT IS NOT AN ENTITY. Generic nouns and bare acronyms
+  are never entities: skill, step, tool, task, agent, procedure, workflow, gate,
+  input, output, code, file, script, app, API, UI, AI, LLM, doc, repo and the
+  like. Only extract something with a specific name, path, command or a short
+  synthesized phrase that carries actual content. Never extract entities from
+  the examples written inside this ontology itself — "/sky:code" and any name
+  introduced here with "e.g." is illustrative, not data.
+
+  EXTRACTION GUIDANCE — SYNTHESIZED NAMES. Step, Guardrail, Trigger, Input,
+  Output and Gate rarely carry a proper name. For these, the name is a short
+  phrase taken from the document's own wording — imperative for a Step ("write
+  the regression test"), prohibitive for a Guardrail ("never push to a remote"),
+  situational for a Trigger ("the user asks to fix a bug ticket"). Keep it under
+  about twelve words and keep the document's own vocabulary.
+
+  EXTRACTION GUIDANCE — CO-OCCURRENCE. A relation is only created when both of
+  its ends appear in the same passage of text. Skill documents ingested under
+  this ontology are therefore written as compact skill cards in which the skill
+  name is restated in every section, so that each section carries the Skill
+  together with the Steps, Tools and Guardrails it should link to. If the skill
+  name is absent from a passage, extract the Steps and Tools you find there and
+  do not invent a Skill to attach them to.
+
+entity_types:
+  - name: Skill
+    description: >
+      One reusable procedure an agent can retrieve and follow, named exactly as
+      the document's "Skill:" line gives it, including the leading slash and
+      namespace (e.g. "/sky:code", "/sky:review"). Capture in the description
+      what the skill is for in one sentence, which role it belongs to if stated,
+      whether it is an orchestrator that sequences other skills or a unit of
+      work, and whether it may run on its own or only inside another track.
+      One Skill per skill document.
+      NAMING, and this decides whether the graph is usable: a skill document's
+      front matter carries the BARE name ("name: review") because its host
+      requires that form, while the body heading carries the full one
+      ("# /sky:review"). They are THE SAME SKILL. Always use the full
+      "/namespace:name" form, even when the chunk in front of you shows only
+      the bare one — a document whose front matter says "name: review" is
+      "/sky:review". Emitting both creates two nodes for one skill and the
+      graph answers "which skill does this" twice, differently.
+      NEVER a Skill: a generic word ("skill", "procedure"), a section heading
+      of the document ("Procedure", "Synthesis", "Output format", "Hard
+      rules"), or a step description. Those are Steps or nothing.
+
+  - name: Trigger
+    description: >
+      A situation, request or phrase that should cause this skill to be used —
+      the "use when" of a skill document. Name it as a short situational phrase
+      in the document's own words (e.g. "the user asks to fix a bug ticket",
+      "before any design or spec work"). A Trigger is about WHEN to reach for
+      the skill, never about what the skill does.
+
+  - name: Step
+    description: >
+      One action in the skill's procedure, named as a short imperative phrase
+      taken from the document ("establish the base commit", "run the affected
+      tests"). Record its order in the description when the document numbers or
+      sequences the steps, and note if a step is conditional or optional.
+      A heading that only labels a section is not a Step; a Step is something
+      the agent does.
+
+  - name: Tool
+    description: >
+      Something the skill invokes to get work done: an MCP tool (any name
+      beginning "mcp__"), a CLI command, a script, or a named API. Use the exact
+      invocation name as written. Record in the description what the skill uses
+      it for and whether the call reads or writes. A Tool is never also a Skill.
+
+  - name: Guardrail
+    description: >
+      A rule this skill must obey — a prohibition, a limit, or a "confirm before"
+      condition. Name it as a short prohibitive or conditional phrase in the
+      document's own words ("never push to a remote", "confirm before ingesting",
+      "do not run the full spec checklist"). Guardrails are the part of a skill
+      that must survive summarisation, so extract every one you find, including
+      those stated in passing.
+
+  - name: Gate
+    description: >
+      A point in the skill where the procedure stops and something other than the
+      agent decides: a human approval, a reviewer verdict, a test that must pass,
+      a validation that must return APPROVED before work continues. Name it for
+      what is being decided ("architect gate before implementation", "human runs
+      the push"). A Gate differs from a Guardrail: a Guardrail is a standing rule,
+      a Gate is a stopping point in the flow.
+
+  - name: Input
+    description: >
+      Something the skill needs before it can start — a ticket id, a file path, a
+      diff, an approved spec, a configured connection. Name it as the document
+      names it. Record in the description whether it is required or optional and
+      where it comes from.
+
+  - name: Output
+    description: >
+      Something the skill produces: a document, a code change, a verdict, a PR, a
+      context package, an ingested memory. Name it as the document names it, and
+      record in the description where it is written and whether writing it needs
+      an approval.
+
+  - name: Role
+    description: >
+      The agent role a skill belongs to or is written for — for example
+      "developer", "reviewer", "architect", "security". Only extract a Role when
+      the document states one. Use the role name exactly as written, lower-case.
+
+relation_types:
+  - name: TRIGGERED_BY
+    description: This skill should be used in this situation.
+    source: Skill
+    target: Trigger
+
+  - name: HAS_STEP
+    description: This step is part of this skill's procedure.
+    source: Skill
+    target: Step
+
+  - name: SKILL_CALLS_TOOL
+    description: This skill invokes this tool somewhere in its procedure.
+    source: Skill
+    target: Tool
+
+  - name: STEP_CALLS_TOOL
+    description: This particular step invokes this tool.
+    source: Step
+    target: Tool
+
+  - name: CONSTRAINED_BY
+    description: This rule limits what this skill may do.
+    source: Skill
+    target: Guardrail
+
+  - name: HAS_GATE
+    description: This skill stops at this gate for a decision it does not make itself.
+    source: Skill
+    target: Gate
+
+  - name: REQUIRES_INPUT
+    description: This skill needs this before it can start.
+    source: Skill
+    target: Input
+
+  - name: PRODUCES_OUTPUT
+    description: This skill produces this.
+    source: Skill
+    target: Output
+
+  - name: FOR_ROLE
+    description: This skill belongs to, or is written for, this agent role.
+    source: Skill
+    target: Role
+
+  - name: DELEGATES_TO
+    description: >
+      This skill calls another skill as part of its own procedure — an
+      orchestrator to a unit of work. Both ends are Skills.
+    source: Skill
+    target: Skill
+
+  - name: SUPERSEDES
+    description: This skill replaces an older skill, which should no longer be used.
+    source: Skill
+    target: Skill
+
+  - name: STEP_PRODUCES
+    description: This step is the one that produces this output.
+    source: Step
+    target: Output

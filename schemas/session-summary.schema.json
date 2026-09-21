@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:session-summary",
+  "title": "session-summary",
+  "description": "the one verified record of a session that reaches the knowledge base",
+  "type": "object",
+  "properties": {
+    "memory_type": {
+      "type": "string",
+      "enum": [
+        "sky_session_summary"
+      ],
+      "description": "fixed",
+      "x-written-by": "model"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the run",
+      "x-written-by": "runtime"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the task",
+      "x-written-by": "runtime"
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the agent",
+      "x-written-by": "runtime"
+    },
+    "agent_name_at_execution": {
+      "type": "string",
+      "minLength": 1,
+      "description": "its display name at the time",
+      "x-written-by": "runtime"
+    },
+    "owner_jira_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the answerable human",
+      "x-written-by": "runtime"
+    },
+    "hand": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "codex",
+        "kimi"
+      ],
+      "description": "which coding agent ran it",
+      "x-written-by": "runtime"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "developer",
+        "reviewer",
+        "architect",
+        "security"
+      ],
+      "description": "which role it ran as",
+      "x-written-by": "runtime"
+    },
+    "kb": {
+      "type": "string",
+      "minLength": 1,
+      "description": "where this is being written",
+      "x-written-by": "runtime"
+    },
+    "package_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the harness version in use",
+      "x-written-by": "runtime"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "description": "project key",
+      "x-written-by": "model"
+    },
+    "issue_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the ticket, when there is one",
+      "x-written-by": "model"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "ready_for_review",
+        "completed",
+        "blocked",
+        "failed",
+        "cancelled"
+      ],
+      "description": "how it ended",
+      "x-written-by": "model"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "what happened, in the hand's words",
+      "x-written-by": "model"
+    },
+    "learning": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what is worth knowing next time",
+      "x-written-by": "model"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "verified references this rests on",
+      "x-written-by": "runtime"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "memory_type",
+    "run_id",
+    "agent_id",
+    "kb",
+    "outcome",
+    "summary",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

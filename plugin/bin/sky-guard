@@ -1,0 +1,22 @@
+#!/bin/sh
+# PreToolUse. Judges the command against the policy.
+#
+# ONLY INSIDE A RUN THE LAUNCHER STARTED. This hook fires in every session that
+# has the plugin enabled, including one a person opened to do their own work —
+# and denying `git push` there is simply wrong: it is their repository and
+# their credentials, and the host's own permission prompt is the control that
+# belongs there. Exiting early also means an ordinary session does not pay for
+# a subprocess on every Bash call.
+if [ "$SKY_LAUNCHED" != "1" ]; then
+    exit 0
+fi
+# The plugin ships its own runtime, so this works after a plugin-only install.
+# A `sky` the person installed themselves wins, because they had a reason.
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if command -v sky >/dev/null 2>&1; then
+    exec sky guard
+elif [ -x "$DIR/sky" ]; then
+    exec "$DIR/sky" guard
+fi
+echo "sky-guard: no runtime found, so this command was not judged." >&2
+printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"the sky guard could not run; the tool allowlist still applies"}}\n'

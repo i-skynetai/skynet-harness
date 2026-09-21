@@ -1,0 +1,14 @@
+{
+  "gates": [
+    {
+      "id": "unit-tests",
+      "tier": 30,
+      "cmd": "env HOME=/private/tmp/skynet-harness-test-home python3 -m unittest discover -s core/tests -p 'test_*.py'"
+    },
+    {
+      "id": "selftest",
+      "tier": 40,
+      "cmd": "env HOME=/private/tmp/skynet-harness-test-home ./core/bin/sky selftest"
+    }
+  ]
+}

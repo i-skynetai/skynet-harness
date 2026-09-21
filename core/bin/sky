@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+"""The `sky` command. Standard library only — Ethan depends on this."""
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from sky.cli import main
+sys.exit(main())

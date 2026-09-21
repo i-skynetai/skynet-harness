@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:agent-result",
+  "title": "agent-result",
+  "description": "what a hand reports, separated from what the runtime knows",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the run",
+      "x-written-by": "runtime"
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the agent",
+      "x-written-by": "runtime"
+    },
+    "agent_name_at_execution": {
+      "type": "string",
+      "minLength": 1,
+      "description": "its display name at the time",
+      "x-written-by": "runtime"
+    },
+    "owner_jira_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the answerable human",
+      "x-written-by": "runtime"
+    },
+    "issue_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the ticket, when there is one",
+      "x-written-by": "model"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "ready_for_review",
+        "completed",
+        "blocked",
+        "failed",
+        "cancelled"
+      ],
+      "description": "how it ended",
+      "x-written-by": "model"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "what was done, in the hand's own words",
+      "x-written-by": "model"
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "files the hand says it changed",
+      "x-written-by": "model"
+    },
+    "tests_requested": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "commands the hand asks to have run",
+      "x-written-by": "model"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what the hand thinks might bite",
+      "x-written-by": "model"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "choices it made along the way",
+      "x-written-by": "model"
+    },
+    "memory_candidates": {
+      "type": "array",
+      "items": {
+        "title": "memory-candidate",
+        "description": "one durable thing worth keeping, proposed by a hand and verified by core",
+        "type": "object",
+        "properties": {
+          "memory_type": {
+            "type": "string",
+            "enum": [
+              "implementation_outcome",
+              "decision",
+              "lesson",
+              "risk",
+              "review_outcome"
+            ],
+            "description": "what sort of thing this is",
+            "x-written-by": "model"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the thing itself, in one or two sentences",
+            "x-written-by": "model"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "what was decided and why",
+            "x-written-by": "model"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "what might bite later",
+            "x-written-by": "model"
+          },
+          "project": {
+            "type": "string",
+            "minLength": 1,
+            "description": "project key",
+            "x-written-by": "model"
+          },
+          "issue_key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the ticket, when there is one",
+            "x-written-by": "model"
+          },
+          "agent_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "which agent",
+            "x-written-by": "runtime"
+          },
+          "agent_name_at_execution": {
+            "type": "string",
+            "minLength": 1,
+            "description": "its display name at the time",
+            "x-written-by": "runtime"
+          },
+          "owner_jira_user_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the answerable human",
+            "x-written-by": "runtime"
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the run it came from",
+            "x-written-by": "runtime"
+          },
+          "evidence": {
+            "type": "object",
+            "description": "verified references \u2014 ticket, PR, commits, pipeline",
+            "x-written-by": "runtime"
+          },
+          "verification": {
+            "type": "object",
+            "description": "what was actually run and what it said",
+            "x-written-by": "runtime"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "when it was written",
+            "x-written-by": "runtime"
+          }
+        },
+        "required": [
+          "memory_type",
+          "summary",
+          "agent_id",
+          "run_id",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "description": "things worth keeping",
+      "x-written-by": "model"
+    },
+    "head_commit": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the commit that actually exists",
+      "x-written-by": "runtime"
+    },
+    "pull_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the PR that was actually opened",
+      "x-written-by": "runtime"
+    },
+    "ci_result": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "running",
+        "none"
+      ],
+      "description": "what CI actually said",
+      "x-written-by": "runtime"
+    },
+    "stopped_because": {
+      "type": "string",
+      "minLength": 1,
+      "description": "finished \u00b7 failed \u00b7 hard-cap \u00b7 silent",
+      "x-written-by": "runtime"
+    },
+    "seconds": {
+      "type": "integer",
+      "description": "how long the hand ran",
+      "x-written-by": "runtime"
+    },
+    "cost_usd": {
+      "type": "number",
+      "description": "what the hand reported it cost",
+      "x-written-by": "runtime"
+    },
+    "input_tokens": {
+      "type": "integer",
+      "description": "tokens read by the model",
+      "x-written-by": "runtime"
+    },
+    "output_tokens": {
+      "type": "integer",
+      "description": "tokens written by the model",
+      "x-written-by": "runtime"
+    },
+    "cache_read_tokens": {
+      "type": "integer",
+      "description": "prompt-cache reads \u2014 recorded, not judged on",
+      "x-written-by": "runtime"
+    },
+    "cache_write_tokens": {
+      "type": "integer",
+      "description": "prompt-cache writes \u2014 recorded, not judged on",
+      "x-written-by": "runtime"
+    },
+    "turns": {
+      "type": "integer",
+      "description": "model turns the hand took",
+      "x-written-by": "runtime"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "description": "wall time the hand reported",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "run_id",
+    "agent_id",
+    "outcome",
+    "summary"
+  ],
+  "additionalProperties": false
+}

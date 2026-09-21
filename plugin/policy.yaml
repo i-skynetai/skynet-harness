@@ -1,0 +1,360 @@
+# The policy. One file, read by everything that decides.
+#
+# The launcher reads it before a hand starts (tier 0 and the tool allowlist,
+# tier A). The guard hook reads it during a run (tier B). The broker reads it
+# before an outward action (H5, H8). They must give the same answer, which is
+# why there is one file rather than a list in each of them.
+#
+# Two rules hold the whole thing up, and `sky policy lint` fails if either is
+# broken:
+#
+#   1. Default deny. An action a role does not list is denied. An action not
+#      named in `actions:` at all is denied, not assumed harmless.
+#   2. No outward action is ever plainly allowed. Anything that reaches the
+#      world outside this machine is `needs_human` or goes through the broker.
+#      A role cannot be given `push` by editing this file.
+
+version: 1
+
+# ── what the words mean ──────────────────────────────────────────────────
+# Every action a role can request, and whether it leaves this machine.
+# `outward: true` means it changes something other people can see.
+actions:
+  repo.read:
+    outward: false
+    description: "read files in the repository under work"
+  repo.edit:
+    outward: false
+    description: "create or change files inside the repository"
+  repo.edit_outside:
+    outward: false
+    description: "create or change files outside the repository"
+    never: "a hand works in one repository; writing outside it is how a run touches something nobody reviewed"
+  test.run:
+    outward: false
+    description: "run the repository's own test command"
+  commit.local:
+    outward: false
+    description: "commit to a local branch; nothing leaves the machine"
+  code.index.read:
+    outward: false
+    description: "query the indexed copy of the code in the knowledge base"
+  kb.read:
+    outward: false
+    description: "search the knowledge base"
+  ticket.read:
+    outward: false
+    description: "read a ticket and its status"
+  pr.read:
+    outward: false
+    description: "read a pull request and its comments"
+  ci.read:
+    outward: false
+    description: "read pipeline results"
+  shell.free:
+    outward: false
+    description: "run an arbitrary shell command"
+    never: "an allowlist of commands is a boundary; a free shell is the absence of one"
+
+  push:
+    outward: true
+    broker: push_branch
+    description: "publish a branch"
+  pr.open:
+    outward: true
+    broker: open_pr
+    description: "open a pull request"
+  pr.vote:
+    outward: true
+    description: "approve or reject a pull request"
+    never: "an agent voting on a pull request is an agent reviewing its own work, or standing in for someone who should have looked"
+  pr.merge:
+    outward: true
+    description: "merge a pull request"
+    never: "the last human checkpoint before code is live"
+  ticket.comment:
+    outward: true
+    broker: comment
+    description: "comment on a ticket, from a fixed template"
+  ticket.transition:
+    outward: true
+    broker: transition
+    description: "move a ticket to another status"
+  ticket.assign:
+    outward: true
+    description: "change who a ticket is assigned to"
+    never: "the assignee is the human answerable for the work and never changes because an agent ran"
+  pipeline.run:
+    outward: true
+    description: "start a CI pipeline"
+    never: "a pipeline holds deployment credentials this policy cannot see"
+  kb.ingest:
+    outward: true
+    description: "write to the knowledge base"
+  deploy:
+    outward: true
+    description: "release to any environment"
+    never: "not an operation the harness has"
+  permission.change:
+    outward: true
+    description: "change this policy, a grant, or an agent card"
+    never: "an agent that can widen its own permission has none"
+  skill.promote:
+    outward: true
+    description: "activate a skill or raise its grant"
+    never: "skills are granted by a reviewed change, never by the agent using them"
+
+# ── tool groups ──────────────────────────────────────────────────────────
+# The knowledge and code tools, named once. Three roles have identical read
+# access to both, and writing that out three times is three chances for them to
+# drift apart.
+#
+# **Each tool is listed under BOTH names it can have**, and that is not
+# belt-and-braces — it is required. A tool's id is `mcp__<server>__<tool>`, and
+# the server name depends on how the session was started:
+#
+#   mcp__kb__…              core launched it: `--strict-mcp-config --mcp-config`
+#                           with a server named `kb`
+#   mcp__plugin_sky_kb__…   the plugin's own .mcp.json loaded in a normal session
+#
+# Listing only the plugin form meant a hand launched by `sky build` had **no
+# knowledge-base tools at all** — the allowlist filtered out every tool it was
+# given, silently, with no error. Measured on a real run 2026-09-14, not
+# reasoned about: the hand answered "I don't have access to the kb MCP tools in
+# this session".
+#
+# Every name here is checked against the live servers by
+# `scripts/check-allowlists.py`.
+tool_groups:
+  # The shared skill catalogue (D-20): READS only, and no `jobs_*` — a role
+  # never ingests into it, so it never needs to watch an ingest job there.
+  # Publishing to the catalogue is a reviewed change run by a person, not an
+  # action any agent has (D-18).
+  kb_read:
+    - mcp__kb__kb_search
+    - mcp__kb__kb_similarity_search
+    - mcp__kb__kb_agentic_search
+    - mcp__kb__kb_graph_query
+    - mcp__kb__kb_context_search
+    - mcp__kb__kb_layer_search
+    - mcp__kb__kb_ontologies_list
+    - mcp__kb__kb_ontologies_get
+    - mcp__kb__kb_jobs_status
+    - mcp__kb__kb_jobs_output
+    - mcp__plugin_sky_kb__kb_search
+    - mcp__plugin_sky_kb__kb_similarity_search
+    - mcp__plugin_sky_kb__kb_agentic_search
+    - mcp__plugin_sky_kb__kb_graph_query
+    - mcp__plugin_sky_kb__kb_context_search
+    - mcp__plugin_sky_kb__kb_layer_search
+    - mcp__plugin_sky_kb__kb_ontologies_list
+    - mcp__plugin_sky_kb__kb_ontologies_get
+    - mcp__plugin_sky_kb__kb_jobs_status
+    - mcp__plugin_sky_kb__kb_jobs_output
+  code_read:
+    - mcp__code__search_definitions
+    - mcp__code__get_definition
+    - mcp__code__get_source
+    - mcp__code__view_signatures
+    - mcp__code__inspect_symbol
+    - mcp__code__get_dependencies
+    - mcp__code__find_related_code
+    - mcp__code__summarize_impact
+    - mcp__code__coverage_by_path
+    - mcp__code__list_files
+    - mcp__code__list_indexed_repos
+    - mcp__code__get_repo_status
+    - mcp__code__repo_health_report
+    - mcp__plugin_sky_code__search_definitions
+    - mcp__plugin_sky_code__get_definition
+    - mcp__plugin_sky_code__get_source
+    - mcp__plugin_sky_code__view_signatures
+    - mcp__plugin_sky_code__inspect_symbol
+    - mcp__plugin_sky_code__get_dependencies
+    - mcp__plugin_sky_code__find_related_code
+    - mcp__plugin_sky_code__summarize_impact
+    - mcp__plugin_sky_code__coverage_by_path
+    - mcp__plugin_sky_code__list_files
+    - mcp__plugin_sky_code__list_indexed_repos
+    - mcp__plugin_sky_code__get_repo_status
+    - mcp__plugin_sky_code__repo_health_report
+
+  catalogue_read:
+    - mcp__catalogue__kb_search
+    - mcp__catalogue__kb_similarity_search
+    - mcp__catalogue__kb_agentic_search
+    - mcp__catalogue__kb_graph_query
+    - mcp__catalogue__kb_context_search
+    - mcp__catalogue__kb_ontologies_list
+    - mcp__catalogue__kb_ontologies_get
+
+# ── the four roles ───────────────────────────────────────────────────────
+# `tools` is the host-enforced allowlist — tier A, the strongest in-session
+# control. `may` is what the role can do at all. `needs_human` is what it may
+# prepare and not perform.
+roles:
+  developer:
+    purpose: "implement a bounded change, with tests, and stop"
+    tools:
+      - Read
+      - Edit
+      - Write
+      - Grep
+      - Glob
+      - "Bash(git add:*)"
+      - "Bash(git commit:*)"
+      - "Bash(git status:*)"
+      - "Bash(git diff:*)"
+      - "Bash(git log:*)"
+      - "Bash(npm test:*)"
+      - "Bash(pytest:*)"
+      - "Bash(make test:*)"
+      - +kb_read
+      - +code_read
+      - +catalogue_read
+    may:
+      - repo.read
+      - repo.edit
+      - test.run
+      - commit.local
+      - code.index.read
+      - kb.read
+      - ticket.read
+      - pr.read
+      - ci.read
+    needs_human:
+      - push
+      - pr.open
+      - ticket.comment
+      - ticket.transition
+      - kb.ingest
+
+  reviewer:
+    purpose: "read a change and say APPROVED or BLOCKED, with file and line"
+    tools:
+      - Read
+      - Grep
+      - Glob
+      - +kb_read
+      - +code_read
+      - +catalogue_read
+    may:
+      - repo.read
+      - code.index.read
+      - kb.read
+      - ticket.read
+      - pr.read
+      - ci.read
+    needs_human:
+      - ticket.comment
+      - kb.ingest
+
+  architect:
+    purpose: "design, the spec gate, impact walk; produce documents, not code"
+    tools:
+      - Read
+      - Grep
+      - Glob
+      - +kb_read
+      - +code_read
+      - +catalogue_read
+    may:
+      - repo.read
+      - code.index.read
+      - kb.read
+      - ticket.read
+      - pr.read
+      - ci.read
+    needs_human:
+      - ticket.comment
+      - kb.ingest
+
+  security:
+    purpose: "scan a change for secrets, permission drift and CI tampering"
+    tools:
+      - Read
+      - Grep
+      - Glob
+      - +kb_read
+      - +code_read
+      - +catalogue_read
+    may:
+      - repo.read
+      - code.index.read
+      - kb.read
+      - ticket.read
+      - pr.read
+      - ci.read
+    needs_human:
+      - kb.ingest
+
+# ── tier B: what the guard hook denies during a run ──────────────────────
+# A command string can be rewritten, so this is a real control and not a
+# boundary. It catches the ordinary attempt, not a determined one; `reason` is
+# what the hand is told, because a denial nobody understands gets worked around.
+guard:
+  deny_commands:
+    - pattern: "git push"
+      action: push
+      reason: "publishing a branch goes through `sky ship`, which shows you the exact command first"
+    - pattern: "git remote add"
+      action: push
+      reason: "adding a remote is a way to push around the block"
+    - pattern: "git remote set-url"
+      action: push
+      reason: "changing a remote is a way to push around the block"
+    - pattern: "git config credential"
+      action: push
+      reason: "the credential helper is deliberately empty for this run"
+    - pattern: "git config --global"
+      action: permission.change
+      reason: "a run must not change configuration outside its own repository"
+    - pattern: "git push --force"
+      action: push
+      reason: "a force push can destroy work that is not yours"
+    - pattern: "git tag"
+      action: push
+      reason: "a tag is published like a branch and goes the same route"
+    - pattern: "gh pr"
+      action: pr.open
+      reason: "pull requests go through the broker so the intent is recorded"
+    - pattern: "gh pr merge"
+      action: pr.merge
+      reason: "merging is a human decision"
+    - pattern: "az repos pr"
+      action: pr.open
+      reason: "pull requests go through the broker so the intent is recorded"
+    - pattern: "glab mr"
+      action: pr.open
+      reason: "merge requests go through the broker so the intent is recorded"
+    - pattern: "curl"
+      action: shell.free
+      reason: "a shell that can reach the network can do anything this policy forbids; use a named tool"
+    - pattern: "wget"
+      action: shell.free
+      reason: "a shell that can reach the network can do anything this policy forbids; use a named tool"
+
+  # The guard stands aside outside a harness run. Installing this must never
+  # make somebody's own agent less capable in an unrelated repository.
+  scope: harness_runs_only
+
+  # A hook that runs on every tool call must not be able to break ten people's
+  # work over a typo in itself. On its own error it allows and records.
+  fails: open
+
+# ── writing to the knowledge base ────────────────────────────────────────
+ingest:
+  # Only this layer is isolated per tenant; the others are shared across
+  # tenants on the same host.
+  layer: project
+  require_stamp: true
+  require_redaction_gate: true
+
+# ── ticket naming ────────────────────────────────────────────────────────
+# Replaces the prefix that used to be hard-coded in the skills.
+tickets:
+  # Set this to your own project's prefix at install time. Shipping one real
+  # project's prefix as the default would put one team's vocabulary on
+  # everybody else's machine.
+  prefix: ""
+  board_url: ""

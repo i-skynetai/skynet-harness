@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a1a">Who runs whom — the target design</text>
+
+  <!-- Layer 1: triggers -->
+  <rect x="40" y="60" width="820" height="70" rx="8" fill="#f4f4f5" stroke="#a1a1aa"/>
+  <text x="60" y="85" font-size="13" font-weight="bold" fill="#3f3f46">TRIGGERS</text>
+  <text x="60" y="110" font-size="13" fill="#3f3f46">You in a terminal   ·   a Jira assignment   ·   a message to Ethan</text>
+  <text x="835" y="110" text-anchor="end" font-size="12" fill="#71717a">no LLM</text>
+
+  <!-- Layer 2: Ethan -->
+  <rect x="40" y="150" width="820" height="90" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="60" y="175" font-size="13" font-weight="bold" fill="#78350f">ETHAN   (Wave 2, separate repo)</text>
+  <text x="60" y="198" font-size="13" fill="#78350f">Doors and router: which KB, which hand, what steps. Watches sessions, takes mid-session input,</text>
+  <text x="60" y="218" font-size="13" fill="#78350f">answers or escalates to you, asks core to launch, and requests external updates through the chosen permission mode.</text>
+  <text x="835" y="200" text-anchor="end" font-size="12" font-weight="bold" fill="#b45309">OWN LLM</text>
+
+  <!-- Layer 3: core -->
+  <rect x="40" y="260" width="820" height="90" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="60" y="285" font-size="13" font-weight="bold" fill="#1e3a8a">sky CORE   (the `sky` command — plain Python)</text>
+  <text x="60" y="308" font-size="13" fill="#1e3a8a">Resolves the KB, checks readiness, removes the git credential (the KB token stays — §7.1),</text>
+  <text x="60" y="328" font-size="13" fill="#1e3a8a">applies the policy, stamps run id + agent id (owner registry not built), starts the hand, watches the clock.</text>
+  <text x="835" y="310" text-anchor="end" font-size="12" fill="#1d4ed8">no LLM — deterministic</text>
+
+  <!-- Layer 4: the hand -->
+  <rect x="40" y="370" width="820" height="150" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="60" y="395" font-size="13" font-weight="bold" fill="#14532d">THE HAND   (Claude Code · Codex · Kimi)</text>
+  <text x="60" y="418" font-size="13" fill="#14532d">Runs the role agent it was started with. The agent IS this session, wearing a role:</text>
+
+  <rect x="70" y="432" width="170" height="36" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <text x="155" y="455" text-anchor="middle" font-size="13" fill="#14532d">developer</text>
+  <rect x="255" y="432" width="170" height="36" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <text x="340" y="455" text-anchor="middle" font-size="13" fill="#14532d">reviewer</text>
+  <rect x="440" y="432" width="170" height="36" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <text x="525" y="455" text-anchor="middle" font-size="13" fill="#14532d">architect</text>
+  <rect x="625" y="432" width="170" height="36" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <text x="710" y="455" text-anchor="middle" font-size="13" fill="#14532d">security</text>
+
+  <text x="60" y="497" font-size="13" fill="#14532d">Loads the plugin's skills from disk. Reaches the KB through MCP with the tenant core gave it.</text>
+  <text x="835" y="420" text-anchor="end" font-size="12" font-weight="bold" fill="#15803d">THE HAND'S LLM</text>
+
+  <!-- arrows -->
+  <line x1="450" y1="130" x2="450" y2="150" stroke="#52525b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="450" y1="240" x2="450" y2="260" stroke="#52525b" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="450" y1="350" x2="450" y2="370" stroke="#52525b" stroke-width="2" marker-end="url(#a)"/>
+  <!-- direct path: terminal -> core, bypassing Ethan -->
+  <path d="M 50 130 L 50 260" stroke="#52525b" stroke-width="2" stroke-dasharray="6,4" fill="none" marker-end="url(#a)"/>
+  <text x="60" y="254" font-size="11" fill="#52525b">direct: `sky build` from a terminal</text>
+
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#52525b"/></marker></defs>
+
+  <text x="500" y="548" text-anchor="middle" font-size="12" fill="#71717a">Target design — §6.4 says what is built today. Two model responsibilities; Skynet Harness owns neither.</text>
+</svg>

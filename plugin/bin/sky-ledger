@@ -1,0 +1,14 @@
+#!/bin/sh
+# PostToolUse. Records what ran, and changes nothing about what happens.
+# Silent when there is nothing to record: a ledger is evidence, not a control,
+# and noise on every tool call is how one gets turned off.
+if [ "$SKY_LAUNCHED" != "1" ]; then
+    exit 0
+fi
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if command -v sky >/dev/null 2>&1; then
+    exec sky ledger
+elif [ -x "$DIR/sky" ]; then
+    exec "$DIR/sky" ledger
+fi
+exit 0

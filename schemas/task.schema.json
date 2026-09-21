@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:task",
+  "title": "task",
+  "description": "one piece of work, and how far it may go without a human",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "assigned before work starts",
+      "x-written-by": "runtime"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "question",
+        "review",
+        "build",
+        "learn"
+      ],
+      "description": "what sort of work \u2014 readiness is per kind",
+      "x-written-by": "model"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "what is being asked",
+      "x-written-by": "model"
+    },
+    "detail": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the full request, as given",
+      "x-written-by": "model"
+    },
+    "issue_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the ticket, when there is one",
+      "x-written-by": "model"
+    },
+    "repo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "where the work happens",
+      "x-written-by": "model"
+    },
+    "kb": {
+      "type": "string",
+      "minLength": 1,
+      "description": "resolved by core from the path \u2014 never chosen by a model",
+      "x-written-by": "runtime"
+    },
+    "requested_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the human who asked",
+      "x-written-by": "runtime"
+    },
+    "permission": {
+      "type": "string",
+      "enum": [
+        "wait",
+        "proceed"
+      ],
+      "description": "wait for the owner, or proceed \u2014 absent means wait",
+      "x-written-by": "runtime"
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what finished looks like",
+      "x-written-by": "model"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when the task was raised",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "task_id",
+    "kind",
+    "title",
+    "kb",
+    "requested_by"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""The `sky` runtime, as the plugin ships it.
+
+A plugin-only installation gets a working runtime from here: the modules sit in
+`../runtime/sky`, and this puts them on the path and hands over to the command
+line. No pip, no clone, no second install step — the person typed one command
+and is entitled to a working thing.
+
+If a `sky` is already on PATH it is left alone: somebody who installed the
+runtime themselves has a reason, and a plugin quietly shadowing it would be a
+surprise at exactly the wrong moment.
+"""
+import os
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+RUNTIME = HERE.parent / "runtime"
+
+if not RUNTIME.is_dir():
+    sys.exit("sky: this plugin was installed without its runtime "
+             f"({RUNTIME} is missing). Reinstall the plugin.")
+
+sys.path.insert(0, str(RUNTIME))
+os.environ.setdefault("SKY_PLUGIN_ROOT", str(HERE.parent))
+
+from sky.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    sys.exit(main())

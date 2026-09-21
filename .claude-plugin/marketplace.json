@@ -1,0 +1,14 @@
+{
+  "name": "sky",
+  "description": "Marketplace hosting Skynet Harness",
+  "owner": {
+    "name": "SKY"
+  },
+  "plugins": [
+    {
+      "name": "sky",
+      "source": "./plugin",
+      "description": "Skynet Harness \u2014 /sky:* skills and four role agents, grounded in your team's knowledge base"
+    }
+  ]
+}

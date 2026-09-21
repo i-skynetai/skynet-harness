@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:memory-candidate",
+  "title": "memory-candidate",
+  "description": "one durable thing worth keeping, proposed by a hand and verified by core",
+  "type": "object",
+  "properties": {
+    "memory_type": {
+      "type": "string",
+      "enum": [
+        "implementation_outcome",
+        "decision",
+        "lesson",
+        "risk",
+        "review_outcome"
+      ],
+      "description": "what sort of thing this is",
+      "x-written-by": "model"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the thing itself, in one or two sentences",
+      "x-written-by": "model"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what was decided and why",
+      "x-written-by": "model"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what might bite later",
+      "x-written-by": "model"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "description": "project key",
+      "x-written-by": "model"
+    },
+    "issue_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the ticket, when there is one",
+      "x-written-by": "model"
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "which agent",
+      "x-written-by": "runtime"
+    },
+    "agent_name_at_execution": {
+      "type": "string",
+      "minLength": 1,
+      "description": "its display name at the time",
+      "x-written-by": "runtime"
+    },
+    "owner_jira_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the answerable human",
+      "x-written-by": "runtime"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the run it came from",
+      "x-written-by": "runtime"
+    },
+    "evidence": {
+      "type": "object",
+      "description": "verified references \u2014 ticket, PR, commits, pipeline",
+      "x-written-by": "runtime"
+    },
+    "verification": {
+      "type": "object",
+      "description": "what was actually run and what it said",
+      "x-written-by": "runtime"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when it was written",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "memory_type",
+    "summary",
+    "agent_id",
+    "run_id",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:agent-card",
+  "title": "agent-card",
+  "description": "who an agent is, who owns it, and what it may do",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "stable internal id, never renamed",
+      "x-written-by": "runtime"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "renameable; history keeps the old names",
+      "x-written-by": "model"
+    },
+    "owner_jira_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the human answerable for this agent's work",
+      "x-written-by": "runtime"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "developer",
+        "reviewer",
+        "architect",
+        "security"
+      ],
+      "description": "one of the four roles",
+      "x-written-by": "model"
+    },
+    "hand": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "codex",
+        "kimi"
+      ],
+      "description": "the coding agent that runs it",
+      "x-written-by": "model"
+    },
+    "kb": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the knowledge base this agent resolves to",
+      "x-written-by": "runtime"
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "repository paths in scope",
+      "x-written-by": "model"
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "project keys in scope",
+      "x-written-by": "model"
+    },
+    "skills": {
+      "type": "object",
+      "description": "skill name to grant state",
+      "x-written-by": "model"
+    },
+    "allowed_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what this agent may do",
+      "x-written-by": "runtime"
+    },
+    "denied_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "what it may never do, whatever else says",
+      "x-written-by": "runtime"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when the card was issued",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "agent_id",
+    "display_name",
+    "owner_jira_user_id",
+    "role",
+    "hand",
+    "allowed_actions"
+  ],
+  "additionalProperties": false
+}

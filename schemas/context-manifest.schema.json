@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:context-manifest",
+  "title": "context-manifest",
+  "description": "everything the model was given, with its provenance attached",
+  "type": "object",
+  "properties": {
+    "context_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "this assembly",
+      "x-written-by": "runtime"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the run it was assembled for",
+      "x-written-by": "runtime"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the task",
+      "x-written-by": "runtime"
+    },
+    "issue_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the ticket, when there is one",
+      "x-written-by": "model"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "title": "context-item",
+        "description": "one thing put in front of the model, and how far it may be trusted",
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "kb",
+              "jira",
+              "git",
+              "repo",
+              "ci",
+              "user",
+              "web"
+            ],
+            "description": "where it came from",
+            "x-written-by": "model"
+          },
+          "source_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "its id in that system",
+            "x-written-by": "model"
+          },
+          "class": {
+            "type": "string",
+            "minLength": 1,
+            "description": "what sort of thing it is",
+            "x-written-by": "model"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "human label",
+            "x-written-by": "model"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "description": "which version was read",
+            "x-written-by": "model"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "when it was read",
+            "x-written-by": "runtime"
+          },
+          "trust": {
+            "type": "string",
+            "enum": [
+              "governed",
+              "untrusted"
+            ],
+            "description": "governed content may instruct; everything else is data",
+            "x-written-by": "runtime"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "description": "the text itself",
+            "x-written-by": "model"
+          }
+        },
+        "required": [
+          "source",
+          "source_id",
+          "class",
+          "retrieved_at",
+          "trust",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "description": "what was supplied",
+      "x-written-by": "runtime"
+    },
+    "budget_tokens": {
+      "type": "integer",
+      "description": "the cap retrieval was held to",
+      "x-written-by": "runtime"
+    },
+    "assembled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "context_id",
+    "run_id",
+    "items"
+  ],
+  "additionalProperties": false
+}

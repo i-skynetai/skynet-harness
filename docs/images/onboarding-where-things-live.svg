@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000" font-family="Helvetica, Arial, sans-serif" font-size="15">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2e8b57"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="1000" fill="#ffffff"/>
+  <text x="500" y="48" text-anchor="middle" font-size="22" font-weight="bold" fill="#111">Where things live, and the one path a token travels</text>
+
+  <!-- row 1 -->
+  <rect x="60" y="100" width="280" height="100" rx="8" fill="#eef4ff" stroke="#3b6fd6" stroke-width="2"/>
+  <text x="200" y="132" text-anchor="middle" font-weight="bold" fill="#111">Claude Code (the host)</text>
+  <text x="200" y="157" text-anchor="middle" fill="#333">loads the plugin</text>
+  <text x="200" y="180" text-anchor="middle" fill="#333">reads ~/.claude.json at start</text>
+
+  <rect x="400" y="100" width="300" height="100" rx="8" fill="#eef4ff" stroke="#3b6fd6" stroke-width="2"/>
+  <text x="550" y="132" text-anchor="middle" font-weight="bold" fill="#111">~/.claude/plugins/cache/sky/sky/&lt;ver&gt;/</text>
+  <text x="550" y="157" text-anchor="middle" fill="#333">20 skills · 6 agents · policy.yaml</text>
+  <text x="550" y="180" text-anchor="middle" fill="#333">its own copy of the sky runtime</text>
+
+  <!-- row 2 -->
+  <rect x="60" y="300" width="280" height="100" rx="8" fill="#fff8e6" stroke="#c98a00" stroke-width="2"/>
+  <text x="200" y="332" text-anchor="middle" font-weight="bold" fill="#111">~/.claude.json</text>
+  <text x="200" y="357" text-anchor="middle" fill="#333">mcpServers.kb → https://&lt;kb-host&gt;/mcp/</text>
+  <text x="200" y="380" text-anchor="middle" fill="#333">headersHelper → sky-headers</text>
+
+  <rect x="400" y="300" width="300" height="100" rx="8" fill="#fff8e6" stroke="#c98a00" stroke-width="2"/>
+  <text x="550" y="332" text-anchor="middle" font-weight="bold" fill="#111">~/.config/sky/sky-headers</text>
+  <text x="550" y="357" text-anchor="middle" fill="#333">run by the host · 10 s · prints JSON</text>
+  <text x="550" y="380" text-anchor="middle" fill="#333">Authorization: Bearer …</text>
+
+  <rect x="760" y="300" width="200" height="100" rx="8" fill="#ffecec" stroke="#c43c3c" stroke-width="2"/>
+  <text x="860" y="332" text-anchor="middle" font-weight="bold" fill="#111">~/.config/sky/env</text>
+  <text x="860" y="357" text-anchor="middle" fill="#333">SKY_PAT_EXAMPLE_KB=…</text>
+  <text x="860" y="380" text-anchor="middle" fill="#333">mode 600 · tokens only</text>
+
+  <text x="860" y="430" text-anchor="middle" font-size="13" fill="#c43c3c">Only this file holds a token.</text>
+  <text x="860" y="449" text-anchor="middle" font-size="13" fill="#c43c3c">The host never opens it — it runs</text>
+  <text x="860" y="468" text-anchor="middle" font-size="13" fill="#c43c3c">the helper and uses what it prints.</text>
+
+  <!-- row 3 -->
+  <rect x="60" y="510" width="280" height="100" rx="8" fill="#f2f2f2" stroke="#666" stroke-width="2"/>
+  <text x="200" y="542" text-anchor="middle" font-weight="bold" fill="#111">~/.local/bin/sky</text>
+  <text x="200" y="567" text-anchor="middle" fill="#333">the command you type</text>
+  <text x="200" y="590" text-anchor="middle" fill="#333">runs ~/.config/sky/runtime/</text>
+
+  <rect x="400" y="510" width="300" height="100" rx="8" fill="#f2f2f2" stroke="#666" stroke-width="2"/>
+  <text x="550" y="542" text-anchor="middle" font-weight="bold" fill="#111">~/.config/sky/kb-map.json</text>
+  <text x="550" y="567" text-anchor="middle" fill="#333">which KBs exist · which directories</text>
+  <text x="550" y="590" text-anchor="middle" fill="#333">the token variable's NAME, never its value</text>
+
+  <!-- row 4 -->
+  <rect x="400" y="740" width="300" height="100" rx="8" fill="#e9f7ee" stroke="#2e8b57" stroke-width="2"/>
+  <text x="550" y="772" text-anchor="middle" font-weight="bold" fill="#111">Knowledge base (KB host)</text>
+  <text x="550" y="797" text-anchor="middle" fill="#333">tenant · ontology · your own token</text>
+  <text x="550" y="820" text-anchor="middle" fill="#333">records every ingest against you</text>
+
+  <!-- arrows -->
+  <line x1="340" y1="150" x2="400" y2="150" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="370" y="140" text-anchor="middle" font-size="13" fill="#333">loads</text>
+
+  <line x1="200" y1="200" x2="200" y2="300" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="212" y="255" font-size="13" fill="#333">reads at start</text>
+
+  <line x1="340" y1="350" x2="400" y2="350" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="370" y="340" text-anchor="middle" font-size="13" fill="#333">runs</text>
+
+  <line x1="700" y1="350" x2="760" y2="350" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="730" y="340" text-anchor="middle" font-size="13" fill="#333">reads</text>
+
+  <line x1="550" y1="510" x2="550" y2="400" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="562" y="460" font-size="13" fill="#333">which variable for this URL</text>
+
+  <line x1="340" y1="560" x2="400" y2="560" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="370" y="550" text-anchor="middle" font-size="13" fill="#333">reads</text>
+
+  <line x1="200" y1="400" x2="200" y2="510" stroke="#333" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="212" y="460" font-size="13" fill="#333">all four written by sky setup init</text>
+
+  <!-- the token's one path, down the left margin -->
+  <path d="M 60 130 L 30 130 L 30 790 L 400 790" fill="none" stroke="#2e8b57" stroke-width="2.5" marker-end="url(#g)"/>
+  <text x="44" y="700" font-size="13" fill="#2e8b57">every request</text>
+  <text x="44" y="719" font-size="13" fill="#2e8b57">carries the</text>
+  <text x="44" y="738" font-size="13" fill="#2e8b57">Bearer token</text>
+  <text x="44" y="757" font-size="13" fill="#2e8b57">the helper printed</text>
+
+  <text x="500" y="930" text-anchor="middle" font-size="13" fill="#555">Blue: installed by Claude. Yellow and grey: written by `sky setup init`. Red: the only file that holds a secret. Green: the knowledge base.</text>
+</svg>

@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""Print the knowledge base's Authorization header. Nothing else, ever.
+
+The host runs this as an MCP server's `headersHelper`. Measured against Claude
+Code 2.1.152 rather than taken from documentation: it is run **through a
+shell**, with a **10-second timeout**, with `CLAUDE_CODE_MCP_SERVER_NAME` and
+`CLAUDE_CODE_MCP_SERVER_URL` added to the environment, and it must **exit 0
+having printed a JSON object whose values are all strings**. Anything else —
+a non-zero exit, empty output, a list, a nested object, a number — is refused
+by the host, so failure here is silent by design: the reason goes to stderr and
+stdout stays empty.
+
+**Why this exists at all.** The address of a knowledge base is not a secret and
+can live in the host's settings file, where a graphical Claude will see it. A
+token is a secret and must not. This is the one bridge between them: the host
+never reads the token file; it runs this, and uses what it prints.
+
+**Which token.** Two cases, in order:
+
+1. `$SKY_KB_PAT` is set — use it. That is core's path: when `sky build` starts
+   a hand it has already resolved the knowledge base and puts exactly one token
+   in that hand's environment. A helper that second-guessed it could hand the
+   session a different knowledge base's token than the one its URL points at.
+
+2. Otherwise, look up the knowledge base **whose address is the one the host is
+   connecting to** — `CLAUDE_CODE_MCP_SERVER_URL` — and read the variable that
+   entry names. Matching on the URL rather than on the directory is what keeps
+   the token and the address describing the same place; picking by directory
+   would cheerfully send one host's token to another.
+
+This duplicates a little of `core/sky/setup.py` on purpose. `core/` is not
+shipped — the installed plugin holds `plugin/` and nothing else (gate G11) — so
+the alternative to fifty lines of duplication is a helper that cannot run on
+the machine it is installed on.
+"""
+import json
+import os
+import sys
+from pathlib import Path
+
+CONFIG = Path(os.environ.get("SKY_CONFIG_DIR", "~/.config/sky")).expanduser()
+CLIENT = "skynet-harness"
+
+
+def fail(why):
+    """stderr, never stdout: empty stdout is how the host is told this failed."""
+    print(f"sky-headers: {why}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def read_env(path):
+    values = {}
+    if not path.exists():
+        return values
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, _, value = line.partition("=")
+            values[key.strip()] = value.strip()
+    return values
+
+
+def token_for_url(url):
+    """The token the map names for this address, or a reason it cannot be had."""
+    map_path = CONFIG / "kb-map.json"
+    if not map_path.exists():
+        fail(f"no knowledge-base map at {map_path} — run `sky setup init`")
+    try:
+        entries = json.loads(map_path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        fail(f"{map_path} is not valid JSON: {exc}")
+
+    matches = [(name, body) for name, body in entries.items()
+               if isinstance(body, dict) and not name.startswith("_")
+               and body.get("mcp_url") == url]
+    if not matches:
+        # Named without the token, because the address is not a secret and the
+        # usual cause is a settings file left pointing at an old host.
+        fail(f"no entry in {map_path} has mcp_url {url!r}")
+    if len(matches) > 1:
+        # Two tenants on one host is ORDINARY — a task knowledge base and the
+        # shared catalogue commonly live on the same server, and the platform
+        # issues one token per person per instance, so they name the same
+        # variable. Refusing that was wrong: it made the normal multi-tenant
+        # setup unusable. Only genuinely different tokens are ambiguous.
+        wanted = {body.get("pat_env") for _, body in matches}
+        if len(wanted) > 1:
+            fail("entries at that address name different token variables ("
+                 + ", ".join(sorted(str(w) for w in wanted))
+                 + "), so there is no single right answer")
+        matches = matches[:1]
+
+    name, body = matches[0]
+    variable = body.get("pat_env")
+    if not variable:
+        fail(f"knowledge base {name!r} names no token variable (pat_env)")
+    value = os.environ.get(variable) or read_env(CONFIG / "env").get(variable, "")
+    if not value:
+        fail(f"{variable} is neither in the environment nor in {CONFIG / 'env'}")
+    return value
+
+
+def main():
+    token = os.environ.get("SKY_KB_PAT", "").strip()
+    if not token:
+        url = os.environ.get("CLAUDE_CODE_MCP_SERVER_URL", "").strip()
+        if not url:
+            fail("the host passed no CLAUDE_CODE_MCP_SERVER_URL and "
+                 "$SKY_KB_PAT is not set, so there is nothing to look up")
+        token = token_for_url(url).strip()
+    if not token:
+        fail("the token is empty, which fails as though it were revoked")
+    # Values must all be strings: the host rejects the object otherwise.
+    json.dump({"Authorization": f"Bearer {token}",
+               "X-Client-Hostname": CLIENT}, sys.stdout)
+    sys.stdout.write("\n")
+
+
+if __name__ == "__main__":
+    main()

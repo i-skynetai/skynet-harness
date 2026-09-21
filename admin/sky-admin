@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""The administrator's side: make a knowledge base, and hand someone a profile.
+
+Two commands and one refusal, and the refusal is the important part.
+
+    sky-admin profile --url … --tenant … --ontology … [--out FILE]
+    sky-admin check   --url … --tenant …
+
+**This never mints, stores or transmits a person's token.** Every developer
+uses their own, minted by them in the knowledge-base application, so the record
+of who ingested what is true rather than "the team account". An administrator
+who hands out a token has replaced an audit trail with a shared password, and
+this tool will not help with that — `profile` produces the three public fields
+and says, in the file it writes, where the person gets their own token.
+
+The admin's *own* token, for `check`, comes from an environment variable or a
+hidden prompt. Never from a command-line argument: argv is in the process
+table, the shell history and every transcript.
+"""
+from __future__ import annotations
+
+import argparse
+import getpass
+import json
+import os
+import sys
+import urllib.request
+from pathlib import Path
+
+PAT_VAR = "SKY_ADMIN_PAT"
+
+
+def admin_token() -> str:
+    value = os.environ.get(PAT_VAR, "")
+    if value:
+        return value
+    if not sys.stdin.isatty():
+        raise SystemExit(f"{PAT_VAR} is not set and there is no terminal to ask "
+                         f"at. A token must not go on a command line.")
+    return getpass.getpass("admin token (hidden): ")
+
+
+def profile(args) -> int:
+    """The three fields a new person needs, and nothing that identifies them."""
+    body = {
+        "name": args.name,
+        "mcp_url": args.url,
+        "tenant_code": args.tenant,
+        "ontology": args.ontology,
+        "privacy": args.privacy,
+        "instance": args.instance or "",
+        "_note": ("Run `sky setup init --profile <this file>`. It will ask for "
+                  "YOUR OWN token at a hidden prompt — mint one in the "
+                  "knowledge-base application; it is shown once. Never use "
+                  "somebody else's, and never paste one into a chat: every "
+                  "ingest is recorded against whoever the token belongs to."),
+    }
+    if args.code_url:
+        body["code_url"] = args.code_url
+    if args.repo:
+        # Without these every run falls back to the default, which is the
+        # wrong knowledge base for every repository but one.
+        body["repos"] = list(args.repo)
+    if args.kind != "task":
+        body["kind"] = args.kind
+    if args.not_default or args.kind == "catalogue":
+        body["default"] = False
+    text = json.dumps({k: v for k, v in body.items() if v not in ("", None)},
+                      indent=2) + "\n"
+    if args.out:
+        path = Path(args.out).expanduser()
+        path.write_text(text, encoding="utf-8")
+        print(f"wrote {path}")
+        print("Send this file. It carries no token and no personal data.")
+    else:
+        sys.stdout.write(text)
+    return 0
+
+
+def check(args) -> int:
+    """Does the tenant answer, with the admin's own token? A live call."""
+    payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list",
+                          "params": {}}).encode()
+    request = urllib.request.Request(args.url, data=payload, method="POST")
+    request.add_header("Content-Type", "application/json")
+    request.add_header("Accept", "application/json, text/event-stream")
+    request.add_header("Authorization", f"Bearer {admin_token()}")
+    try:
+        raw = urllib.request.urlopen(request, timeout=30).read().decode()
+    except Exception as exc:
+        print(f"the endpoint did not answer: {type(exc).__name__}: {exc}",
+              file=sys.stderr)
+        return 1
+    for line in raw.splitlines():
+        if line.startswith("data: "):
+            raw = line[6:]
+            break
+    try:
+        tools = json.loads(raw).get("result", {}).get("tools", [])
+    except ValueError:
+        print("the endpoint answered with something that is not JSON",
+              file=sys.stderr)
+        return 1
+    if not tools:
+        # The failure a ping cannot see: it answered, and it is useless.
+        print("it answered and published NO tools — reachable and unusable",
+              file=sys.stderr)
+        return 1
+    print(f"ok — {len(tools)} tools, tenant {args.tenant}")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        prog="sky-admin", description=__doc__.splitlines()[0])
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("profile", help="the file a new person is sent")
+    p.add_argument("--url", required=True)
+    p.add_argument("--tenant", required=True)
+    p.add_argument("--ontology", required=True)
+    p.add_argument("--name", default="team_kb")
+    p.add_argument("--privacy", default="work",
+                   choices=("personal", "work", "client"))
+    p.add_argument("--instance", default="")
+    p.add_argument("--code-url", default="")
+    p.add_argument("--repo", action="append", default=[], metavar="PATH",
+                   help="a directory this knowledge base owns; repeatable")
+    p.add_argument("--kind", default="task", choices=("task", "catalogue"),
+                   help="catalogue = the shared skill library, read alongside "
+                        "a task KB and never instead of it")
+    p.add_argument("--not-default", action="store_true",
+                   help="do not make this the default knowledge base")
+    p.add_argument("--out")
+    p.set_defaults(func=profile)
+
+    c = sub.add_parser("check", help="does the tenant answer, with your token")
+    c.add_argument("--url", required=True)
+    c.add_argument("--tenant", required=True)
+    c.set_defaults(func=check)
+
+    args = parser.parse_args()
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

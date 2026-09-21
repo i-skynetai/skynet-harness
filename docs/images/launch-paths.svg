@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 720" width="1020" height="720" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L7.5,3.2 L0,6.4 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .box{fill:#fff;stroke:#94a3b8;stroke-width:2}
+      .acc{fill:#f0fdf4;stroke:#16a34a;stroke-width:2.5}
+      .eth{fill:#f0f9ff;stroke:#0ea5e9;stroke-width:2.5}
+      .shared{fill:#f8fafc;stroke:#475569;stroke-width:2.5}
+      .hum{fill:#fffbeb;stroke:#f59e0b;stroke-width:2.5}
+      .t{font-size:12.5px;fill:#0f172a;font-weight:600}
+      .s{font-size:10.5px;fill:#475569}
+      .h{font-size:15px;fill:#0f172a;font-weight:700}
+      .n{font-size:10.5px;fill:#94a3b8;font-weight:700}
+      .ln{stroke:#64748b;stroke-width:2;fill:none;marker-end:url(#a)}
+    </style>
+  </defs>
+  <rect width="1020" height="720" fill="#fafafa"/>
+  <text x="34" y="36" font-size="19" font-weight="700" fill="#0f172a">Two launch paths — one brain</text>
+  <text x="34" y="58" class="s">Both paths use the same roles and KB map. Who launches the hand and who controls outward writes are explicit.</text>
+
+  <line x1="510" y1="76" x2="510" y2="536" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="6 5"/>
+
+  <!-- PATH A -->
+  <text x="34" y="100" class="h">Path A — Skynet Harness alone</text>
+  <text x="34" y="120" class="s">the user starts, and makes both choices</text>
+
+  <rect class="hum" x="34" y="136" width="440" height="52" rx="9"/>
+  <text x="254" y="158" class="t" text-anchor="middle">User opens the hand they chose</text>
+  <text x="254" y="176" class="s" text-anchor="middle">claude · codex · kimi — in the repo they are working in</text>
+  <path class="ln" d="M254,188 L254,212"/>
+
+  <rect class="box" x="34" y="214" width="440" height="52" rx="9"/>
+  <text x="254" y="236" class="t" text-anchor="middle">/sky:spec ENG-123</text>
+  <text x="254" y="254" class="s" text-anchor="middle">a harness skill, run by hand</text>
+  <path class="ln" d="M254,266 L254,290"/>
+
+  <rect class="box" x="34" y="292" width="440" height="66" rx="9"/>
+  <text x="254" y="314" class="t" text-anchor="middle">Harness resolves the KB</text>
+  <text x="254" y="332" class="s" text-anchor="middle">repo path in kb-map.json → a kb: line → default sky_kb</text>
+  <text x="254" y="349" class="s" text-anchor="middle">or the user switched it: /sky:kb team_kb</text>
+  <path class="ln" d="M254,358 L254,382"/>
+
+  <rect class="acc" x="34" y="384" width="440" height="52" rx="9"/>
+  <text x="254" y="406" class="t" text-anchor="middle">Role agent runs inside that one hand</text>
+  <text x="254" y="424" class="s" text-anchor="middle">architect → developer → reviewer → security</text>
+
+  <!-- PATH B -->
+  <text x="546" y="100" class="h">Path B — Ethan</text>
+  <text x="546" y="120" class="s">a door starts it, and Ethan makes both choices</text>
+
+  <rect class="eth" x="546" y="136" width="440" height="52" rx="9"/>
+  <text x="766" y="158" class="t" text-anchor="middle">Trigger arrives at a door</text>
+  <text x="766" y="176" class="s" text-anchor="middle">Telegram · console · CLI · schedule</text>
+  <path class="ln" d="M766,188 L766,212"/>
+
+  <rect class="eth" x="546" y="214" width="440" height="66" rx="9"/>
+  <text x="766" y="236" class="t" text-anchor="middle">Ethan router decides</text>
+  <text x="766" y="254" class="s" text-anchor="middle">what kind of task · which KB (by intent) · which hand · what steps</text>
+  <text x="766" y="271" class="s" text-anchor="middle">may pick two: build on one hand, review on another</text>
+  <path class="ln" d="M766,280 L766,304"/>
+
+  <rect class="eth" x="546" y="306" width="440" height="66" rx="9"/>
+  <text x="766" y="328" class="t" text-anchor="middle">Ethan asks core to launch the hand</text>
+  <text x="766" y="346" class="s" text-anchor="middle">core builds the explicit environment and applies the role policy</text>
+  <text x="766" y="363" class="s" text-anchor="middle">--agent sky:&lt;role&gt; · git push blocked</text>
+  <path class="ln" d="M766,372 L766,396"/>
+
+  <rect class="acc" x="546" y="398" width="440" height="38" rx="9"/>
+  <text x="766" y="422" class="t" text-anchor="middle">The same role agent runs inside that hand</text>
+
+  <!-- converge -->
+  <path d="M254,436 L254,462 L510,462" stroke="#64748b" stroke-width="2" fill="none"/>
+  <path d="M766,436 L766,462 L510,462" stroke="#64748b" stroke-width="2" fill="none"/>
+  <path class="ln" d="M510,462 L510,486"/>
+
+  <!-- SHARED -->
+  <rect class="shared" x="34" y="488" width="952" height="118" rx="11"/>
+  <text x="510" y="514" class="h" text-anchor="middle">The brain — identical on both paths</text>
+  <text x="510" y="538" class="s" text-anchor="middle">same kb-map.json · same skills and role agents · same policy tiers and guard · same KB and the same identity stamp</text>
+  <text x="510" y="560" class="s" text-anchor="middle">Ethan supplies the senses and the planner. It is a launcher and a router in front of this — never a second implementation.</text>
+  <text x="510" y="586" class="t" text-anchor="middle">Brain status is checked here first: not ready for this task kind → the task is refused, and the blocking part is named</text>
+
+  <!-- permission modes -->
+  <path class="ln" d="M510,606 L510,634"/>
+  <rect class="hum" x="230" y="636" width="560" height="56" rx="9"/>
+  <text x="510" y="660" class="t" text-anchor="middle">Outward writes follow the selected permission mode</text>
+  <text x="510" y="679" class="s" text-anchor="middle">interactive: host approval or pre-approval · managed: intent → core broker or rendered command</text>
+</svg>
