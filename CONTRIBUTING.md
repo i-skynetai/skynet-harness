@@ -3,10 +3,11 @@
 ## Running the tests
 
 ```bash
-python3 -m pytest core/tests -q
+python3 -m unittest discover -s core/tests -t core
 ```
 
-518 tests and 533 subtests, standard library only. They must pass before a change is
+523 cases, standard library only — no pytest, no install step. That is the same command
+CI runs, so a green run here is the run that matters. They must pass before a change is
 considered.
 
 ## What a change needs

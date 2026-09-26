@@ -86,3 +86,12 @@ read it and run it yourself.
 
 This is why a model cannot claim it opened a pull request: opening one was never
 something it could do.
+
+## One hand, one knowledge base
+
+![How a run reaches exactly one knowledge base, is given no write tool, and leaves
+outward writes as intents for the broker](images/sky-hand-contract.svg)
+
+The contract in one picture: the agent reaches exactly one knowledge base, is handed
+no supported write tool, and every outward write leaves as an intent the broker renders
+for a human. Nothing in the run can widen any of the three.

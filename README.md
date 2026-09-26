@@ -1,5 +1,10 @@
 # Skynet Harness
 
+[![tests](https://github.com/arupmmi07/skynet-harness/actions/workflows/tests.yml/badge.svg)](https://github.com/arupmmi07/skynet-harness/actions/workflows/tests.yml)
+[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![licence](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
+
+
 **A local control plane for AI coding agents.** It gives the agent you already use —
 Claude Code, Codex, Kimi — an identity, a role with a fixed tool list, grounded
 context from a knowledge base you choose, and a human checkpoint on anything that
@@ -44,6 +49,16 @@ list is fixed before the model exists, and a run record the model cannot write t
 - **Records evidence.** Every managed run has a local record: identity, events, result,
   and the token usage the agent reported.
 
+## How it fits together
+
+![The layers: an optional planner on top, the harness, the knowledge base, and the
+engine underneath](docs/images/sky-solution.svg)
+
+Each layer is useful without the one above it. The harness is the layer everyone
+installs. [Ethan](https://github.com/arupmmi07/ethan) — the planner on top — is a
+separate, optional repository. The coding agent supplies the thinking and the acting;
+the harness supplies the habits and the boundary.
+
 ## Three design decisions
 
 **Default deny, and no outward action is ever plainly allowed.** An action a role does not
@@ -82,12 +97,16 @@ python3 -m sky doctor
 | [Getting started](docs/getting-started.md) | Connect a knowledge base and run your first task |
 | [Policy](docs/policy.md) | Roles, actions, and why outward actions are special |
 | [Knowledge port](docs/knowledge-port.md) | Point it at any MCP knowledge base |
+| [The local loop](docs/local-workflow.md) | Reviewing, committing, and what leaves the machine |
+| [Contributing](CONTRIBUTING.md) | Running the tests, and what a change needs |
 
 ## Status
 
-**v2.1.1.** Working and tested — **518 tests, 533 subtests**. Unattended execution is deliberately
-not built. The managed-write path renders commands for a human to run; it does not
-execute them.
+**v2.1.1.** Working and tested — **523 tests**, about 15,000 lines of Python, standard
+library only. CI runs the suite on Python 3.11, 3.12 and 3.13 with no install step.
+
+Unattended execution is deliberately not built. The managed-write path renders commands
+for a human to run; it does not execute them.
 
 ## Licence
 

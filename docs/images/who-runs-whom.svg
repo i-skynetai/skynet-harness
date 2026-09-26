@@ -10,7 +10,7 @@
 
   <!-- Layer 2: Ethan -->
   <rect x="40" y="150" width="820" height="90" rx="8" fill="#fef3c7" stroke="#d97706"/>
-  <text x="60" y="175" font-size="13" font-weight="bold" fill="#78350f">ETHAN   (Wave 2, separate repo)</text>
+  <text x="60" y="175" font-size="13" font-weight="bold" fill="#78350f">ETHAN   (optional, separate repo)</text>
   <text x="60" y="198" font-size="13" fill="#78350f">Doors and router: which KB, which hand, what steps. Watches sessions, takes mid-session input,</text>
   <text x="60" y="218" font-size="13" fill="#78350f">answers or escalates to you, asks core to launch, and requests external updates through the chosen permission mode.</text>
   <text x="835" y="200" text-anchor="end" font-size="12" font-weight="bold" fill="#b45309">OWN LLM</text>

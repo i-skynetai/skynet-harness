@@ -12,14 +12,14 @@
   </style></defs>
   <rect width="1060" height="660" fill="#fafafa"/>
   <text x="34" y="36" font-size="19" font-weight="700" fill="#0f172a">A brain is assembled, not built</text>
-  <text x="34" y="58" class="s">Ten things a brain does. Four suppliers, plus Ethan in Wave 2. The KB is one of the ten — it is not the brain.</text>
+  <text x="34" y="58" class="s">Ten things a brain does. Four suppliers, plus Ethan when you add it. The KB is one of the ten — it is not the brain.</text>
 
   <!-- legend -->
   <rect class="kb"  x="34"  y="76" width="14" height="14" rx="3"/><text x="54"  y="88" class="k">KB</text>
   <rect class="harn"  x="120" y="76" width="14" height="14" rx="3"/><text x="140" y="88" class="k">Harness</text>
   <rect class="hand"  x="220" y="76" width="14" height="14" rx="3"/><text x="240" y="88" class="k">Hand</text>
   <rect class="user"  x="310" y="76" width="14" height="14" rx="3"/><text x="330" y="88" class="k">User</text>
-  <rect class="ethan" x="392" y="76" width="14" height="14" rx="3"/><text x="412" y="88" class="k">Ethan (Wave 2)</text>
+  <rect class="ethan" x="392" y="76" width="14" height="14" rx="3"/><text x="412" y="88" class="k">Ethan (optional)</text>
 
   <!-- row 1 : IN -->
   <text x="36" y="124" class="n">TAKES IN</text>

@@ -23,7 +23,7 @@
   <!-- ETHAN -->
   <rect class="eth" x="34" y="80" width="700" height="118" rx="11"/>
   <text x="56" y="108" class="t">Ethan — the senses and the planner</text>
-  <text x="722" y="108" class="tag" text-anchor="end">WAVE 2 · optional · one per person</text>
+  <text x="722" y="108" class="tag" text-anchor="end">optional · one per person</text>
   <rect class="inner" x="56" y="122" width="158" height="58" rx="8"/>
   <text x="135" y="143" class="s" text-anchor="middle" font-weight="700">Doors</text>
   <text x="135" y="160" class="s" text-anchor="middle">phone · console</text>
@@ -47,7 +47,7 @@
   <!-- HARNESS -->
   <rect class="har" x="34" y="230" width="700" height="150" rx="11"/>
   <text x="56" y="258" class="t">Skynet Harness — the habits and the conscience</text>
-  <text x="722" y="258" class="tag" text-anchor="end">WAVE 1 · everyone installs it</text>
+  <text x="722" y="258" class="tag" text-anchor="end">the layer everyone installs</text>
   <rect class="inner" x="56" y="272" width="158" height="90" rx="8"/>
   <text x="135" y="293" class="s" text-anchor="middle" font-weight="700">Skills</text>
   <text x="135" y="310" class="s" text-anchor="middle">context · design</text>
@@ -79,7 +79,7 @@
   <!-- KB -->
   <rect class="kb" x="34" y="412" width="700" height="98" rx="11"/>
   <text x="56" y="440" class="t">SKY_KB — the team's knowledge</text>
-  <text x="722" y="440" class="tag" text-anchor="end">WAVE 1 · one KB tenant</text>
+  <text x="722" y="440" class="tag" text-anchor="end">one tenant per team</text>
   <text x="56" y="464" class="s">designs · specs · module cards · fix notes · delivery history · learnings</text>
   <text x="56" y="484" class="s">Context and memory only — never a queue, a lock, a permission system, or live status.</text>
   <text x="56" y="502" class="s" font-style="italic">Other KBs sit beside it: a client KB, a personal KB. One entry each in kb-map.json.</text>
@@ -87,7 +87,7 @@
   <path class="ln" d="M384,510 L384,540"/>
 
   <rect class="kb" x="34" y="542" width="700" height="62" rx="11"/>
-  <text x="56" y="568" class="t">KB — graph, vectors, documents, search, ingest</text>
+  <text x="56" y="568" class="t">Knowledge engine — graph, vectors, documents, search, ingest</text>
   <text x="56" y="590" class="s">already running · one account and one token per person, so an ingest can be attributed</text>
 
   <!-- HAND column -->

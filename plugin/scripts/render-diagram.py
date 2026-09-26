@@ -14,13 +14,20 @@ claim a rendered diagram.
     render-diagram.py <input.mmd|input.svg> --out-dir images [--name flow]
 
 Mermaid needs `mmdc` (`npm i -g @mermaid-js/mermaid-cli`). SVG input needs
-nothing. PNG comes from `mmdc` when it rendered, else `qlmanage` on macOS, else
-`rsvg-convert`/`inkscape` — and if none is present it says so rather than
+nothing. PNG comes from `rsvg-convert`, else a headless Chrome, else
+`inkscape`, else `qlmanage` — and if none is present it says so rather than
 leaving a caller to assume one appeared.
+
+**Why qlmanage is last.** It is a thumbnailer, not a renderer: it returns a
+square image and crops a wide diagram to fit, with a zero exit code. A cropped
+diagram that reports success is the exact failure this file exists to prevent,
+so the aspect ratio of every PNG is checked against its source and a crop is
+reported as a failure.
 """
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -55,31 +62,128 @@ def to_svg(source: Path, svg: Path) -> str:
     return ""
 
 
+CHROME_PATHS = (
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "google-chrome", "chromium", "chromium-browser",
+)
+
+
+def chrome() -> str:
+    """The first Chrome-family binary that exists, or ""."""
+    for candidate in CHROME_PATHS:
+        if "/" in candidate:
+            if Path(candidate).is_file():
+                return candidate
+        elif shutil.which(candidate):
+            return shutil.which(candidate)
+    return ""
+
+
+def svg_size(svg: Path) -> tuple[float, float] | None:
+    """The source's intended width and height, or None if it does not say."""
+    head = svg.read_text(errors="replace")[:4000]
+    box = re.search(r'viewBox\s*=\s*"([^"]+)"', head)
+    if box:
+        parts = re.split(r"[\s,]+", box.group(1).strip())
+        if len(parts) == 4:
+            try:
+                _, _, w, h = (float(v) for v in parts)
+                if w > 0 and h > 0:
+                    return w, h
+            except ValueError:
+                pass
+    w = re.search(r'\bwidth\s*=\s*"([\d.]+)', head)
+    h = re.search(r'\bheight\s*=\s*"([\d.]+)', head)
+    if w and h and float(w.group(1)) > 0 and float(h.group(1)) > 0:
+        return float(w.group(1)), float(h.group(1))
+    return None
+
+
+def png_size(png: Path) -> tuple[int, int] | None:
+    """Width and height from the PNG header, without a third-party library."""
+    try:
+        raw = png.read_bytes()[:24]
+    except OSError:
+        return None
+    if len(raw) < 24 or raw[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    return int.from_bytes(raw[16:20], "big"), int.from_bytes(raw[20:24], "big")
+
+
+def cropped(svg: Path, png: Path) -> str:
+    """"" if the PNG keeps the source's shape, else why it does not."""
+    want, got = svg_size(svg), png_size(png)
+    if not want or not got or got[1] == 0:
+        return ""                      # cannot tell; do not invent a failure
+    wanted, actual = want[0] / want[1], got[0] / got[1]
+    if abs(wanted - actual) / wanted <= 0.02:
+        return ""
+    return (f"the PNG is {got[0]}x{got[1]} but the source is "
+            f"{want[0]:g}x{want[1]:g} — it was cropped, not scaled")
+
+
+def by_chrome(binary: str, svg: Path, png: Path) -> str:
+    """Chrome honours the viewBox, so a wide diagram stays wide."""
+    size = svg_size(svg) or (PNG_WIDTH, PNG_WIDTH)
+    width, height = int(round(size[0])), int(round(size[1]))
+    scale = max(1.0, min(4.0, PNG_WIDTH / max(width, height)))
+    page = png.parent / f".{png.stem}.render.html"
+    page.write_text(
+        '<!doctype html><meta charset="utf-8">'
+        "<style>html,body{margin:0;padding:0;background:#fff}"
+        f"img{{display:block;width:{width}px;height:{height}px}}</style>"
+        f'<img src="{svg.resolve().as_uri()}">'
+    )
+    try:
+        code, said = run([binary, "--headless", "--disable-gpu", "--no-sandbox",
+                          f"--screenshot={png}", f"--window-size={width},{height}",
+                          f"--force-device-scale-factor={scale:g}",
+                          "--allow-file-access-from-files", page.resolve().as_uri()])
+    finally:
+        page.unlink(missing_ok=True)
+    if not png.is_file():
+        return f"chrome produced nothing: {said[:160]}"
+    return cropped(svg, png)
+
+
 def to_png(svg: Path, png: Path) -> str:
-    """First converter that exists wins. Absence is reported, not hidden."""
+    """First converter that exists wins. Absence is reported, not hidden.
+
+    Order is by fidelity, not convenience: a converter that keeps the shape of
+    the diagram comes before one that only usually does.
+    """
     if shutil.which("rsvg-convert"):
         code, said = run(["rsvg-convert", "-w", str(PNG_WIDTH),
                           "-o", str(png), str(svg)])
         if code == 0 and png.is_file():
-            return ""
+            return cropped(svg, png)
         return f"rsvg-convert failed: {said[:160]}"
+    binary = chrome()
+    if binary:
+        return by_chrome(binary, svg, png)
+    if shutil.which("inkscape"):
+        code, said = run(["inkscape", str(svg), "--export-type=png",
+                          f"--export-filename={png}", f"--export-width={PNG_WIDTH}"])
+        if code == 0 and png.is_file():
+            return cropped(svg, png)
+        return f"inkscape failed: {said[:160]}"
     if shutil.which("qlmanage"):
-        # Writes <name>.svg.png into the output directory; rename it after.
+        # A thumbnailer, so it is the last resort: it writes
+        # <name>.svg.png and squares anything that is not already square.
         code, said = run(["qlmanage", "-t", "-s", str(PNG_WIDTH),
                           "-o", str(png.parent), str(svg)])
         produced = png.parent / (svg.name + ".png")
         if produced.is_file():
             produced.replace(png)
+            problem = cropped(svg, png)
+            if problem:
+                png.unlink(missing_ok=True)
+                return f"qlmanage: {problem}"
             return ""
         return f"qlmanage produced nothing: {said[:160]}"
-    if shutil.which("inkscape"):
-        code, said = run(["inkscape", str(svg), "--export-type=png",
-                          f"--export-filename={png}", f"--export-width={PNG_WIDTH}"])
-        if code == 0 and png.is_file():
-            return ""
-        return f"inkscape failed: {said[:160]}"
-    return ("no SVG-to-PNG converter found (looked for rsvg-convert, qlmanage, "
-            "inkscape). The SVG is fine; there is no PNG.")
+    return ("no SVG-to-PNG converter found (looked for rsvg-convert, Chrome, "
+            "inkscape, qlmanage). The SVG is fine; there is no PNG.")
 
 
 def main() -> int:

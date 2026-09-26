@@ -67,6 +67,14 @@ Each managed run leaves a local record: identity, the events that happened, the 
 and the usage the coding agent reported. The model does not write this record, which is
 why "I opened a pull request" cannot appear in it unless a pull request was opened.
 
+## Where everything lives
+
+![Where the plugin, the knowledge-base setting and the token each live, and the one
+path a token travels](images/onboarding-where-things-live.svg)
+
+Four locations, one token path. If a run cannot reach the knowledge base, the fault is
+on that path and `sky doctor` says which step.
+
 ## Common first problems
 
 | Symptom | Cause |

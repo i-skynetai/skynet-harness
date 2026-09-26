@@ -30,6 +30,9 @@ How a task becomes a managed run, and which component decides what.
 └──────────────────┘                └─────────────────────────────┘
 ```
 
+![Who runs whom: triggers, the harness, the hand, and where a human
+decides](images/who-runs-whom.svg)
+
 ## The parts
 
 | Part | Responsibility |
@@ -58,6 +61,9 @@ tools. It exists for the run. It is not another product.
    launcher proves the usual Git credential routes are unavailable before starting.
 5. **Run.** The guard reads commands the model is about to run and answers on them.
 6. **Record.** Identity, events, result, reported usage — in a local run record.
+
+![The two launch paths — the harness alone, and the harness driven by a
+planner — share one set of roles and one knowledge-base map](images/launch-paths.svg)
 
 ## Two tiers, named honestly
 
