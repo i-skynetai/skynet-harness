@@ -56,8 +56,8 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-002 | [The Safety probe asks the guard as a run would](#sh-002) | probes | P0 | S | Ready | |
 | SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Ready | |
 | SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Needs decision | |
-| SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | In progress | @arupmmi07, 2026-09-30 |
-| SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | In progress | @arupmmi07, 2026-09-30 |
+| SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | Ready | |
+| SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | Ready | |
 | SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Ready | |
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Ready | |
 | SH-009 | [`sky kb which` gives the real reason](#sh-009) — *good first issue* | cli | P0 | S | Ready | |
@@ -168,6 +168,9 @@ while five files carry it. *Done when:* the five places use a neutral name and t
 beside the SVG is rendered again; the word check covers the whole tree; CI runs it from
 a committed list of hashed words, so the list itself names nobody. *Starts in:*
 `core/sky/selftest.py`.
+*Progress, 2026-09-30:* the name is gone from the five places and from every commit —
+history was rewritten before the first push — and the PNG is rendered again. *Still
+open:* the word check over the whole tree, from a committed list of hashed words.
 
 <a id="sh-006"></a>**SH-006 — A `test` skill with no vendor tools.** The `test` skill
 tells the agent to run two vendor test-suite products through tools named after them,
@@ -176,6 +179,10 @@ and names two test-management products (`plugin/skills/test/SKILL.md:3`, `:28`�
 product. *Done when:* the skill runs local tests, or calls a remote-suite operation
 named in the policy; no vendor name remains; `sky selftest` passes. *Starts in:*
 `plugin/skills/test/SKILL.md`.
+*Progress, 2026-09-30:* the vendor names are gone from the skill and from every commit;
+the remote families are generic (`kb_tools_regression_*`, `kb_tools_browser_*`) and
+`sky selftest` passes. *Still open:* no role's policy names those operations, so the
+skill should call operations the policy does name.
 
 <a id="sh-007"></a>**SH-007 — The documented KB map works as written.** Two documents
 say the map lives in `config/kb-map.json` (`docs/getting-started.md:68`,
