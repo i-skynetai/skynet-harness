@@ -56,8 +56,8 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-002 | [The Safety probe asks the guard as a run would](#sh-002) | probes | P0 | S | Ready | |
 | SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Ready | |
 | SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Needs decision | |
-| SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | Ready | |
-| SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | Ready | |
+| SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | In progress | @arupmmi07, 2026-09-30 |
+| SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | In progress | @arupmmi07, 2026-09-30 |
 | SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Ready | |
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Ready | |
 | SH-009 | [`sky kb which` gives the real reason](#sh-009) — *good first issue* | cli | P0 | S | Ready | |
