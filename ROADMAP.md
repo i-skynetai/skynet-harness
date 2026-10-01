@@ -348,3 +348,11 @@ a test pins the probe's answer on 3.11.
 <a id="sh-052"></a>**SH-052 — Install without a clone.** There is no package metadata; the
 runtime reaches people by clone, by `sky setup` copying a launcher, or inside the
 plugin. *Decision needed:* a package installable with `pipx`, or clone and plugin only.
+
+## Release review — 2026-10-01
+
+| ID | Feature | Area | P | Size | Status | Owner |
+|---|---|---|---|---|---|---|
+| SH-900 | Bring release documentation up to the shared standard | release | P1 | M | Ready | Unassigned |
+
+**Verified:** Resolve the five documentation-check failures: early PNG, PNG embeds in README/architecture, quick-start section and numbered steps. Demonstrate an offline complete run, not only readiness diagnostics.
