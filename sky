@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+"""The `sky` command, from a fresh clone.
+
+The runtime lives in `core/`, so `python3 -m sky` only resolves once you are inside
+that directory — which is not where anyone starts. This is the two-line shim that makes
+the documented first command work from the repository root, with no install step and no
+dependency, which is the promise the README makes.
+
+`core/bin/sky` is the same shim for a checkout that puts `core/bin` on PATH. Both exist
+because both entry points are real: a person who just cloned, and an installed plugin.
+"""
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "core"))
+
+from sky.cli import main                                          # noqa: E402
+
+sys.exit(main())

@@ -1,25 +1,67 @@
 # Getting started
 
-Ten minutes: check readiness, connect a knowledge base, run one task.
+Two minutes to see what it does. Ten to connect a knowledge base and run a real task.
 
-## 1. Requirements
+## 1. Clone it and ask the policy a question
 
-- Python 3.11 or newer. The core uses the standard library only.
-- A coding agent already installed — Claude Code, Codex or Kimi.
-- A knowledge base reachable over MCP. See [knowledge-port.md](knowledge-port.md);
-  any MCP server exposing search tools will do.
-
-## 2. Check what is present
+No install, no account, no knowledge base. Python 3.11 or newer is the only
+requirement — the core is standard library.
 
 ```bash
 git clone https://github.com/arupmmi07/skynet-harness.git
 cd skynet-harness
-python3 -m sky doctor
+
+./sky policy lint                    # does the shipped policy hold together?
+./sky policy developer push          # may a developer push?
+./sky policy reviewer push           # may a reviewer?
+./sky policy developer edit          # may a developer do something unnamed?
+```
+
+You should see:
+
+```
+plugin/policy.yaml: clean
+    4 roles, 23 actions, 13 guard rules
+
+developer · push: needs-human — prepared by the agent, performed by you
+reviewer · push: deny — the reviewer role does not have 'push'
+developer · edit: deny — 'edit' is not an action this policy defines, so it is denied
+```
+
+That is the whole idea in four commands. **`push` is never a plain allow**, for anybody
+— the agent prepares it and you perform it. **A reviewer cannot push** at all, because
+the role does not list it. And **an action the policy has never heard of is denied**
+rather than assumed harmless, which is the difference between a default-deny policy and
+a list of things someone remembered to forbid.
+
+```bash
+./sky policy show                    # every role, its tools, and what it may do
+./sky selftest                       # is this repository still internally sound?
+```
+
+`selftest` checks the repository against itself — that the core never imports the
+plugin, that every role's tool list matches the policy, that the plugin's vendored copy
+of the runtime has not drifted, that no credential is in the plugin. On a fresh clone
+two checks skip and say why, which is the habit the whole project is built on: a check
+that did not run says so rather than counting itself as a pass.
+
+## 2. Check what is present
+
+```bash
+./sky doctor
 ```
 
 `doctor` probes the knowledge source, retrieval, coding agent, policy, skills and test
 runner, and prints a readiness table. It names what is missing rather than continuing.
 A green table means a run will start; it does not promise the run will succeed.
+
+At this point `doctor` will say there is no knowledge base, which is correct — you have
+not connected one yet. That is the next step, and it is the first one that needs
+anything from outside this repository:
+
+- A coding agent already installed — Claude Code, Codex or Kimi.
+- A knowledge base reachable over MCP. See [knowledge-port.md](knowledge-port.md);
+  any MCP server exposing search tools will do.
 
 ## 3. Connect a knowledge base
 
@@ -45,13 +87,13 @@ Then:
 
 ```bash
 export SKY_PAT_WORK=your-token-here
-python3 -m sky doctor          # confirm the KB is reachable and retrieval returns
+./sky doctor          # confirm the KB is reachable and retrieval returns
 ```
 
 ## 4. Run a task
 
 ```bash
-python3 -m sky build --issue PROJ-123 --role developer --hand claude
+./sky build --task PROJ-123 --role developer --hand claude
 ```
 
 This resolves the KB, applies the developer role's tool list, builds an explicit

@@ -24,7 +24,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sky.policy import ALLOW, DENY, NEEDS_HUMAN, Policy, PolicyError  # noqa: E402
 
-SHIPPED = Path(__file__).resolve().parents[2] / "plugin" / "policy.yaml"
+REPO = Path(__file__).resolve().parents[2]
+SHIPPED = REPO / "plugin" / "policy.yaml"
 
 MINIMAL = """
 version: 1
@@ -412,6 +413,59 @@ class FindingIt(unittest.TestCase):
             self.assertIn("may not build", str(caught.exception))
         finally:
             os.environ.pop("SKY_POLICY", None)
+            if before is not None:
+                os.environ["SKY_POLICY"] = before
+
+
+class AFreshCloneCanReadThePolicyItShipsWith(unittest.TestCase):
+    """The last resort, and why it is last.
+
+    Before this, someone who cloned the repository and ran the first command in the
+    README was told no policy.yaml was found — while the file sat in `plugin/` two
+    directories away. That reads as "this tool is broken", not "this tool is
+    unconfigured", and it is the first thing a stranger sees.
+    """
+
+    def test_the_repository_copy_is_found_when_nothing_is_installed(self):
+        from sky.policy import _repo_policy
+        found = _repo_policy()
+        self.assertIsNotNone(found, "the checkout's own plugin/policy.yaml was not found")
+        self.assertTrue(found.is_file())
+        self.assertEqual(found.name, "policy.yaml")
+        Policy.load(found)                      # and it must actually parse
+
+    def test_it_is_found_from_the_vendored_copy_too(self):
+        """This module is vendored into plugin/runtime/sky, at a different depth.
+
+        Counting parent directories would be right in one copy and wrong in the other,
+        which is the kind of break that only shows up in the copy nobody tested.
+        """
+        vendored = REPO / "plugin" / "runtime" / "sky" / "policy.py"
+        if not vendored.is_file():
+            self.skipTest("no vendored runtime in this checkout")
+        import subprocess
+        out = subprocess.run(
+            [sys.executable, "-c",
+             "import sys; sys.path.insert(0, %r); "
+             "from sky.policy import _repo_policy; print(_repo_policy())"
+             % str(REPO / "plugin" / "runtime")],
+            capture_output=True, text=True)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertTrue(out.stdout.strip().endswith("plugin/policy.yaml"),
+                        f"vendored copy resolved to {out.stdout.strip()!r}")
+
+    def test_an_installed_policy_still_wins_over_the_checkout(self):
+        """A checkout on disk must never quietly override what governs the machine."""
+        from sky import policy as policy_module
+        installed = Path(tempfile.mkdtemp()) / "policy.yaml"
+        installed.write_text(MINIMAL)
+        real = policy_module._installed_policy
+        policy_module._installed_policy = lambda: installed
+        before = os.environ.pop("SKY_POLICY", None)
+        try:
+            self.assertEqual(Policy.find(), installed)
+        finally:
+            policy_module._installed_policy = real
             if before is not None:
                 os.environ["SKY_POLICY"] = before
 

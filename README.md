@@ -83,7 +83,7 @@ Requires Python 3.11+. No other runtime dependency; the core is standard library
 ```bash
 git clone https://github.com/arupmmi07/skynet-harness.git
 cd skynet-harness
-python3 -m sky doctor
+./sky doctor
 ```
 
 `sky doctor` tells you what is present and what is missing. See
@@ -102,7 +102,7 @@ python3 -m sky doctor
 
 ## Status
 
-**v2.1.1.** Working and tested — **523 tests**, about 15,000 lines of Python, standard
+**v2.1.1.** Working and tested — **526 tests**, about 15,000 lines of Python, standard
 library only. CI runs the suite on Python 3.11, 3.12 and 3.13 with no install step.
 
 Unattended execution is deliberately not built. The managed-write path renders commands

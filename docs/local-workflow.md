@@ -4,8 +4,8 @@ What a managed run looks like from your side, and the one habit that matters.
 
 ## The loop
 
-1. `python3 -m sky doctor` — confirm the knowledge base and the coding agent are ready.
-2. `python3 -m sky build --issue <ID> --role developer --hand claude` — the harness
+1. `./sky doctor` — confirm the knowledge base and the coding agent are ready.
+2. `./sky build --task <ID> --role developer --hand claude` — the harness
    resolves the KB, applies the role, blocks the credential paths and launches.
 3. The agent works. It can read, edit, run tests and commit locally.
 4. You review. Then you decide what leaves the machine.

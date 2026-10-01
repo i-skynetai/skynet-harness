@@ -49,8 +49,15 @@ CONFIG_POLICY = "~/.config/sky/policy.yaml"
 PLUGIN_CACHE = "~/.claude/plugins/cache"
 PLUGIN_NAMES = ("skynet-harness", "sky")
 
+#: Last, the copy this repository ships in `plugin/policy.yaml`. It is the lowest
+#: priority on purpose: an installed policy is the one actually governing runs on that
+#: machine, and a checkout sitting on disk must never quietly override it. But when
+#: nothing is installed and nothing is configured — which is every fresh clone — the
+#: file is right there, and refusing to read it taught a first-time reader that the
+#: tool is broken rather than that it is unconfigured.
 DEFAULT_LOCATIONS = (CONFIG_POLICY,
-                     f"{PLUGIN_CACHE}/<marketplace>/<plugin>/<version>/policy.yaml")
+                     f"{PLUGIN_CACHE}/<marketplace>/<plugin>/<version>/policy.yaml",
+                     "plugin/policy.yaml, beside a checkout of this repository")
 
 
 def _version_key(name: str) -> tuple:
@@ -59,6 +66,23 @@ def _version_key(name: str) -> tuple:
     for piece in name.split("."):
         parts.append((0, int(piece)) if piece.isdigit() else (1, 0, piece))
     return tuple(parts)
+
+
+def _repo_policy() -> Path | None:
+    """`plugin/policy.yaml` in the checkout this runtime is running from.
+
+    Resolved by walking up from this file, not from the working directory: `sky` is run
+    from wherever the person happens to be standing, and the answer must not depend on
+    that. Walking rather than counting parents because this module is vendored into
+    `plugin/runtime/sky/` as well, and a fixed depth would be right in one copy and
+    wrong in the other — the kind of difference that shows up only in the copy nobody
+    tested.
+    """
+    for parent in Path(__file__).resolve().parents:
+        candidate = parent / "plugin" / "policy.yaml"
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 def _installed_policy() -> Path | None:
@@ -164,7 +188,7 @@ class Policy:
             beside = Path(root) / "policy.yaml"
             if beside.is_file():
                 return beside
-        return _installed_policy()
+        return _installed_policy() or _repo_policy()
 
     @classmethod
     def from_dict(cls, body, *, path: Path | None = None) -> "Policy":
