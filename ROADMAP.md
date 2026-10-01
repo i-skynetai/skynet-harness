@@ -52,8 +52,8 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
-| SH-001 | [Probes call the tools the knowledge port names](#sh-001) | probes | P0 | S | Ready | |
-| SH-002 | [The Safety probe asks the guard as a run would](#sh-002) | probes | P0 | S | Ready | |
+| SH-001 | [Probes call the tools the knowledge port names](#sh-001) | probes | P0 | S | Done — 2.1.2 | @arupmmi07 |
+| SH-002 | [The Safety probe asks the guard as a run would](#sh-002) | probes | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Ready | |
 | SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Needs decision | |
 | SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | Ready | |

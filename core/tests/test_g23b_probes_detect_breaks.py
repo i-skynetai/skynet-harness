@@ -19,6 +19,7 @@ is healthy — that is `sky doctor`, run against the real thing.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -95,6 +96,9 @@ class World:
             if self.broken.get("plugin_absent"):
                 out = "Installed plugins:\n\n  (none)\n"
         elif command.endswith("guard"):
+            self.guard_env = kw.get("env")
+            if self.broken.get("guard_missing"):
+                return type("R", (), {"stdout": "", "stderr": "", "returncode": 1})()
             decision = "allow" if self.broken.get("guard_stood_aside") else "deny"
             out = json.dumps({"hookSpecificOutput": {
                 "hookEventName": "PreToolUse", "permissionDecision": decision}})
@@ -105,12 +109,7 @@ class World:
         import shutil
         self.saved = {"rpc": probes._rpc, "call": probes._call_tool,
                       "run": probes.subprocess.run, "which": probes.shutil.which,
-                      "cmd": probes._runtime_command,
                       "pat": os.environ.get("SKY_TEST_PAT")}
-        # `_runtime_command` looks past PATH — at ~/.local/bin and the plugin —
-        # which is the point of finding 3. The stub has to hide all of it.
-        probes._runtime_command = (
-            lambda: None if self.broken.get("guard_missing") else "/usr/bin/sky")
         probes._rpc = self._rpc
         probes._call_tool = self._call_tool
         probes.subprocess.run = self._run
@@ -128,7 +127,6 @@ class World:
         probes._call_tool = self.saved["call"]
         probes.subprocess.run = self.saved["run"]
         probes.shutil.which = self.saved["which"]
-        probes._runtime_command = self.saved["cmd"]
         if self.saved["pat"] is None:
             os.environ.pop("SKY_TEST_PAT", None)
         else:
@@ -328,6 +326,34 @@ class TheGuardIsRunNotFound(unittest.TestCase):
                  "SKY_POLICY": str(REPO / "plugin" / "policy.yaml")})
         decision = json.loads(out.stdout)["hookSpecificOutput"]["permissionDecision"]
         self.assertEqual(decision, "deny")
+
+    def test_safety_is_ok_outside_a_managed_run(self):
+        """SH-002: the caller is not in a run, yet a run's guard must refuse."""
+        saved = os.environ.pop("SKY_LAUNCHED", None)
+        try:
+            brain = Brain()
+            probes.probe_safety(brain, Policy.load(REPO / "plugin" / "policy.yaml"))
+        finally:
+            if saved is not None:
+                os.environ["SKY_LAUNCHED"] = saved
+        row = next(o for o in brain.observations if o.part is Part.SAFETY)
+        self.assertIs(row.state, State.OK, row.detail)
+
+    def test_the_guard_is_asked_with_a_runs_environment(self):
+        with World() as world:
+            probes.probe_safety(Brain(), POLICY)
+        self.assertEqual(world.guard_env.get("SKY_LAUNCHED"), "1")
+        self.assertEqual(world.guard_env.get("SKY_POLICY"), str(POLICY.path))
+        for name in probes.RUN_RECORD_VARS:
+            self.assertNotIn(name, world.guard_env)
+
+    def test_the_guard_asked_is_this_runtimes_own(self):
+        """Not whichever `sky` is first on PATH."""
+        command = probes._guard_command()
+        self.assertEqual(command[:3], [sys.executable, "-m", "sky"])
+        env = probes._guard_env()
+        package_root = str(Path(probes.__file__).resolve().parent.parent)
+        self.assertEqual(env["PYTHONPATH"].split(os.pathsep)[0], package_root)
 
     def test_a_hooks_file_alone_is_not_the_evidence(self):
         """Stated as a test so the shortcut is not taken later."""

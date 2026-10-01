@@ -114,26 +114,6 @@ class G2_TheBareCommandWorks(unittest.TestCase):
         self.assertIn("export PATH=", out.stdout)
 
 
-class G3_ReadinessFindsTheBundledGuard(unittest.TestCase):
-    """PATH alone reported "not installed" on a machine whose guard was
-    sitting next to the probe."""
-
-    def test_the_lookup_goes_past_path(self):
-        root = Path(tempfile.mkdtemp())
-        (root / "bin").mkdir()
-        fake = root / "bin" / "sky"
-        fake.write_text("#!/bin/sh\nexit 0\n")
-        os.chmod(fake, 0o755)
-        os.environ["SKY_PLUGIN_ROOT"] = str(root)
-        saved = probes.shutil.which
-        probes.shutil.which = lambda name: None
-        try:
-            self.assertEqual(probes._runtime_command(), str(fake))
-        finally:
-            probes.shutil.which = saved
-            os.environ.pop("SKY_PLUGIN_ROOT", None)
-
-
 class G4_TheOtherHostsAreConnected(unittest.TestCase):
     def a_config(self):
         path = Path(tempfile.mkdtemp()) / "mcp.json"

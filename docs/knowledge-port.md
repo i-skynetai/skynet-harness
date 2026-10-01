@@ -15,6 +15,7 @@ one — the port is a small set of operations plus a tool-name prefix.
 | `graph_query` | read-only graph query, for precise structural answers |
 | `ontologies_list` / `ontologies_get` | discover and fetch ontologies |
 | `jobs_status` / `jobs_output` | poll asynchronous work |
+| `documents_ingest` | write a document; starts a job. An outward action (`kb.ingest` in the policy), used by `/sky:learn` and `sky doctor --deep` |
 
 A provider does not have to implement all of them. `doctor` reports which are present
 and the skills degrade to what exists — a missing `graph_query` means graph-shaped
@@ -27,8 +28,9 @@ MCP tools are named `<prefix>_<operation>` — the default prefix is `kb`, givin
 `mcp__<server>__<prefix>_<operation>`.
 
 To point the harness at a knowledge base whose tools use a different prefix, change it
-in `plugin/policy.yaml` where the allowlist names the tools. Nothing else in the core
-knows the prefix.
+in `plugin/policy.yaml` where the allowlist names the tools, and in `KB_PREFIX` in
+`core/sky/probes.py`, which the readiness checks use. Nothing else in the core knows
+the prefix; a test fails if a check calls a tool the policy does not name.
 
 ## Writing a provider
 

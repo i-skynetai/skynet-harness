@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -32,6 +33,21 @@ TIMEOUT = 30
 
 
 # ── talking to a knowledge base ──────────────────────────────────────────
+#: The knowledge port's tool prefix (docs/knowledge-port.md). Tools are named
+#: `<prefix>_<operation>`. This is the only place the runtime spells it.
+KB_PREFIX = "kb"
+
+#: Every port operation a probe calls. A test checks each one against the
+#: policy, so a probe cannot drift onto a name no agent is allowed to call.
+PROBE_OPERATIONS = ("similarity_search", "documents_ingest", "jobs_status",
+                    "jobs_output", "ontologies_get")
+
+
+def kb_tool(operation: str) -> str:
+    """The tool name a knowledge base built to the port offers."""
+    return f"{KB_PREFIX}_{operation}"
+
+
 def _rpc(url: str, token: str, method: str, params: dict) -> dict:
     body = json.dumps({"jsonrpc": "2.0", "id": 1,
                        "method": method, "params": params}).encode()
@@ -147,7 +163,7 @@ def probe_focus(brain: Brain, kb: KB, code_note: str = "") -> None:
         return
     try:
         started = time.monotonic()
-        text = _call_tool(kb.url, kb.token(), "kb.similarity_search",
+        text = _call_tool(kb.url, kb.token(), kb_tool("similarity_search"),
                           {"tenant_code": kb.tenant, "query": "design", "k": 5})
         ms = int((time.monotonic() - started) * 1000)
         _hit_tenants.wanted = kb.tenant
@@ -305,7 +321,7 @@ def probe_safety(brain: Brain, policy=None) -> None:
                   "check policy.yaml")
         return
     rules = (f"{len(policy.actions)} actions, {len(policy.roles)} roles")
-    answered = _guard_answers()
+    answered = _guard_answers(getattr(policy, "path", None))
     if answered is True:
         brain.add(Part.SAFETY, State.OK,
                   f"rules loaded and denying ({rules}); the guard ran and "
@@ -320,47 +336,56 @@ def probe_safety(brain: Brain, policy=None) -> None:
                   f"run here, so nothing enforces them during a session")
 
 
-def _runtime_command() -> str | None:
-    """Where `sky` is: on PATH, then installed by setup, then in the plugin.
+#: What `sky build` gives a run and the guard reads to decide it is in one.
+#: Without it the guard stands aside — correct in a person's own session, and
+#: exactly why asking it from the caller's environment always read "allowed".
+RUN_MARKER = "SKY_LAUNCHED"
 
-    PATH alone reported "the guard is not installed here" on a plugin-only
-    machine whose guard was sitting right next to the probe — which is the
-    third emergency state, not one of the two real ones.
+#: Variables that would make the probe's question land in a real run's ledger.
+RUN_RECORD_VARS = ("SKY_RUN_DIR", "SKY_RUN_ID", "SKY_AGENT_ID")
+
+
+def _guard_command() -> list[str]:
+    """This runtime's own guard — not whichever `sky` is first on PATH.
+
+    A checkout probed by an older installed copy reported on the installed
+    copy's guard. Running the package this file belongs to, with the same
+    interpreter, asks the code that is actually running.
     """
-    found = shutil.which("sky")
-    if found:
-        return found
-    candidates = []
-    root = os.environ.get("SKY_PLUGIN_ROOT", "")
-    if root:
-        # The plugin this is running out of comes before a setup-installed
-        # copy: they are normally the same file, and when they differ the
-        # running one is the one whose guard is being asked about.
-        candidates.append(Path(root) / "bin" / "sky")
-    candidates.append(Path("~/.local/bin/sky").expanduser())
-    candidates += sorted(
-        Path("~/.claude/plugins/cache/sky/sky").expanduser().glob("*/bin/sky"))
-    for candidate in candidates:
-        if candidate.is_file() and os.access(candidate, os.X_OK):
-            return str(candidate)
-    return None
+    return [sys.executable, "-m", "sky", "guard"]
 
 
-def _guard_answers() -> bool | None:
+def _guard_env(policy_path=None) -> dict:
+    """The environment a managed run would hand the guard.
+
+    The run marker is set, so the guard decides instead of standing aside.
+    The run-record variables are removed, so this question is not written into
+    a run's ledger. The policy is the one the probe just loaded, so the guard
+    is asked about the same rules.
+    """
+    env = {k: v for k, v in os.environ.items() if k not in RUN_RECORD_VARS}
+    env[RUN_MARKER] = "1"
+    package_root = str(Path(__file__).resolve().parent.parent)
+    env["PYTHONPATH"] = os.pathsep.join(
+        p for p in (package_root, env.get("PYTHONPATH", "")) if p)
+    if policy_path:
+        env["SKY_POLICY"] = str(policy_path)
+    return env
+
+
+def _guard_answers(policy_path=None) -> bool | None:
     """Run the guard on a command the policy denies. True/False/None-if-absent.
 
-    None is a real third answer and must not collapse into False: "the guard is
-    not installed here" and "the guard is installed and let a push through" are
+    None is a real third answer and must not collapse into False: "the guard
+    could not be run here" and "the guard ran and let a push through" are
     different emergencies.
     """
     payload = json.dumps({"tool_name": "Bash",
                           "tool_input": {"command": "git push origin main"}})
-    binary = _runtime_command()
-    if not binary:
-        return None
     try:
-        out = subprocess.run([binary, "guard"], input=payload, text=True,
-                             capture_output=True, timeout=20)
+        out = subprocess.run(_guard_command(), input=payload, text=True,
+                             capture_output=True, timeout=20,
+                             env=_guard_env(policy_path))
         body = json.loads(out.stdout or "{}")
     except (subprocess.TimeoutExpired, OSError, ValueError):
         return None
@@ -562,7 +587,7 @@ def probe_remembering(brain: Brain, kb: KB, deep: bool = False) -> None:
             f"and may be deleted.\n")
     try:
         started = _rpc(kb.url, token, "tools/call", {
-            "name": "kb.documents.ingest",
+            "name": kb_tool("documents_ingest"),
             "arguments": {"tenant_code": kb.tenant, "text": body,
                           "filename": f"sky-probe-{stamp}.md",
                           "ontology": kb.ontology, "layer": "project"}})
@@ -641,7 +666,7 @@ def _await_job(kb: KB, token: str, job: str, limit: int = 180):
     status = "unknown"
     while time.monotonic() < deadline:
         result = _rpc(kb.url, token, "tools/call", {
-            "name": "kb.jobs.status",
+            "name": kb_tool("jobs_status"),
             "arguments": {"tenant_code": kb.tenant, "job_id": job}})
         for text in _texts(result):
             try:
@@ -660,7 +685,7 @@ def _await_job(kb: KB, token: str, job: str, limit: int = 180):
 def _entity_types(kb: KB, token: str) -> list:
     """What this ontology actually extracts, asked rather than assumed."""
     result = _rpc(kb.url, token, "tools/call", {
-        "name": "kb.ontologies.get",
+        "name": kb_tool("ontologies_get"),
         "arguments": {"tenant_code": kb.tenant, "name": kb.ontology}})
     refusal = _tool_error(result)
     if refusal:
@@ -704,7 +729,7 @@ def _job_entities(kb: KB, token: str, job: str):
     """The entity count, from the job's output."""
     try:
         result = _rpc(kb.url, token, "tools/call", {
-            "name": "kb.jobs.output",
+            "name": kb_tool("jobs_output"),
             "arguments": {"tenant_code": kb.tenant, "job_id": job}})
     except Exception:
         return None
