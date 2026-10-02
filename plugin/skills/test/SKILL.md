@@ -1,6 +1,6 @@
 ---
 name: test
-description: Runs the right tests for a change, module, or ticket. Local unit/affected tests run immediately; remote shared-environment suites (regression suites, browser suites) are prepared but ALWAYS confirmed before running. Use when the user says "run affected tests", "regression for X", "test this change/module", or after implementing a change. Reports what ran, pass/fail, failures, and the next step.
+description: Runs the right local tests for a change, module, or ticket, and names any shared-environment suite for the person to run. Use when the user says "run affected tests", "regression for X", "test this change/module", or after implementing a change. Reports what ran, pass/fail, failures, and the next step.
 ---
 
 # /sky:test — run the right tests for a scope
@@ -18,21 +18,17 @@ description: Runs the right tests for a change, module, or ticket. Local unit/af
 > you will see, it is a tool that silently is not there.
 
 Select and run the tests that cover a change, module, or ticket — not the whole suite.
-Local tests execute freely. Remote shared-environment executions always require an
-explicit user confirmation first.
 
-## The core rule — split behavior
+## The core rule
 
-- **LOCAL** (unit / affected tests on this machine): run without asking. No confirmation needed.
-- **REMOTE** (shared QA environments): **never fire without confirmation.** This covers:
-  - regression suites — `kb_tools_regression_*`
-  - browser suites — `kb_tools_browser_*`
-
-  These consume shared QA environments other people depend on. Always present exactly
-  what would run (suites, environment, scope) and wait for an explicit "yes" before firing.
-- **Out of scope:** test-management tools, which keep test-case records. This skill executes
-  tests; it does not create, link, or update test-case records. If asked for that, say it
-  is outside `/sky:test` and stop.
+- **LOCAL** (unit / affected tests on this machine): run them, with the command your
+  role allows.
+- **SHARED ENVIRONMENTS** (regression or browser suites that other people depend on):
+  **never run them.** No role's policy names a tool for them, so this skill has none.
+  If they are warranted, name which suites and why, and leave running them to the
+  person.
+- **Out of scope:** test-management tools, which keep test-case records. If asked for
+  that, say it is outside `/sky:test` and stop.
 
 ## Prerequisites
 
@@ -63,36 +59,19 @@ explicit user confirmation first.
    markers, or `-k` expressions. If the mapping for a module is unclear, note it as an
    OPEN question rather than silently widening the run.
 
-4. **Run the local tests now** (no confirmation). Capture full output. If failures look
-   environmental (missing dependency, wrong interpreter), say so and fix or report —
-   do not retry blindly.
+4. **Run the local tests now.** Capture full output. Your role may run only the test
+   commands its policy lists (for the developer: `npm test`, `pytest`, `make test`). If
+   the repository's command is not one of them, do not find another way to run it: give
+   the person the exact command and say why you did not run it. If failures look
+   environmental (missing dependency, wrong interpreter), say so — do not retry blindly.
 
-5. **Decide whether remote runs are warranted.** Reasons: the user asked for regression,
-   the change spans multiple modules or public APIs, or covering tests found in step 1
-   include regression or browser suites. If local tests fully cover the change, say so and skip
-   remote entirely.
+5. **Decide whether a shared-environment suite is warranted.** Reasons: the user asked
+   for regression, the change spans several modules or public APIs, or the covering
+   tests from step 1 include such suites. If local tests fully cover the change, say so.
+   If a suite is warranted, list it with the reason, citing the knowledge-base document
+   or node id that links it to the change. Do not run it.
 
-6. **Prepare the remote plan — then STOP and confirm.** Assemble, without executing:
-   - Target environment: `kb_tools_regression_list_environments`.
-   - Candidate regression scope: regression suite, specific test cases, or functional areas.
-   - Candidate browser scope: `kb_tools_browser_list_suites` /
-     `_list_tests` for the affected UI flows.
-   Present the plan as a short list — suite/test names, environment, and why each is
-   in scope (cite the knowledge-base document/node id that links it to the change). Ask:
-   "Run these against <environment>? They consume a shared QA environment." Proceed
-   only on an explicit yes; on no, report the local results and offer alternatives.
-
-7. **Execute confirmed remote runs.**
-   - regression: `kb_tools_regression_run_regression_tests`,
-     `_run_test_cases`, or `_run_tests_in_functional_areas`; poll with
-     `_get_task_status` / `_wait_for_task`; stop a runaway task with `_stop_task`.
-   - browser: `kb_tools_browser_execute_suite` or `_run_test`;
-     poll with `_get_suite_execution_status` / `_get_test_status`; fetch
-     `_get_test_detail` and `_get_screenshot` for failures;
-     cancel with `_cancel_suite_execution` if asked.
-   Pass `tenant_code` on every call.
-
-8. **Report** (format below), then suggest the next step.
+6. **Report** (format below), then suggest the next step.
 
 ## Evidence rules
 
@@ -106,24 +85,21 @@ explicit user confirmation first.
 
 Always end with these four parts:
 
-1. **What ran** — exact local commands; remote suites with environment and job/task ids.
-   State explicitly what was skipped and why.
+1. **What ran** — exact local commands. State explicitly what was skipped and why,
+   including any shared-environment suite left for the person.
 2. **Pass/fail summary** — counts per run (passed / failed / skipped), one line each.
 3. **Failures** — per failure: test name, the relevant output excerpt (assertion message
    and the few stack lines that matter), and whether it looks related to the change or
    pre-existing.
 4. **Suggested next step** — one concrete action, e.g. fix the assertion in `<file>`,
-   open `/sky:bugfix` for a pre-existing failure, re-run after fix, or (with
-   confirmation) widen to a regression-suite run. Include OPEN questions if any.
+   open `/sky:bugfix` for a pre-existing failure, re-run after fix, or ask the person
+   to run a named regression suite. Include OPEN questions if any.
 
 ## Failure modes
 
 - Missing `tenant_code` → `$SKY_TENANT`, else the KB map; only then ask.
-- Regression or browser tools not available in the session → the tool surface may not include
-  the test families; report which local tests ran and tell the user the remote families
-  are unavailable.
-- Remote task stuck → report last known status and offer `_stop_task` /
-  `_cancel_suite_execution`; do not silently re-fire (that doubles shared-environment load).
+- The repository's test command is not one your role may run → report the exact
+  command for the person; do not route around the policy.
 
 ## Before returning: acceptance criteria, then evidence
 

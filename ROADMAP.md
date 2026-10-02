@@ -57,7 +57,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Done — 2.1.2 | @arupmmi07 |
 | SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | In progress | @arupmmi07, 2026-09-30 |
-| SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | In progress | @arupmmi07, 2026-10-01 |
+| SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-009 | [`sky kb which` gives the real reason](#sh-009) — *good first issue* | cli | P0 | S | Done — 2.1.2 | @arupmmi07 |
@@ -86,6 +86,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-035 | [A test runner is a shell: say so, or close it](#sh-035) | policy | P1 | M | Needs decision | |
 | SH-036 | [The guard reads git's options, not a substring](#sh-036) | guard | P2 | M | Done — 2.1.2 | @arupmmi07 |
 | SH-037 | [Only the runtime writes `.sky/pending`](#sh-037) | broker | P1 | S | Ready | |
+| SH-038 | [The ingest skills call tools a role holds](#sh-038) | skills | P1 | S | Needs decision | |
 
 ### 2.4.0 — ports, not products
 
@@ -314,6 +315,16 @@ rendering checks still apply and nothing is executed, but the identity would be 
 *Done when:* `sky ship` shows only intents whose run id matches a run record on this
 machine, or the runtime keeps pending intents outside the working tree; a test plants a
 forged file and it is not shown.
+
+<a id="sh-038"></a>**SH-038 — The ingest skills call tools a role holds.** The `ingest`
+and `learn` skills call `kb_documents_ingest` and `kb_jobs_logs`
+(`plugin/skills/ingest/SKILL.md:74`, `:84`; `plugin/skills/learn/SKILL.md:58`, `:63`).
+No role's tool list names either, and writing to the knowledge base is the outward
+action `kb.ingest`. Found while closing SH-006. *Decision needed:* route knowledge-base
+writes through the outbox the way SH-004 routes pushes, or give one role the write tools
+with `kb.ingest` as needs-human. *Done when:* every `kb_` tool any skill names is in a
+role's tool list or reaches the knowledge base through the runtime, with a test over all
+skills.
 
 ### Ports, not products
 
