@@ -73,12 +73,6 @@ class TheRecord(unittest.TestCase):
         self.assertIn('"field_kind": "build"', text)
         self.assertIn('"why": "not ready"', text)
 
-    def test_the_trailer_carries_agent_and_run(self):
-        root = Path(tempfile.mkdtemp())
-        run = recorder.Run.start(role="developer", task="t", kb="k",
-                                 agent_id="arup-developer-1", root=root)
-        self.assertIn("arup-developer-1", run.trailer())
-        self.assertIn(run.run_id, run.trailer())
 
 
 if __name__ == "__main__":

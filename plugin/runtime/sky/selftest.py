@@ -51,7 +51,7 @@ _HOME_PATH = re.compile(r"(?:/Users/|/home/|C:\\\\Users\\\\)[A-Za-z0-9._-]+")
 #: was found in shipped content after the rename was believed finished.
 RETIRED_NAMES = {
     "brain-map": "the KB map — `kb-map.json`",
-    "BRAIN_MAP": "`SKY_KB_MAP`",
+    "BRAIN_MAP": "the KB map — `kb-map.json`",
     "architect-reviewer": "the `architect` and `reviewer` agents, which it was split into",
     # The 2026-09-16 rename. Retired for the same reason as the two above: the
     # old words are still in everybody's fingers, in the backups and in three
@@ -247,9 +247,9 @@ def check_both_tool_spellings(root: Path) -> Result:
     """One server, two tool names — and an agent must name both.
 
     A tool's id is `mcp__<server>__<tool>`, and **the server's name depends on
-    how the session started.** The plugin's own `.mcp.json` calls its servers
-    `kb` and `code`; the host namespaces a plugin's servers, so in a session
-    started from the installed plugin those arrive as `mcp__plugin_sky_kb__*`.
+    how the session started.** If the plugin ever ships its own `.mcp.json`
+    again (it ships none today), the host namespaces those servers, so in a
+    session started from the plugin they would arrive as `mcp__plugin_sky_kb__*`.
     Core's `--mcp-config` writes a top-level server also called `kb`, which
     stays `mcp__kb__*`. Same server, two names, decided by the launch path.
 
@@ -310,13 +310,12 @@ def check_skills_read_configuration(root: Path) -> Result:
     which tenant, which ontology, and what a ticket id looks like. A skill that
     names one of them ships one team's setup to everybody.
 
-    And one that names a single MCP tool spelling — `mcp__kb__kb_search` or
-    `mcp__plugin_sky_kb__kb_search` — is the same silent failure that has
-    already been paid for in the policy and in an agent file: the tool is
-    absent rather than refused, so the model concludes the knowledge base is
-    empty. Skills name the bare tool and read `CONFIG.md` for the prefix.
+    And one that spells out a full MCP tool id — `mcp__kb__kb_search` — ties
+    the skill to one server name; if that name ever differs, the tool is absent
+    rather than refused, and the model concludes the knowledge base is empty.
+    Skills name the bare tool and read `CONFIG.md` for the prefix.
 
-    The `CONFIG.md` file itself is exempt: explaining both spellings is its job.
+    The `CONFIG.md` file itself is exempt: explaining the prefix is its job.
     """
     name = "skills hold no local configuration"
     directory = root / "plugin" / "skills"

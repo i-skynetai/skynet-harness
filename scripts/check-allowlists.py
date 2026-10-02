@@ -120,9 +120,9 @@ def main() -> int:
         print("SKY_KB_PAT and SKY_KB_URL must be set — run `sky-setup init` first.")
         return 1
 
-    rosters = {"mcp__plugin_sky_kb__": server_tools(kb_url, token)}
+    rosters = {"mcp__kb__": server_tools(kb_url, token)}
     if code_url:
-        rosters["mcp__plugin_sky_code__"] = server_tools(code_url, token)
+        rosters["mcp__code__"] = server_tools(code_url, token)
     else:
         print("note: SKY_CODE_URL is unset, so code-tool references are not checked.")
 

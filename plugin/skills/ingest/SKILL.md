@@ -14,8 +14,7 @@ disable-model-invocation: true
 > **Configuration.** The tenant, the ontology and what a ticket id looks like
 > are **not** in this file — they differ per person and per project. Resolve
 > them as `CONFIG.md` beside this plugin describes, and **use the knowledge-base
-> tool spelling this session actually has** (`mcp__kb__…` or
-> `mcp__plugin_sky_kb__…`): a call to a name the session lacks is not an error
+> tool spelling this session actually has** (`mcp__kb__…`): a call to a name the session lacks is not an error
 > you will see, it is a tool that silently is not there.
 
 Input: a file path or URL, plus an optional doc type. Output: a confirmed, deduplicated ingest into the knowledge base, reported with the resulting `document_id`.
@@ -25,7 +24,7 @@ Input: a file path or URL, plus an optional doc type. Output: a confirmed, dedup
 - **Manual only.** This skill writes to the shared knowledge base. It runs only when a human invokes it. Never ingest anything the user has not explicitly confirmed in step 7.
 - **tenant_code is required on every knowledge-base tool call.** Resolve it in this order:
   1. **`$SKY_TENANT`**, which the launcher sets from the resolved knowledge base. This is the normal case, and it is the one that has already passed the privacy check — the launcher refuses to resolve a knowledge base across a privacy boundary, so a tenant that arrives this way is one you may write to.
-  2. **The KB map**, when you were started by hand and the variable is unset — the path in `$SKY_KB_MAP`, else `~/.config/sky/kb-map.json`. It is a JSON object of knowledge-base entries; take the entry whose `repos` path is the longest prefix of the working directory.
+  2. **The KB map**, when you were started by hand and the variable is unset — the path in `~/.config/sky/kb-map.json`. It is a JSON object of knowledge-base entries; take the entry whose `repos` path is the longest prefix of the working directory.
   3. **Server guard.** Before using a map entry, compare its `mcp_url` host with `$SKY_KB_URL`. If the hosts differ, STOP and say so plainly: this repository's knowledge base is a different server from the one you are connected to — name both hosts and ingest nothing. The user ingests through whatever tool owns that other server.
   4. Neither → ask the user once and reuse the answer for the session.
 - **Every ingest carries the stamp, and an unstamped one is refused.** Get it from `sky stamp --json` and put all five fields in the metadata — never compose them yourself. If that command says this session is not a run, say so and do not ingest: a document nobody can trace to the run that produced it is one nobody can audit, and a knowledge base full of them cannot be cleaned up later. See `identity.md`.

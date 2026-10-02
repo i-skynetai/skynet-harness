@@ -127,6 +127,6 @@ on that path and `sky doctor` says which step.
 | Symptom | Cause |
 |---|---|
 | `doctor` says retrieval returns nothing | The KB is reachable but empty, or the tenant is wrong. Check `tenant_code`. |
-| A repository resolves to no KB | Deliberate. Add the path to a KB's `repos`, or set a `brain:` line in the repo's `CLAUDE.md`. |
+| A repository resolves to no KB | Deliberate. Add the path to a KB's `repos`, or pass `--kb <name>`. |
 | A role cannot run a command | Also deliberate. Check the role's tool list in `plugin/policy.yaml`. |
 | The run produced no record | The hand exited before the harness attached. Check `doctor` first. |

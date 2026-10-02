@@ -109,19 +109,11 @@ actions:
 # access to both, and writing that out three times is three chances for them to
 # drift apart.
 #
-# **Each tool is listed under BOTH names it can have**, and that is not
-# belt-and-braces — it is required. A tool's id is `mcp__<server>__<tool>`, and
-# the server name depends on how the session was started:
-#
-#   mcp__kb__…              core launched it: `--strict-mcp-config --mcp-config`
-#                           with a server named `kb`
-#   mcp__plugin_sky_kb__…   the plugin's own .mcp.json loaded in a normal session
-#
-# Listing only the plugin form meant a hand launched by `sky build` had **no
-# knowledge-base tools at all** — the allowlist filtered out every tool it was
-# given, silently, with no error. Measured on a real run 2026-09-14, not
-# reasoned about: the hand answered "I don't have access to the kb MCP tools in
-# this session".
+# A tool's id is `mcp__<server>__<tool>`. Every launch path this project ships
+# — `sky build`, and `sky setup init`'s registration — names the servers `kb`
+# and `code`, so each tool has one name here. (The plugin ships no MCP
+# configuration of its own; an earlier second spelling for one was removed as
+# a promise with nothing behind it, SH-010.)
 #
 # Every name here is checked against the live servers by
 # `scripts/check-allowlists.py`.
@@ -141,16 +133,6 @@ tool_groups:
     - mcp__kb__kb_ontologies_get
     - mcp__kb__kb_jobs_status
     - mcp__kb__kb_jobs_output
-    - mcp__plugin_sky_kb__kb_search
-    - mcp__plugin_sky_kb__kb_similarity_search
-    - mcp__plugin_sky_kb__kb_agentic_search
-    - mcp__plugin_sky_kb__kb_graph_query
-    - mcp__plugin_sky_kb__kb_context_search
-    - mcp__plugin_sky_kb__kb_layer_search
-    - mcp__plugin_sky_kb__kb_ontologies_list
-    - mcp__plugin_sky_kb__kb_ontologies_get
-    - mcp__plugin_sky_kb__kb_jobs_status
-    - mcp__plugin_sky_kb__kb_jobs_output
   code_read:
     - mcp__code__search_definitions
     - mcp__code__get_definition
@@ -165,19 +147,6 @@ tool_groups:
     - mcp__code__list_indexed_repos
     - mcp__code__get_repo_status
     - mcp__code__repo_health_report
-    - mcp__plugin_sky_code__search_definitions
-    - mcp__plugin_sky_code__get_definition
-    - mcp__plugin_sky_code__get_source
-    - mcp__plugin_sky_code__view_signatures
-    - mcp__plugin_sky_code__inspect_symbol
-    - mcp__plugin_sky_code__get_dependencies
-    - mcp__plugin_sky_code__find_related_code
-    - mcp__plugin_sky_code__summarize_impact
-    - mcp__plugin_sky_code__coverage_by_path
-    - mcp__plugin_sky_code__list_files
-    - mcp__plugin_sky_code__list_indexed_repos
-    - mcp__plugin_sky_code__get_repo_status
-    - mcp__plugin_sky_code__repo_health_report
 
   catalogue_read:
     - mcp__catalogue__kb_search
@@ -359,3 +328,4 @@ tickets:
   # everybody else's machine.
   prefix: ""
   board_url: ""
+

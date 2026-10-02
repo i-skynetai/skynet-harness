@@ -14,8 +14,7 @@ agent: developer
 > **Configuration.** The tenant, the ontology and what a ticket id looks like
 > are **not** in this file — they differ per person and per project. Resolve
 > them as `CONFIG.md` beside this plugin describes, and **use the knowledge-base
-> tool spelling this session actually has** (`mcp__kb__…` or
-> `mcp__plugin_sky_kb__…`): a call to a name the session lacks is not an error
+> tool spelling this session actually has** (`mcp__kb__…`): a call to a name the session lacks is not an error
 > you will see, it is a tool that silently is not there.
 
 The skill the Developer role exists for. It writes code, writes the tests that

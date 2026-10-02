@@ -15,8 +15,7 @@ agent: context-retriever
 > **Configuration.** The tenant, the ontology and what a ticket id looks like
 > are **not** in this file — they differ per person and per project. Resolve
 > them as `CONFIG.md` beside this plugin describes, and **use the knowledge-base
-> tool spelling this session actually has** (`mcp__kb__…` or
-> `mcp__plugin_sky_kb__…`): a call to a name the session lacks is not an error
+> tool spelling this session actually has** (`mcp__kb__…`): a call to a name the session lacks is not an error
 > you will see, it is a tool that silently is not there.
 
 The core retrieval primitive. Every other track (design, spec, bugfix, impact) starts here. It answers: what does the team already know that is relevant to this ticket or topic — with citations.
@@ -29,7 +28,7 @@ One argument: a ticket id (e.g. `<TICKET>`) or a free-text topic (e.g. `ingest d
 
 ## Setup
 
-1. Resolve `tenant_code` and pass it on **every** knowledge-base tool call: read it from `$SKY_TENANT`, which the launcher sets. If it is not set (you were started by hand), read the KB map — `$SKY_KB_MAP`, else `~/.config/sky/kb-map.json` — and take the entry whose repository path is the longest prefix of the working directory. Only ask the user if neither is available, and then reuse the answer for the session.
+1. Resolve `tenant_code` and pass it on **every** knowledge-base tool call: read it from `$SKY_TENANT`, which the launcher sets. If it is not set (you were started by hand), read the KB map — `~/.config/sky/kb-map.json` — and take the entry whose repository path is the longest prefix of the working directory. Only ask the user if neither is available, and then reuse the answer for the session.
 2. If the input is a ticket id, fetch the ticket **live from Jira** — use a direct Jira MCP server if the session has one; otherwise use the KB-proxied Jira tool if available. Never take the ticket's current state from ingested content.
 3. Remember the boundary: **the code index finds, the working tree confirms. The knowledge base indexes source code and exposes read-only the code-index tools tools over it — use them to locate a symbol, find callers and callees, walk dependencies and see which tests cover a path, including in repositories you have not cloned. Read the actual text of anything you will quote or change from the LOCAL checkout: the index does not record which commit it reflects, so its staleness cannot be measured.
 

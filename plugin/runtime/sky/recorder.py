@@ -99,15 +99,6 @@ class Run:
         self.event("run.finish", outcome=outcome, **fields)
 
     # ── the stamp every artifact carries ─────────────────────────────────
-    def trailer(self) -> str:
-        """The commit trailer. Written by the runtime, never by the model.
-
-        The broker refuses to push a commit that does not carry this exact
-        line — which is what turns "the model cannot omit it" from a hope into
-        a check, since the hand runs `git commit` itself.
-        """
-        return f"SKY-Agent: {self.agent_id} {self.run_id}"
-
     def stamp(self) -> dict:
         return {"sky_agent": self.agent_id, "sky_run": self.run_id,
                 "sky_role": self.role, "sky_task": self.task, "sky_kb": self.kb}

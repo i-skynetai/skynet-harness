@@ -365,13 +365,10 @@ def _for_host(text: str, host: str) -> str:
 
     `${CLAUDE_PLUGIN_ROOT}` means nothing to Codex or Kimi, and a step that
     tells an agent to read a path that does not exist is a step it either skips
-    or invents its own answer to. Same for the two tool spellings: outside
-    Claude there is one server, named `kb`.
+    or invents its own answer to.
     """
     text = text.replace("${CLAUDE_PLUGIN_ROOT}/", "")
     text = text.replace("${CLAUDE_PLUGIN_ROOT}", ".")
-    text = text.replace("`mcp__plugin_sky_kb__…`", "`mcp__kb__…`")
-    text = text.replace("`mcp__kb__…` or\n> `mcp__plugin_sky_kb__…`", "`mcp__kb__…`")
     return text
 
 

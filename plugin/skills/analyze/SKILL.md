@@ -15,8 +15,7 @@ agent: context-retriever
 > **Configuration.** The tenant, the ontology and what a ticket id looks like
 > are **not** in this file — they differ per person and per project. Resolve
 > them as `CONFIG.md` beside this plugin describes, and **use the knowledge-base
-> tool spelling this session actually has** (`mcp__kb__…` or
-> `mcp__plugin_sky_kb__…`): a call to a name the session lacks is not an error
+> tool spelling this session actually has** (`mcp__kb__…`): a call to a name the session lacks is not an error
 > you will see, it is a tool that silently is not there.
 
 Analyze one module and produce a Module Summary Card. The card is cached in the
@@ -33,7 +32,7 @@ the card) happens as a confirm step back in the main thread (step 6).
 
 ## Setup
 
-- `tenant_code`: read it from `$SKY_TENANT`, which the launcher sets. If it is not set (you were started by hand), read the KB map — `$SKY_KB_MAP`, else `~/.config/sky/kb-map.json` — and take the entry whose repository path is the longest prefix of the working directory. Only ask the user if neither is available, and then reuse the answer for the session.
+- `tenant_code`: read it from `$SKY_TENANT`, which the launcher sets. If it is not set (you were started by hand), read the KB map — `~/.config/sky/kb-map.json` — and take the entry whose repository path is the longest prefix of the working directory. Only ask the user if neither is available, and then reuse the answer for the session.
 - Identify the module: a directory, package, or service name the user gave.
   If ambiguous (multiple matches in the repo), list candidates and ask which one.
 

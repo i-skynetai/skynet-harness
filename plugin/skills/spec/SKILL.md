@@ -13,8 +13,7 @@ description: Full feature track and the toolkit's main orchestrator. Takes a PRO
 > **Configuration.** The tenant, the ontology and what a ticket id looks like
 > are **not** in this file — they differ per person and per project. Resolve
 > them as `CONFIG.md` beside this plugin describes, and **use the knowledge-base
-> tool spelling this session actually has** (`mcp__kb__…` or
-> `mcp__plugin_sky_kb__…`): a call to a name the session lacks is not an error
+> tool spelling this session actually has** (`mcp__kb__…`): a call to a name the session lacks is not an error
 > you will see, it is a tool that silently is not there.
 
 Drive one Jira story end to end: story → context → spec → architect gate → code → validation → MR.
@@ -27,7 +26,7 @@ Git is the source of truth. the knowledge base supplies knowledge. Live systems 
 
 ## Before you start
 
-1. Tenant: every knowledge-base tool call requires `tenant_code` — read it from `$SKY_TENANT`, which the launcher sets. If it is not set (you were started by hand), read the KB map — `$SKY_KB_MAP`, else `~/.config/sky/kb-map.json` — and take the entry whose repository path is the longest prefix of the working directory. Only ask the user if neither is available, and then reuse the answer for the session.
+1. Tenant: every knowledge-base tool call requires `tenant_code` — read it from `$SKY_TENANT`, which the launcher sets. If it is not set (you were started by hand), read the KB map — `~/.config/sky/kb-map.json` — and take the entry whose repository path is the longest prefix of the working directory. Only ask the user if neither is available, and then reuse the answer for the session.
 2. Live data (local first): for Jira read the ticket through a direct Jira MCP server if the
    session has one; otherwise use the KB-proxied Jira tool if available. Say which path you used.
 3. Two absolutes:

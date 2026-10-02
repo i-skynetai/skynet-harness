@@ -15,8 +15,9 @@ between blocking someone who only wants an answer and letting someone build
 with no guard. The rule that falls out: *a brain with no Safety may answer and
 review, but may not build.*
 
-The probe contracts are gate G23a in docs/gates.md. This module implements
-them; it does not get to reinterpret them.
+The probe contracts are the docstrings of `probes.py` and the tests that break
+each probe on purpose (`core/tests/test_g23b_probes_detect_breaks.py`). This
+module implements them; it does not get to reinterpret them.
 """
 from __future__ import annotations
 

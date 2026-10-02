@@ -61,7 +61,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-009 | [`sky kb which` gives the real reason](#sh-009) — *good first issue* | cli | P0 | S | Done — 2.1.2 | @arupmmi07 |
-| SH-010 | [Promises with no code behind them](#sh-010) | docs | P0 | M | In progress | @arupmmi07, 2026-10-01 |
+| SH-010 | [Promises with no code behind them](#sh-010) | docs | P0 | M | Done — 2.1.2 | @arupmmi07 |
 
 ### 2.2.0 — clone and run
 

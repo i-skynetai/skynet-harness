@@ -11,25 +11,18 @@ Read this once at the start of a skill that touches the knowledge base.
 
 ## 1. The tool names — check before you call
 
-A knowledge-base tool's full id is `mcp__<server>__<tool>`, and **the server's
-name depends on how this session was started**:
+A knowledge-base tool's full id is `mcp__<server>__<tool>`. Both ways this project
+connects a knowledge base — `sky build`, and `sky setup init`'s registration — name
+the server `kb`, so the tool is called `mcp__kb__kb_search`.
 
-| started by | the same tool is called |
-|---|---|
-| `sky build`, or `sky setup init`'s registration | `mcp__kb__kb_search` |
-| the plugin's own `.mcp.json` | `mcp__plugin_sky_kb__kb_search` |
-
-**Look at the tools you actually have and use the spelling that is there.**
-Never assume one. A call to a name this session does not have does not raise an
-error you will see — the tool is simply absent, and the honest-sounding
-conclusion "the knowledge base has nothing on this" is wrong.
-
-If **neither** spelling is present, stop and say so: this session has no
+**Look at the tools you actually have before you call one.** A call to a name this
+session does not have does not raise an error you will see — the tool is simply
+absent, and the honest-sounding conclusion "the knowledge base has nothing on this"
+is wrong. If no `mcp__kb__…` tool is present, stop and say so: this session has no
 knowledge base, which is a setup problem (`sky setup doctor`), not an empty one.
 
 Throughout the skills, a tool is named by its bare name — `kb_search`,
-`kb_similarity_search`, `kb_documents_ingest`. Prefix it with whichever
-server this session gives you.
+`kb_similarity_search`, `kb_documents_ingest`. Prefix it with `mcp__kb__`.
 
 ## 2. The tenant — required on every knowledge-base call
 
@@ -39,7 +32,7 @@ Resolve in this order, and stop at the first that answers:
    and that resolution has already passed the privacy check — the launcher
    refuses to cross a privacy boundary, so a tenant arriving this way is one
    you may use.
-2. **The KB map** — `$SKY_KB_MAP`, else `~/.config/sky/kb-map.json`. It is a
+2. **The KB map** — `~/.config/sky/kb-map.json`. It is a
    JSON object of entries. Take the entry whose `repos` path is the **longest**
    prefix of the working directory. Longest, so a checkout nested inside
    another resolves to the nearer one.

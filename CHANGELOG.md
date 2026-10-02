@@ -47,9 +47,6 @@ value.
 **Four refusals still said `vai build`.** In core, which the selftest's
 retired-name check does not cover. They say `sky build`.
 
-Also: the onboarding guide, `docs/onboarding.md`, with the sequence a new
-person follows and what each step actually writes.
-
 ## v2.1.0 — 2026-09-17
 
 Four rules about how a skill works, in `plugin/SKILLS.md`, each with a check

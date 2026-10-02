@@ -81,8 +81,9 @@ Three things the harness expects:
 }
 ```
 
-Resolution order for a repository: a path listed under a KB's `repos`, then a `brain:`
-line in the repository's `CLAUDE.md` or `AGENTS.md`, then the default.
+Resolution order for a repository: the KB named with `--kb`, then the KB whose `repos`
+contains the repository path, then the KB marked `"default": true` (only if it is class
+`work`).
 
 **A repository under a client KB never falls back to a work default.** It gets no KB and
 a message saying so. Retrieving a client's answer from the wrong knowledge base is worse

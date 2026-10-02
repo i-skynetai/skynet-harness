@@ -13,8 +13,7 @@ description: Solution-design track for architects and senior developers. Produce
 > **Configuration.** The tenant, the ontology and what a ticket id looks like
 > are **not** in this file — they differ per person and per project. Resolve
 > them as `CONFIG.md` beside this plugin describes, and **use the knowledge-base
-> tool spelling this session actually has** (`mcp__kb__…` or
-> `mcp__plugin_sky_kb__…`): a call to a name the session lacks is not an error
+> tool spelling this session actually has** (`mcp__kb__…`): a call to a name the session lacks is not an error
 > you will see, it is a tool that silently is not there.
 
 Turn a Jira ticket into an approved solution design document, saved in the repo, attached to the ticket, and ingested into the knowledge base. The architect stays in the loop: they edit and approve the draft, and every outward write (Jira, the knowledge base) is confirmed first.

@@ -49,8 +49,8 @@ tools. It exists for the run. It is not another product.
 
 ## The order things happen
 
-1. **Resolve the knowledge base.** From the repository path, a `brain:` line in
-   `CLAUDE.md` / `AGENTS.md`, or the default. A repository under a client KB never falls
+1. **Resolve the knowledge base.** From `--kb`, else the KB whose `repos` contains the
+   repository path, else the default. A repository under a client KB never falls
    back to a work default — it gets no KB and a clear message, rather than the wrong one.
 2. **Probe readiness.** Knowledge source, retrieval, coding agent, policy, skills, test
    runner. This runs *before the model exists*, so a failure is a message rather than a

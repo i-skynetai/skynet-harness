@@ -31,16 +31,6 @@ An ingest without the stamp is refused. Not because the fields are magic, but
 because an unstamped document cannot later be traced to the run that produced
 it, and a knowledge base full of those is a knowledge base nobody can audit.
 
-## The commit trailer
-
-A commit made inside a run carries one line, exactly:
-
-    SKY-Agent: <agent id> <run id>
-
-The runtime supplies it. The broker refuses to push a commit that does not
-carry it — which is what turns "the model will remember" into a check, since
-the hand runs `git commit` itself.
-
 ## What you must never claim
 
 - **Never write an approval.** `approved_by`, `approved_at`, `channel` and
