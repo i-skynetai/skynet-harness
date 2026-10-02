@@ -23,3 +23,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Run the suite
         run: python -m unittest discover -s core/tests -t core -v
+      - name: Check the repository against itself
+        # Fails if the plugin's vendored runtime drifts from core/, if a role's
+        # tool list stops matching the policy, or if a credential lands in the plugin.
+        run: ./core/bin/sky selftest

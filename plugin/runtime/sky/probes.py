@@ -763,18 +763,32 @@ _PENDING = {
 }
 
 
-def run_all(kb: KB, hand: str = "claude", policy=None, cwd=None,
-            deep: bool = False) -> Brain:
+def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,
+            deep: bool = False, no_kb: str = "") -> Brain:
+    """Probe every part. With no knowledge base, still probe the rest.
+
+    A fresh clone has no KB map. Stopping at that one line hid the hand,
+    policy, guard and test-runner rows — the parts that do work without an
+    account — so the first thing a newcomer saw was a dead end.
+    """
     brain = Brain()
-    probe_knowledge(brain, kb)
-    # The search always runs. It is the thing Focus means.
-    probe_focus(brain, kb, code_note=probe_code_index(kb))
+    if kb is None:
+        why = no_kb or "no knowledge base is configured"
+        brain.add(Part.KNOWLEDGE, State.MISSING, why)
+        brain.add(Part.FOCUS, State.MISSING, "not probed: no knowledge base")
+    else:
+        probe_knowledge(brain, kb)
+        # The search always runs. It is the thing Focus means.
+        probe_focus(brain, kb, code_note=probe_code_index(kb))
     probe_hand(brain, hand)
     probe_actions(brain)
     probe_safety(brain, policy)
     probe_quality(brain, cwd)
     probe_habits(brain, hand)
-    probe_remembering(brain, kb, deep=deep)
+    if kb is None:
+        brain.add(Part.REMEMBERING, State.MISSING, "not probed: no knowledge base")
+    else:
+        probe_remembering(brain, kb, deep=deep)
     for part, reason in _PENDING.items():
         if brain.state_of(part) is State.MISSING:
             brain.add(part, State.MISSING, f"not built yet — {reason}")

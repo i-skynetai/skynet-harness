@@ -227,7 +227,16 @@ def read_pending(directory: Path) -> list[dict]:
     if not directory.is_dir():
         return []
     out = []
-    for path in sorted(directory.glob("*.json")):
+    # `sky intent` leads each name with a nanosecond sequence, so name order is
+    # creation order; `created_at` first keeps that true for a file renamed by hand.
+    def made(path: Path):
+        try:
+            when = json.loads(path.read_text(encoding="utf-8")).get("created_at")
+        except (ValueError, OSError, AttributeError):
+            when = None
+        return (when or "", path.name)
+
+    for path in sorted(directory.glob("*.json"), key=made):
         try:
             body = json.loads(path.read_text(encoding="utf-8"))
         except (ValueError, OSError) as exc:

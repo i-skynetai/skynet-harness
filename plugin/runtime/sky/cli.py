@@ -51,16 +51,16 @@ def cmd_doctor(args) -> int:
     """What is alive, and what that permits."""
     try:
         kbmap = _load_map(args)
-    except KBMapError as exc:
-        print(f"sky doctor: {exc}", file=sys.stderr)
-        # Not a crash — an unconfigured machine is a normal state, and the
-        # message above says what to do about it.
-        return EXIT_PROBLEM
-
-    try:
         kb = kbmap.resolve(Path.cwd(), override=args.kb)
-    except NoKBForPath as exc:
+    except (KBMapError, NoKBForPath) as exc:
+        # Not a crash — an unconfigured machine is a normal state. Say what to
+        # do about it, then still probe and show everything else.
         print(f"sky doctor: {exc}", file=sys.stderr)
+        print("no knowledge base — the rows below that need one read MISSING\n")
+        brain = probes.run_all(None, policy=_load_policy(args), cwd=Path.cwd(),
+                               no_kb=f"{exc}")
+        enforced = os.environ.get("SKY_LAUNCHED") == "1"
+        print(brain.table(enforced=enforced))
         return EXIT_PROBLEM
 
     print(f"KB {kb.name}  ({kb.privacy})  tenant {kb.tenant}  ontology {kb.ontology}")
@@ -614,8 +614,16 @@ def cmd_intent(args) -> int:
         print("sky intent: this session is not a run, so an intent from it "
               "cannot be attributed. Run the action yourself.", file=sys.stderr)
         return EXIT_PROBLEM
+    # The order intents are made in is the order a person must run them: a pull
+    # request listed before the push it needs is a wrong instruction. The
+    # nanosecond clock is the sequence; it leads the file name, so a plain
+    # sort of the folder is creation order, and `created_at` says it in words.
+    import time
+    made_ns = time.time_ns()
+    created_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(made_ns // 10**9))
     try:
-        sealed = broker.accept(body, run_id=run_id, agent_id=agent_id)
+        sealed = broker.accept(body, run_id=run_id, agent_id=agent_id,
+                               created_at=created_at)
         broker.render(sealed)          # refuse now, not when a person reads it
     except broker.Refused as exc:
         print(f"sky intent: {exc}", file=sys.stderr)
@@ -627,7 +635,7 @@ def cmd_intent(args) -> int:
     # an outward action somebody believes is still pending.
     import uuid
     for _ in range(50):
-        name = f"{uuid.uuid4().hex[:12]}-{sealed['kind']}.json"
+        name = f"{made_ns:020d}-{uuid.uuid4().hex[:8]}-{sealed['kind']}.json"
         try:
             handle = (directory / name).open("x", encoding="utf-8")
         except FileExistsError:                       # pragma: no cover

@@ -102,7 +102,7 @@ cd skynet-harness
 
 ## Status
 
-**v2.1.1.** Working and tested — **533 tests**, about 15,000 lines of Python, standard
+**v2.1.1.** Working and tested — **541 tests**, about 15,000 lines of Python, standard
 library only. CI runs the suite on Python 3.11, 3.12 and 3.13 with no install step.
 
 Unattended execution is deliberately not built. The managed-write path renders commands

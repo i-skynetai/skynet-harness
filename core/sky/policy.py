@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import os
 import re
+import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -136,6 +137,50 @@ class Action:
     description: str
     broker: str = ""
     never: str = ""
+
+
+#: git's global options that take the next word as their value
+#: (`git -C . push`). Skipped so the guard sees `git push`.
+_GIT_GLOBALS_WITH_VALUE = ("-C", "-c", "--git-dir", "--work-tree", "--namespace",
+                           "--exec-path", "--config-env", "--super-prefix")
+#: git's global options that stand alone.
+_GIT_GLOBALS_ALONE = ("-p", "-P", "--paginate", "--no-pager", "--bare",
+                      "--no-replace-objects", "--literal-pathspecs",
+                      "--glob-pathspecs", "--noglob-pathspecs",
+                      "--icase-pathspecs", "--no-optional-locks")
+
+
+def _without_git_globals(command: str) -> str:
+    """`git -C . -c a=b push` as `git push`, so a deny pattern still matches.
+
+    Split into words first, so an option is skipped only where git would read
+    it as one: after the word `git` and before the subcommand. This is still
+    the string guard (tier B), not a shell parser.
+    """
+    try:
+        words = shlex.split(command)
+    except ValueError:
+        words = command.split()
+    out: list[str] = []
+    i = 0
+    while i < len(words):
+        word = words[i]
+        out.append(word)
+        i += 1
+        if word != "git" and not word.endswith("/git"):
+            continue
+        out[-1] = "git"
+        while i < len(words):
+            option = words[i]
+            if option in _GIT_GLOBALS_WITH_VALUE:
+                i += 2
+            elif (option.startswith(tuple(f"{o}=" for o in _GIT_GLOBALS_WITH_VALUE))
+                  or option in _GIT_GLOBALS_ALONE
+                  or (option.startswith(("-C", "-c")) and len(option) > 2)):
+                i += 1
+            else:
+                break
+    return " ".join(out)
 
 
 @dataclass
@@ -331,13 +376,15 @@ class Policy:
         later reads.
         """
         flat = " ".join(command.split())
+        forms = {flat, _without_git_globals(flat)}
         best = None
         best_length = -1
         for rule in self.guard.get("deny_commands") or ():
             if not isinstance(rule, dict):
                 continue
             pattern = " ".join(str(rule.get("pattern", "")).split())
-            if pattern and pattern in flat and len(pattern) > best_length:
+            if (pattern and any(pattern in f for f in forms)
+                    and len(pattern) > best_length):
                 best, best_length = rule, len(pattern)
         if best is None:
             return None

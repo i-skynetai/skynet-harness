@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
 import os
 import sys
 import tempfile
@@ -37,6 +38,42 @@ class WhenNothingIsConfigured(unittest.TestCase):
         code, _, err = run("--kb-map", str(missing), "doctor")
         self.assertEqual(code, 1)
         self.assertIn("sky setup init", err)
+
+    def test_doctor_with_no_map_still_shows_every_row(self):
+        """SH-023: the parts that need no account are probed and shown."""
+        from sky import probes
+        from sky.readiness import Brain, Part
+        seen = {}
+
+        def record(kb, hand="claude", policy=None, cwd=None, deep=False, no_kb=""):
+            seen["kb"], seen["no_kb"] = kb, no_kb
+            b = Brain()
+            probes.probe_actions(b)
+            return b
+
+        saved, probes.run_all = probes.run_all, record
+        try:
+            missing = Path(tempfile.mkdtemp()) / "nope.json"
+            code, out, err = run("--kb-map", str(missing), "doctor")
+        finally:
+            probes.run_all = saved
+        self.assertEqual(code, 1)
+        self.assertIn("sky setup init", err)
+        self.assertIsNone(seen["kb"])
+        self.assertIn("sky setup init", seen["no_kb"])
+        self.assertIn("ready for:", out)
+
+    def test_with_no_kb_the_kb_rows_are_missing_and_the_rest_are_probed(self):
+        from sky import probes
+        from sky.readiness import Part, State
+        brain = probes.run_all(None, policy=None, no_kb="no KB map; run sky setup init")
+        for part in (Part.KNOWLEDGE, Part.FOCUS, Part.REMEMBERING):
+            self.assertIs(brain.state_of(part), State.MISSING)
+        knowledge = next(o for o in brain.observations if o.part is Part.KNOWLEDGE)
+        self.assertIn("sky setup init", knowledge.detail)
+        probed = {o.part for o in brain.observations}
+        for part in (Part.SAFETY, Part.QUALITY, Part.ACTIONS):
+            self.assertIn(part, probed)
 
     def test_a_malformed_map_says_so_precisely(self):
         bad = Path(tempfile.mkdtemp()) / "kb-map.json"
@@ -166,6 +203,15 @@ class TheWholePathWhenTheBrainIsReady(unittest.TestCase):
         from sky.readiness import Brain, Part, State
 
         self.tmp = Path(tempfile.mkdtemp())
+        # Run from a repository with no remote. From the enclosing checkout, the
+        # launcher's dry-run push would try that checkout's real remote, and a
+        # local-path remote (a fresh clone of a clone) lets it succeed — so the
+        # result would depend on the machine, not on the code.
+        self._cwd = os.getcwd()
+        work = self.tmp / "work"
+        work.mkdir()
+        subprocess.run(["git", "init", "-q", str(work)], check=True)
+        os.chdir(work)
         self.map = self.tmp / "kb-map.json"
         self.map.write_text(json.dumps({"team_kb": {
             "purpose": "x", "mcp_url": "https://kb.example/mcp/",
@@ -187,7 +233,9 @@ class TheWholePathWhenTheBrainIsReady(unittest.TestCase):
                                                          "echo the hand ran"]
 
     def tearDown(self) -> None:
+        import os
         from sky import launcher, probes
+        os.chdir(self._cwd)
         probes.run_all = self._probes
         launcher.hand_command = self._cmd
 

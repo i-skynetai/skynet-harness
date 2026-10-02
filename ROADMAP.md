@@ -54,9 +54,9 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 |---|---|---|---|---|---|---|
 | SH-001 | [Probes call the tools the knowledge port names](#sh-001) | probes | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-002 | [The Safety probe asks the guard as a run would](#sh-002) | probes | P0 | S | Done — 2.1.2 | @arupmmi07 |
-| SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Ready | |
+| SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Needs decision | |
-| SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | Ready | |
+| SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | In progress | @arupmmi07, 2026-09-30 |
 | SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | Ready | |
 | SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Ready | |
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Ready | |
@@ -70,7 +70,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-020 | [A demo knowledge base in the repository](#sh-020) | demo | P1 | L | Ready | |
 | SH-021 | [Setup with no administrator](#sh-021) | setup | P1 | S | Ready | |
 | SH-022 | [`doctor` names the port tools it found](#sh-022) | probes | P1 | M | Ready | |
-| SH-023 | [`doctor` with no KB map still shows the table](#sh-023) — *good first issue* | probes | P1 | S | Ready | |
+| SH-023 | [`doctor` with no KB map still shows the table](#sh-023) — *good first issue* | probes | P1 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-024 | [The Sky Context Protocol, written down](#sh-024) | protocol | P1 | M | Needs decision | |
 | SH-025 | [A 60-second demo in the README](#sh-025) | docs | P2 | S | Proposed | |
 
@@ -84,7 +84,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-033 | [Pending intents: done, archived, out of git](#sh-033) | broker | P1 | S | Ready | |
 | SH-034 | [Tests the developer role can run in any repository](#sh-034) | policy | P1 | M | Needs decision | |
 | SH-035 | [A test runner is a shell: say so, or close it](#sh-035) | policy | P1 | M | Needs decision | |
-| SH-036 | [The guard reads git's options, not a substring](#sh-036) | guard | P2 | M | Ready | |
+| SH-036 | [The guard reads git's options, not a substring](#sh-036) | guard | P2 | M | Done — 2.1.2 | @arupmmi07 |
 
 ### 2.4.0 — ports, not products
 
@@ -99,7 +99,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
-| SH-050 | [CI runs `sky selftest`](#sh-050) — *good first issue* | ci | P1 | S | Ready | |
+| SH-050 | [CI runs `sky selftest`](#sh-050) — *good first issue* | ci | P1 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-051 | [CI on macOS, and Python 3.11 checked](#sh-051) | ci | P2 | M | Ready | |
 | SH-052 | [Install without a clone](#sh-052) | distribution | P2 | M | Needs decision | |
 

@@ -6,7 +6,7 @@
 python3 -m unittest discover -s core/tests -t core
 ```
 
-533 cases, standard library only — no pytest, no install step. That is the same command
+541 cases, standard library only — no pytest, no install step. That is the same command
 CI runs, so a green run here is the run that matters. They must pass before a change is
 considered.
 
