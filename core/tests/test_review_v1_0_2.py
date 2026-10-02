@@ -76,7 +76,8 @@ class H2_ModelTextNeverCrossesAShell(unittest.TestCase):
 
     def test_the_ship_skill_tells_you_to_write_a_file(self):
         body = (REPO / "plugin" / "skills" / "ship" / "SKILL.md").read_text()
-        self.assertIn("--from-file", body)
+        self.assertIn("editor tool into\n`.sky/outbox/`", body)   # SH-004
+        self.assertNotIn("--body", body)
         self.assertIn("never put the text on a command line", body)
 
     def test_it_does_not_instruct_composing_body_arguments(self):

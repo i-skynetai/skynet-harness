@@ -217,6 +217,79 @@ def render(intent: dict) -> Rendered:
     raise Refused(f"{kind!r} is not a kind this renders")
 
 
+#: Where a hand inside a managed run leaves what it would like done. The hand
+#: never runs `sky`; it writes a JSON file here, and when it exits the runtime
+#: seals each one with the run's identity and files it for `sky ship` (SH-004).
+OUTBOX = ".sky/outbox"
+
+
+def file_intent(body: dict, *, run_id: str, agent_id: str, directory: Path) -> Path:
+    """Seal what a hand asked for and file it as pending. Returns the file.
+
+    Raises Refused when the request breaks the contract or would not render —
+    refused now, not when a person reads it.
+    """
+    import time
+    import uuid
+    # The order intents are made in is the order a person must run them: a
+    # pull request listed before the push it needs is a wrong instruction.
+    # The nanosecond clock is the sequence; it leads the file name, so a plain
+    # sort of the folder is creation order, and `created_at` says it in words.
+    made_ns = time.time_ns()
+    created_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(made_ns // 10**9))
+    sealed = accept(body, run_id=run_id, agent_id=agent_id, created_at=created_at)
+    render(sealed)
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    # Exclusive creation, not "count the files and add one": with 001 and 003
+    # present that arithmetic returns 003 and silently overwrites an intent —
+    # an outward action somebody believes is still pending.
+    for _ in range(50):
+        name = f"{made_ns:020d}-{uuid.uuid4().hex[:8]}-{sealed['kind']}.json"
+        try:
+            handle = (directory / name).open("x", encoding="utf-8")
+        except FileExistsError:                       # pragma: no cover
+            continue
+        sealed["intent_id"] = name[:-5]
+        with handle:
+            handle.write(json.dumps(sealed, indent=2) + "\n")
+        return directory / name
+    raise Refused("could not create a file for it")   # pragma: no cover
+
+
+def collect_outbox(outbox: Path, *, run_id: str, agent_id: str,
+                   pending: Path) -> tuple[list[Path], list[tuple[Path, str]]]:
+    """File every request a hand left in its outbox. Returns (filed, refused).
+
+    Read in name order, so a hand that names them `1-push.json`,
+    `2-pr.json` gets them shown in that order. A filed request is removed
+    from the outbox; a refused one stays, with the reason returned, so a
+    person can see what was asked and why it was not passed on.
+    """
+    filed, refused = [], []
+    outbox = Path(outbox)
+    if not outbox.is_dir():
+        return filed, refused
+    for path in sorted(outbox.glob("*.json")):
+        try:
+            body = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            refused.append((path, f"not readable JSON: {exc}"))
+            continue
+        if not isinstance(body, dict):
+            refused.append((path, "should hold one JSON object"))
+            continue
+        body = {k: v for k, v in body.items() if v not in ("", None)}
+        try:
+            filed.append(file_intent(body, run_id=run_id, agent_id=agent_id,
+                                     directory=pending))
+        except (Refused, schemas.Invalid) as exc:
+            refused.append((path, str(exc)))
+            continue
+        path.unlink()
+    return filed, refused
+
+
 def read_pending(directory: Path) -> list[dict]:
     """Intents a hand left behind, oldest first. Unreadable ones are reported.
 

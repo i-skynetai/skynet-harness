@@ -236,6 +236,21 @@ def cmd_build(args) -> int:
         run.event("hand.end", reason=result.reason, exit_code=result.exit_code,
                   seconds=round(result.seconds, 1))
 
+        # What the hand asked to have done outside the machine. It never ran
+        # `sky`; it left files in the outbox, and the runtime seals each with
+        # this run's identity now (SH-004). Nothing is executed.
+        filed, refused = broker.collect_outbox(
+            Path.cwd() / broker.OUTBOX, run_id=run.run_id, agent_id=agent_id,
+            pending=Path.cwd() / PENDING)
+        for path in filed:
+            run.event("intent.filed", intent=path.name)
+        for path, why in refused:
+            run.event("intent.refused", file=path.name, reason=why)
+        if filed:
+            print(f"\n{len(filed)} outward action(s) waiting for you — run `sky ship`.")
+        for path, why in refused:
+            print(f"  not passed on: {path.name} — {why}", file=sys.stderr)
+
         # The bill, per run: from the hand's own structured report, read back
         # from the durable log. Recorded whether or not it was available, with
         # the reason when it was not — a blank on a dashboard must say why.
@@ -626,40 +641,13 @@ def cmd_intent(args) -> int:
         print("sky intent: this session is not a run, so an intent from it "
               "cannot be attributed. Run the action yourself.", file=sys.stderr)
         return EXIT_PROBLEM
-    # The order intents are made in is the order a person must run them: a pull
-    # request listed before the push it needs is a wrong instruction. The
-    # nanosecond clock is the sequence; it leads the file name, so a plain
-    # sort of the folder is creation order, and `created_at` says it in words.
-    import time
-    made_ns = time.time_ns()
-    created_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(made_ns // 10**9))
     try:
-        sealed = broker.accept(body, run_id=run_id, agent_id=agent_id,
-                               created_at=created_at)
-        broker.render(sealed)          # refuse now, not when a person reads it
+        path = broker.file_intent(body, run_id=run_id, agent_id=agent_id,
+                                  directory=Path(args.directory or PENDING))
     except broker.Refused as exc:
         print(f"sky intent: {exc}", file=sys.stderr)
         return EXIT_PROBLEM
-    directory = Path(args.directory or PENDING)
-    directory.mkdir(parents=True, exist_ok=True)
-    # Exclusive creation, not "count the files and add one": with 001 and 003
-    # present that arithmetic returns 003 and silently overwrites an intent —
-    # an outward action somebody believes is still pending.
-    import uuid
-    for _ in range(50):
-        name = f"{made_ns:020d}-{uuid.uuid4().hex[:8]}-{sealed['kind']}.json"
-        try:
-            handle = (directory / name).open("x", encoding="utf-8")
-        except FileExistsError:                       # pragma: no cover
-            continue
-        sealed["intent_id"] = name[:-5]
-        with handle:
-            handle.write(json.dumps(sealed, indent=2) + "\n")
-        break
-    else:                                             # pragma: no cover
-        print("sky intent: could not create a file for it", file=sys.stderr)
-        return EXIT_PROBLEM
-    print(f"recorded {directory / name} — run `sky ship` to see what a person "
+    print(f"recorded {path} — run `sky ship` to see what a person "
           f"then does")
     return EXIT_OK
 

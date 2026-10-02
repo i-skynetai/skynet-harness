@@ -55,7 +55,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-001 | [Probes call the tools the knowledge port names](#sh-001) | probes | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-002 | [The Safety probe asks the guard as a run would](#sh-002) | probes | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-003 | [`sky ship` in the order the intents were made](#sh-003) | broker | P0 | S | Done — 2.1.2 | @arupmmi07 |
-| SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | In progress | @arupmmi07, 2026-10-01 |
+| SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Done — 2.1.2 | @arupmmi07 |
 | SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | In progress | @arupmmi07, 2026-09-30 |
 | SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | In progress | @arupmmi07, 2026-10-01 |
 | SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Done — 2.1.2 | @arupmmi07 |
@@ -85,6 +85,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-034 | [Tests the developer role can run in any repository](#sh-034) | policy | P1 | M | Needs decision | |
 | SH-035 | [A test runner is a shell: say so, or close it](#sh-035) | policy | P1 | M | Needs decision | |
 | SH-036 | [The guard reads git's options, not a substring](#sh-036) | guard | P2 | M | Done — 2.1.2 | @arupmmi07 |
+| SH-037 | [Only the runtime writes `.sky/pending`](#sh-037) | broker | P1 | S | Ready | |
 
 ### 2.4.0 — ports, not products
 
@@ -304,6 +305,15 @@ allowed while `git push origin feat/x` is denied. The tool list still stops the 
 for the developer; the guard should catch the ordinary spelling too. *Done when:*
 commands are split into words and git's global options (`-C`, `-c`, `--git-dir`,
 `--work-tree`) are skipped before matching, with a test for each.
+
+<a id="sh-037"></a>**SH-037 — Only the runtime writes `.sky/pending`.** Since SH-004 the
+agent leaves requests in `.sky/outbox/` and the runtime seals them into `.sky/pending/`.
+A developer agent can write files, so it could also write a file straight into
+`.sky/pending/` that claims another run's identity, and `sky ship` would render it. The
+rendering checks still apply and nothing is executed, but the identity would be false.
+*Done when:* `sky ship` shows only intents whose run id matches a run record on this
+machine, or the runtime keeps pending intents outside the working tree; a test plants a
+forged file and it is not shown.
 
 ### Ports, not products
 

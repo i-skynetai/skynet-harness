@@ -328,6 +328,7 @@ def waits_for_owner(task: dict) -> bool:
 EVENT_KINDS = (
     "run.start", "run.refused", "run.finish", "run.usage",
     "git.block.checked", "hand.command", "hand.start", "hand.end",
+    "intent.filed", "intent.refused",
 )
 
 RUN_EVENT = Schema(

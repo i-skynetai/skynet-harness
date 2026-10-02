@@ -67,8 +67,9 @@ than assumed harmless. `./sky selftest` checks the repository against itself.
    The harness checks readiness, applies the role's tool list, blocks the usual git
    credential routes, and launches the agent.
 4. **Review the work.** The agent can read, edit, test and commit locally.
-5. **Ship it yourself.** `./sky ship` prints the commands for the push or pull request
-   the agent asked for, in order. It runs none of them.
+5. **Ship it yourself.** The agent leaves its requests in `.sky/outbox/`; when it
+   exits, the harness files them. `./sky ship` prints the commands, in order, and
+   runs none of them.
 
 ## How a run fits together
 
@@ -103,9 +104,11 @@ is a separate and optional repository.
 
 - No knowledge base ships with the repository, so a full run needs one of your own
   ([SH-020](ROADMAP.md#sh-020)).
-- A managed run cannot yet hand an intent to `sky ship` ([SH-004](ROADMAP.md#sh-004)).
-- Hosts differ: the documents disagree on which roles Codex and Kimi can run
-  ([SH-008](ROADMAP.md#sh-008)).
+- Only Claude Code can run every role, because only it takes a fixed tool list per
+  run. Codex runs the reviewer role only; Kimi runs no managed role, since it cannot be
+  given a knowledge base for one run ([hosts/README.md](hosts/README.md)).
+- Inside a run, the agent could also write straight into `.sky/pending/`, the folder
+  `sky ship` reads ([SH-037](ROADMAP.md#sh-037)).
 - Open correctness bugs are listed as P0 rows in [ROADMAP.md](ROADMAP.md).
 
 ## Status

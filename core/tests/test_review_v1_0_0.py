@@ -102,7 +102,7 @@ class F3_TheBrokerIsConnected(unittest.TestCase):
     def test_the_ship_skill_calls_the_runtime_rather_than_composing(self):
         body = (REPO / "plugin" / "skills" / "ship" / "SKILL.md").read_text()
         self.assertIn("sky ship", body)
-        self.assertIn("sky intent", body)
+        self.assertIn(".sky/outbox/", body)       # SH-004: the hand never runs `sky`
         self.assertIn("You do not compose these commands", body)
 
 

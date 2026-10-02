@@ -47,34 +47,27 @@ model chooses what goes on a command line, and every check in the runtime
 becomes decoration. Your job is to say *what* is wanted; the runtime decides
 what that looks like as a command, and refuses the ones it will not put there.
 
-For each outward action, **write a small JSON file with your editor tool and
-name it** — never put the text on a command line:
+For each outward action, **write a small JSON file with your editor tool into
+`.sky/outbox/`**, named in the order the person should run them —
+`1-push.json`, `2-pr.json` — and never put the text on a command line:
 
 ```json
 { "kind": "ticket.comment", "summary": "tell the ticket",
   "issue_key": "<TICKET>", "body": "…what you want to say…" }
 ```
 
-```bash
-sky intent --from-file .sky/intent-1.json
-```
+**You do not run `sky`.** When this session ends, the runtime reads the outbox,
+stamps each request with this run's identity, refuses any it will not render, and
+files the rest. The person then runs `sky ship`, which prints one block per action
+— the exact command, and any body text separately — and runs none of them.
 
-**Why a file and not `--body "…"`.** A shell expands an argument *before* `sky`
-starts. A body containing a backtick, `$(…)` or a newline has already run by
-the time any check could see it — so every validation in the runtime would be
-happening too late. An editor tool writes bytes; no shell is involved. `kind`
-is one of `push`, `pr.open`, `ticket.comment`, `ticket.transition`, and the
+**Why a file and not a command.** A shell expands an argument before any program
+starts. A body containing a backtick, `$(…)` or a newline has already run by the
+time any check could see it. An editor tool writes bytes; no shell is involved.
+`kind` is one of `push`, `pr.open`, `ticket.comment`, `ticket.transition`, and the
 other fields are `branch`, `remote`, `base`, `title`, `body`, `issue_key`,
-`to_state`.
-
-Then show the person everything at once:
-
-```bash
-sky ship
-```
-
-It prints one block per action — the exact command, and any body text
-separately — and runs none of them.
+`to_state`. Do not write `run_id`, `agent_id` or any approval field: the runtime
+owns those, and a request that sets one is refused.
 
 **Expect refusals, and do not work around them.** The runtime rejects a branch
 or remote that starts with `-` (it would be read by git as an option, not a
@@ -82,13 +75,14 @@ name), anything carrying a shell metacharacter, a push straight to `main` or
 `master`, and an intent claiming its own approval. If one is refused, say so
 and stop — a refusal is the system working.
 
-If `sky` is not available in this session, say that plainly and stop. **Do not
-fall back to composing the commands yourself**: unvalidated is exactly the
-state this exists to prevent.
+If this is not a managed run, nothing collects the outbox: say that plainly and
+stop. **Do not fall back to composing the commands yourself**: unvalidated is
+exactly the state this exists to prevent.
 
 ## After
 
-4. Say plainly: *these are not run. Run them yourself, in this order.*
+4. Say plainly: *these are not run. When this session ends, run `sky ship` and
+   then the commands it shows, in its order.*
 5. If the user asks you to run one, say which role could and could not, and
    that this one is theirs. In an Ethan-managed run the same actions go through
    core's broker under a grant the person gave; in an interactive session they
@@ -108,10 +102,10 @@ Your first look must not be the user's first look. State what "done"
 means for this task, produce a draft, then check it against **the runtime's rendering, not your own** —
 reading your own output and concluding it is fine is not verification.
 
-- **`sky ship` produced the commands, not you.** If you composed a command line, stop:
-  every validation in the runtime happens after a shell has already expanded it.
-- **Read the rendered block back.** Exactly one line per action may be runnable; body
-  text is commented. If anything else looks executable, do not hand it over.
+- **The runtime will produce the commands, not you.** If you composed a command line,
+  stop: every validation in the runtime happens after a shell has already expanded it.
+- **Read each outbox file back.** One JSON object, one action, only the fields listed
+  above, and named in the order the person should run them.
 - A refusal is the system working. Report it; do not route around it.
 
 Fix everything you find and check again. Return the result with a short

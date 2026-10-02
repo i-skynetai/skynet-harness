@@ -28,6 +28,18 @@ without having read it, which is the failure this whole project exists to preven
 
 The harness renders the command. You run it.
 
+Inside a run, the agent never runs `sky`. It writes what it wants done — a push, a pull
+request, a ticket comment — as small JSON files in `.sky/outbox/`. When the agent
+exits, `sky build` reads them, stamps each with the run's identity, refuses any it will
+not render (for example one that claims its own approval), and files the rest. A refused
+file stays in the outbox with the reason printed. Then:
+
+```bash
+./sky ship
+```
+
+prints each action in the order the agent asked for them.
+
 ```
 The broker would run:
 

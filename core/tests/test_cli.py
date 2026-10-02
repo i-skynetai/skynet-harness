@@ -263,6 +263,53 @@ class TheWholePathWhenTheBrainIsReady(unittest.TestCase):
             self.assertIn(expected, events, f"{expected} was not recorded")
         self.assertIn("the hand ran", (runs[0] / "hand.log").read_text())
 
+    def _hand_leaves(self, files: dict):
+        """A fake hand that writes these files into the outbox, as a real one
+        would with its Write tool. It never runs `sky`."""
+        from sky import launcher
+        script = "mkdir -p .sky/outbox && " + " && ".join(
+            f"printf '%s' {json.dumps(json.dumps(body))} > .sky/outbox/{name}"
+            for name, body in files.items())
+        launcher.hand_command = lambda h, r, m, p, pol: ["sh", "-c", script]
+
+    def test_a_managed_run_leaves_an_intent_that_ship_renders(self):
+        """SH-004: the runtime collects the outbox when the hand exits."""
+        self._hand_leaves({
+            "1-push.json": {"kind": "push", "summary": "push the fix",
+                            "branch": "fix/eng-1", "remote": "origin"},
+            "2-pr.json": {"kind": "pr.open", "summary": "open the pull request",
+                          "branch": "fix/eng-1", "base": "main", "title": "Fix ENG-1"},
+        })
+        code, out, err = run("--kb-map", str(self.map), "build",
+                             "--role", "developer", "--task", "ENG-1")
+        self.assertEqual(code, 0, err)
+        self.assertIn("2 outward action(s) waiting for you", out)
+        self.assertFalse(list(Path(".sky/outbox").glob("*.json")),
+                         "filed requests must leave the outbox")
+
+        pending = sorted(Path(".sky/pending").glob("*.json"))
+        self.assertEqual(len(pending), 2)
+        run_id = list((self.tmp / "state" / "runs").iterdir())[0].name
+        for path in pending:
+            self.assertEqual(json.loads(path.read_text())["run_id"], run_id)
+
+        code, shown, err = run("ship")
+        self.assertEqual(code, 0, err)
+        self.assertIn("git push origin fix/eng-1", shown)
+        self.assertLess(shown.index("git push origin fix/eng-1"), shown.index("gh pr create"))
+
+    def test_a_hand_cannot_approve_its_own_request(self):
+        self._hand_leaves({"1-push.json": {
+            "kind": "push", "summary": "s", "branch": "fix/x",
+            "approved_by": "the model", "run_id": "forged"}})
+        code, out, err = run("--kb-map", str(self.map), "build",
+                             "--role", "developer", "--task", "ENG-1")
+        self.assertEqual(code, 0, err)
+        self.assertIn("not passed on: 1-push.json", err)
+        self.assertFalse(list(Path(".sky/pending").glob("*.json")))
+        self.assertTrue(Path(".sky/outbox/1-push.json").exists(),
+                        "a refused request stays where a person can read it")
+
     def test_a_hand_that_reports_usage_gets_a_bill_recorded_and_its_text_shown(self):
         """The bill, end to end: from the hand's own report into events.jsonl.
 
