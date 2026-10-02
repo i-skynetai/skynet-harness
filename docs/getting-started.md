@@ -65,19 +65,24 @@ anything from outside this repository:
 
 ## 3. Connect a knowledge base
 
-Knowledge bases live in `config/kb-map.json`. One entry per KB:
+Knowledge bases live in `~/.config/sky/kb-map.json` (or pass `--kb-map <path>`).
+One entry per KB:
 
 ```json
 {
   "work_kb": {
     "mcp_url": "https://your-kb.example.com/mcp/",
     "tenant_code": "DEMO0001",
+    "ontology": "sky_sdlc",
+    "privacy": "work",
     "pat_env": "SKY_PAT_WORK",
     "repos": ["/path/to/a/repository"]
   }
 }
 ```
 
+- `ontology` is the knowledge base's schema name; `privacy` is `personal`, `work` or
+  `client`. Both are required.
 - `pat_env` names the environment variable holding the token. The token itself never
   goes in the file.
 - `repos` is how a repository resolves to a KB. A repository under a client KB never
@@ -112,7 +117,7 @@ why "I opened a pull request" cannot appear in it unless a pull request was open
 ## Where everything lives
 
 ![Where the plugin, the knowledge-base setting and the token each live, and the one
-path a token travels](images/onboarding-where-things-live.svg)
+path a token travels](images/onboarding-where-things-live.png)
 
 Four locations, one token path. If a run cannot reach the knowledge base, the fault is
 on that path and `sky doctor` says which step.

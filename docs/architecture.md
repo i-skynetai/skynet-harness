@@ -31,7 +31,7 @@ How a task becomes a managed run, and which component decides what.
 ```
 
 ![Who runs whom: triggers, the harness, the hand, and where a human
-decides](images/who-runs-whom.svg)
+decides](images/who-runs-whom.png)
 
 ## The parts
 
@@ -63,7 +63,7 @@ tools. It exists for the run. It is not another product.
 6. **Record.** Identity, events, result, reported usage — in a local run record.
 
 ![The two launch paths — the harness alone, and the harness driven by a
-planner — share one set of roles and one knowledge-base map](images/launch-paths.svg)
+planner — share one set of roles and one knowledge-base map](images/launch-paths.png)
 
 ## Two tiers, named honestly
 

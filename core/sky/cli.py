@@ -264,7 +264,12 @@ def cmd_policy(args) -> int:
     if args.policy_action == "lint":
         # Loading already ran the lint and refused a broken file, so reaching
         # here means it is clean. Saying so plainly is the point of the command.
-        print(f"{policy.path}: clean")
+        shown = policy.path
+        try:
+            shown = policy.path.resolve().relative_to(Path.cwd().resolve())
+        except (AttributeError, ValueError):
+            pass                       # outside this directory: the full path
+        print(f"{shown}: clean")
         print(f"    {len(policy.roles)} roles, {len(policy.actions)} actions, "
               f"{len(policy.guard.get('deny_commands') or ())} guard rules")
         return EXIT_OK

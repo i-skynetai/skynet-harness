@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased — 2.1.2
+
+Correctness fixes found in the release review. Each has a test that fails on the old code.
+
+- **SH-002** — the Safety check ran the guard outside a managed run, where it stands
+  aside, so Safety read DOWN and every developer build was refused. It now asks this
+  runtime's own guard with the environment a run gets.
+- **SH-001** — the checks called tool names no knowledge base built to the port offers.
+  Names now come from one place and are checked against the policy and the port document.
+- **SH-003** — `sky ship` lists intents in the order they were made.
+- **SH-023** — `sky doctor` with no knowledge-base map still shows every row.
+- **SH-036** — the guard reads past git's global options, so `git -C . push` is denied.
+- **SH-007** — the documented knowledge-base map has the real path and loads as written.
+- **SH-050** — CI runs `sky selftest`.
+- Tests no longer depend on the machine's git remote; the suite passes in a fresh clone.
+- README rewritten to the shared documentation standard, with a sixty-second demo.
+
 ## v2.1.1 — 2026-09-17
 
 Four things found while preparing the onboarding guide, each of which the

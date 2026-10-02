@@ -4,109 +4,130 @@
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![licence](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 
+*One policy for the AI coding agents you already use.*
 
-**A local control plane for AI coding agents.** It gives the agent you already use —
-Claude Code, Codex, Kimi — an identity, a role with a fixed tool list, grounded
-context from a knowledge base you choose, and a human checkpoint on anything that
-leaves your machine.
+Skynet Harness runs Claude Code, Codex or Kimi under one written policy. Each run gets
+a role with a fixed list of tools, context from one knowledge base you choose, a human
+checkpoint on anything that leaves your machine, and a local record of what happened.
+It does not supply a model and does not replace your coding agent.
 
-It does not supply a model. It does not replace your coding agent. It is the layer
-underneath that decides what that agent is allowed to do, and records what it did.
+![A task goes through a knowledge base and a role policy to the coding agent, and anything outward goes to you](docs/images/overview.png)
 
-```
-    task  ──►  knowledge base  ──►  role policy  ──►  coding agent  ──►  evidence
-                (you choose)        (default deny)     (your hand)      (local record)
-                                          │
-                                          ▼
-                                   outward action?
-                                          │
-                                    human decides
-```
+## The problem
 
-## Why
+Unmanaged coding agents fail in three ways. They invent context instead of looking it
+up. They act outside their job: the agent asked to review a patch pushes it. And they
+report success that never happened. Each agent product has its own settings for this,
+so a team using two of them keeps two sets of rules, and they drift apart.
 
-Unmanaged coding agents fail in three specific ways. They invent context instead of
-retrieving it. They act outside their remit — the agent asked to review a patch pushes
-it. And they report success that never happened.
+## Words you need
 
-Skynet Harness answers each one directly: one knowledge base per run, a role whose tool
-list is fixed before the model exists, and a run record the model cannot write to.
+- **Role** — developer, reviewer, architect or security. Each has a fixed tool list.
+- **Policy** — `plugin/policy.yaml`, the one file that says what each role may do.
+- **Outward action** — anything that reaches beyond your machine: a push, a pull
+  request, a ticket comment. Never plainly allowed.
+- **Knowledge base** — a search service the agent reads from, over MCP (the Model
+  Context Protocol, the standard way coding agents call outside tools).
+- **Managed run** — a session started by `sky build`, so the policy is enforced in it.
 
-## What it does
+## See it work in sixty seconds
 
-- **Grounds work in knowledge.** Each run resolves exactly one knowledge base. Optionally
-  a separate read-only skill catalogue and code index.
-- **The twenty SDLC skills.** Context, design, impact, module analysis, feature work, bug
-  fixing, code, review, security, test, ingest, learn, ADRs, skill discovery, setup,
-  doctor, build, ship — repeatable workflows instead of one long prompt.
-- **Four roles, different tool lists.** Developer, Reviewer, Architect, Security, plus
-  two helper agents that retrieve context and validate work.
-- **Checks readiness before the model exists.** `sky doctor` probes the knowledge source,
-  retrieval, coding agent, policy, skills and test runner, and says what is missing
-  rather than continuing quietly.
-- **Blocks the credential paths.** The launcher builds an explicit environment and proves
-  the usual Git credential routes are unavailable before the agent starts.
-- **Records evidence.** Every managed run has a local record: identity, events, result,
-  and the token usage the agent reported.
-
-## How it fits together
-
-![The layers: an optional planner on top, the harness, the knowledge base, and the
-engine underneath](docs/images/sky-solution.svg)
-
-Each layer is useful without the one above it. The harness is the layer everyone
-installs. [Ethan](https://github.com/arupmmi07/ethan) — the planner on top — is a
-separate, optional repository. The coding agent supplies the thinking and the acting;
-the harness supplies the habits and the boundary.
-
-## Three design decisions
-
-**Default deny, and no outward action is ever plainly allowed.** An action a role does not
-list is denied. An action not named in the policy at all is denied rather than assumed
-harmless. Anything that reaches the world outside the machine is `needs_human` or goes
-through the broker — you cannot grant a role `push` by editing the file.
-
-**One policy file, read by everything that decides.** The launcher reads it before the
-agent starts, the guard hook reads it during the run, the broker reads it before an
-outward action. One file, because two policies eventually become the looser one.
-
-**The guard is honest about what it is.** The tool allowlist is the real boundary: a role
-that never receives `Bash` cannot run a command, and no string the model emits changes
-that. The guard is the second tier, and it matches on strings — it stops the ordinary
-attempt and the honest mistake, which together are nearly all of them. It is not a
-sandbox, and documenting it as one would be the actual danger.
-
-## Install
-
-Requires Python 3.11+. No other runtime dependency; the core is standard library only.
+You need Python 3.11 or newer. No install, no account:
 
 ```bash
 git clone https://github.com/arupmmi07/skynet-harness.git
 cd skynet-harness
-./sky doctor
+./sky policy lint
+./sky policy developer push
+./sky policy reviewer push
+./sky policy developer edit
 ```
 
-`sky doctor` tells you what is present and what is missing. See
-[docs/getting-started.md](docs/getting-started.md).
+This is the real output on a fresh clone:
+
+![Real output: the policy is clean; a developer push needs a human; a reviewer push is denied; an action the policy does not name is denied](docs/images/demo.png)
+
+A push is never a plain allow, for anyone: the agent prepares it and you run it. A
+reviewer cannot push at all. An action the policy has never heard of is denied rather
+than assumed harmless. `./sky selftest` checks the repository against itself.
+
+## Use it with your coding agent
+
+1. **Check what is present.** `./sky doctor` probes the coding agent, the policy, the
+   guard and the test runner, and shows a readiness table. With no knowledge base yet,
+   the knowledge rows read `MISSING` and say how to fix it.
+2. **Connect a knowledge base.** Add it to `~/.config/sky/kb-map.json` and export its
+   token. See [getting started](docs/getting-started.md).
+3. **Start a managed run.**
+
+   ```bash
+   ./sky build --task PROJ-123 --role developer --hand claude
+   ```
+
+   The harness checks readiness, applies the role's tool list, blocks the usual git
+   credential routes, and launches the agent.
+4. **Review the work.** The agent can read, edit, test and commit locally.
+5. **Ship it yourself.** `./sky ship` prints the commands for the push or pull request
+   the agent asked for, in order. It runs none of them.
+
+## How a run fits together
+
+![The layers: an optional planner on top, the harness, the knowledge base, and the engine underneath](docs/images/sky-solution.png)
+
+The coding agent does the thinking and acting. The harness supplies the role, the
+skills and the boundary. [Ethan](https://github.com/arupmmi07/ethan), a planner on top,
+is a separate and optional repository.
+
+## What it does
+
+- **One policy across agents.** The same roles and default-deny rules, read by the
+  launcher, the guard hook and the ship command.
+- **Checks readiness first.** `sky doctor` names what is missing instead of starting a
+  run that will fail.
+- **Blocks the credential paths.** The launcher builds an explicit environment and
+  proves git cannot get a credential before the agent starts.
+- **Keeps a record the model cannot write.** Each managed run leaves identity, events,
+  each tool call and the token usage the agent reported.
+- **The twenty SDLC skills** cover context, design, review, testing, bug fixing and
+  more, so a workflow is a repeatable step and not one long prompt.
+
+## What it is not
+
+- **Not a sandbox.** The tool list is the real boundary: a role without `Bash` cannot
+  run a command. The guard hook is a second layer that matches command text. It stops
+  the ordinary attempt and the honest mistake, not a determined one.
+- **Not a model or an agent.** It runs the one you have.
+- **Not unattended.** Outward actions are printed for a person to run.
+
+## Limits
+
+- No knowledge base ships with the repository, so a full run needs one of your own
+  ([SH-020](ROADMAP.md#sh-020)).
+- A managed run cannot yet hand an intent to `sky ship` ([SH-004](ROADMAP.md#sh-004)).
+- Hosts differ: the documents disagree on which roles Codex and Kimi can run
+  ([SH-008](ROADMAP.md#sh-008)).
+- Open correctness bugs are listed as P0 rows in [ROADMAP.md](ROADMAP.md).
+
+## Status
+
+**v2.1.1.** The last [changelog](CHANGELOG.md) entry; not yet tagged. Fixes for 2.1.2
+are in progress. **543 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
+CI with `sky selftest`.
 
 ## Documentation
 
 | | |
 |---|---|
-| [Architecture](docs/architecture.md) | How a task becomes a managed run |
 | [Getting started](docs/getting-started.md) | Connect a knowledge base and run your first task |
+| [Architecture](docs/architecture.md) | How a task becomes a managed run |
 | [Policy](docs/policy.md) | Roles, actions, and why outward actions are special |
 | [Knowledge port](docs/knowledge-port.md) | Point it at any MCP knowledge base |
 | [The local loop](docs/local-workflow.md) | Reviewing, committing, and what leaves the machine |
-| [Contributing](CONTRIBUTING.md) | Running the tests, and what a change needs |
 
-## Status
+## Contributing
 
-**v2.1.1.** Working and tested — **541 tests**, about 15,000 lines of Python, standard
-library only. CI runs the suite on Python 3.11, 3.12 and 3.13 with no install step.
-
-Unattended execution is deliberately not built. The managed-write path renders commands
-for a human to run; it does not execute them.
+Pick a `Ready` row in [ROADMAP.md](ROADMAP.md) and follow
+[CONTRIBUTING.md](CONTRIBUTING.md): run the tests, claim the row, open a pull request.
 
 ## Licence
 

@@ -58,19 +58,23 @@ Three things the harness expects:
 
 ## Configuring one
 
-`config/kb-map.json`:
+`~/.config/sky/kb-map.json` (or `--kb-map <path>`):
 
 ```json
 {
   "work_kb": {
     "mcp_url": "https://your-kb.example.com/mcp/",
     "tenant_code": "DEMO0001",
+    "ontology": "sky_sdlc",
+    "privacy": "work",
     "pat_env": "SKY_PAT_WORK",
     "repos": ["/path/to/a/repository"]
   },
   "client_kb": {
     "mcp_url": "https://other-kb.example.com/mcp/",
     "tenant_code": "DEMO0002",
+    "ontology": "sky_sdlc",
+    "privacy": "client",
     "pat_env": "SKY_PAT_CLIENT",
     "repos": ["/path/to/a/client/repository"]
   }

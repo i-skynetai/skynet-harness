@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 296" width="820" height="296">
+<rect width="820" height="296" rx="10" fill="#0f172a"/>
+<circle cx="22" cy="20" r="6" fill="#ef4444"/><circle cx="42" cy="20" r="6" fill="#f59e0b"/><circle cx="62" cy="20" r="6" fill="#22c55e"/>
+<text x="410" y="25" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">terminal — real output on a fresh clone, no setup</text>
+<g font-family="Menlo, Monaco, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" xml:space="preserve">
+<text x="22" y="52" fill="#86efac">$ ./sky policy lint</text>
+<text x="22" y="71" fill="#e2e8f0">plugin/policy.yaml: clean</text>
+<text x="22" y="90" fill="#e2e8f0">    4 roles, 23 actions, 13 guard rules</text>
+<text x="22" y="109" fill="#e2e8f0"></text>
+<text x="22" y="128" fill="#86efac">$ ./sky policy developer push</text>
+<text x="22" y="147" fill="#fde68a">developer · push: needs-human — prepared by the agent, performed by you</text>
+<text x="22" y="166" fill="#e2e8f0"></text>
+<text x="22" y="185" fill="#86efac">$ ./sky policy reviewer push</text>
+<text x="22" y="204" fill="#fca5a5">reviewer · push: deny — the reviewer role does not have &#x27;push&#x27;</text>
+<text x="22" y="223" fill="#e2e8f0"></text>
+<text x="22" y="242" fill="#86efac">$ ./sky policy developer edit</text>
+<text x="22" y="261" fill="#fca5a5">developer · edit: deny — &#x27;edit&#x27; is not an action this policy defines, so it is denied</text>
+</g>
+</svg>

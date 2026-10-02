@@ -58,7 +58,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-004 | [A run can reach the broker](#sh-004) | broker | P0 | M | Needs decision | |
 | SH-005 | [No company-specific name in the public tree](#sh-005) | hygiene | P0 | S | In progress | @arupmmi07, 2026-09-30 |
 | SH-006 | [A `test` skill with no vendor tools](#sh-006) | skills | P0 | S | Ready | |
-| SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Ready | |
+| SH-007 | [The documented KB map works as written](#sh-007) | docs | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Ready | |
 | SH-009 | [`sky kb which` gives the real reason](#sh-009) — *good first issue* | cli | P0 | S | Ready | |
 | SH-010 | [Promises with no code behind them](#sh-010) | docs | P0 | M | Needs decision | |
@@ -353,6 +353,8 @@ plugin. *Decision needed:* a package installable with `pipx`, or clone and plugi
 
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
-| SH-900 | Bring release documentation up to the shared standard | release | P1 | M | Ready | Unassigned |
+| SH-900 | Bring release documentation up to the shared standard | release | P1 | M | In progress | @arupmmi07, 2026-10-01 |
 
 **Verified:** Resolve the five documentation-check failures: early PNG, PNG embeds in README/architecture, quick-start section and numbered steps. Demonstrate an offline complete run, not only readiness diagnostics.
+
+*Progress, 2026-10-01:* the five documentation-check failures are fixed (24 pass, 0 fail). Still open: an offline complete run, which needs SH-020.

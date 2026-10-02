@@ -90,7 +90,7 @@ something it could do.
 ## One hand, one knowledge base
 
 ![How a run reaches exactly one knowledge base, is given no write tool, and leaves
-outward writes as intents for the broker](images/sky-hand-contract.svg)
+outward writes as intents for the broker](images/sky-hand-contract.png)
 
 The contract in one picture: the agent reaches exactly one knowledge base, is handed
 no supported write tool, and every outward write leaves as an intent the broker renders

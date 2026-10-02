@@ -6,9 +6,24 @@
 python3 -m unittest discover -s core/tests -t core
 ```
 
-541 cases, standard library only — no pytest, no install step. That is the same command
-CI runs, so a green run here is the run that matters. They must pass before a change is
-considered.
+543 cases, standard library only — no pytest, no install step. CI runs the same
+command, then `./core/bin/sky selftest`, which fails if the plugin's copy of the runtime
+has drifted from `core/`. Both must pass before a change is considered. After editing
+anything in `core/sky/`, refresh the copy with `python3 scripts/vendor-runtime.py`.
+
+## Picking and claiming work
+
+All planned work is a row in [ROADMAP.md](ROADMAP.md) with an ID (`SH-…`), priority,
+size, status and owner. Work that is not a row is not planned.
+
+1. Choose a `Ready` row. New here? Take one marked *good first issue*.
+2. Claim it with the [*Claim a feature*](.github/ISSUE_TEMPLATE/feature_claim.md) issue
+   template, naming the ID.
+3. Set the row to `In progress`, with your handle and the date in the Owner column.
+4. For an L-sized feature, write a design note from
+   [docs/features/TEMPLATE.md](docs/features/TEMPLATE.md) first.
+5. Open the pull request and set the row to `In review`. A maintainer sets it to
+   `Done — <version>` when it merges.
 
 ## What a change needs
 
@@ -27,6 +42,16 @@ considered.
 - Silent redaction. If a secret is found, refuse the operation and say so — scrubbing it
   quietly hides the near-miss.
 - The core importing from the plugin.
+
+## Documentation
+
+- Write for someone new to the project: short sentences, plain words, and any technical
+  term explained where it first appears.
+- Every claim in the README must work as written and have a test behind it. A feature
+  that does not work yet is a roadmap row, not a sentence in the README.
+- Pictures live in `docs/images/`: the SVG source beside a rendered PNG. Pages embed the
+  PNG. Render it and look at it before committing.
+- A terminal picture shows real command output, never an edited one.
 
 ## Style
 
