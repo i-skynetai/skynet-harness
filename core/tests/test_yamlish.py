@@ -49,7 +49,7 @@ AGREES = [
      "guard:\n  deny:\n    - pattern: git push\n      because: nope\n"
      "    - pattern: git tag\n      because: also nope\n"),
     ("a leading document marker", "---\na: 1\n"),
-    ("a hyphen in a key", "ticket-prefix: VEL\n"),
+    ("a hyphen in a key", "ticket-prefix: PROJ\n"),
     ("a dot in a key", "a.b: 1\n"),
     ("brackets that are not a flow sequence", "a: x[1]\n"),
     ("an empty sequence item", "a:\n  -\n  - two\n"),

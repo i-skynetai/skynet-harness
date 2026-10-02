@@ -648,6 +648,84 @@ def check_no_local_vocabulary(root: Path, words: list[str] | None = None) -> Res
                   else f"{len(problems)} finding(s)", problems)
 
 
+#: The committed form of the private word list: one SHA-256 per line, so the
+#: file names nobody. CI has no local list, so this is what CI checks.
+HASHED_WORDS = "scripts/private-words.sha256"
+#: Mixed into every hash, so a generic table of hashed words does not apply.
+#: It does not stop someone who guesses a name and hashes it to confirm it.
+WORD_SALT = "skynet-harness:"
+#: Longest phrase, in words, a list entry may be.
+MAX_PHRASE = 4
+_PIECE = re.compile(r"[a-z0-9]+")
+_JOINER = re.compile(r"^[-_\s]{1,3}$")
+_SEPARATORS = re.compile(r"[-_\s]+")
+
+
+def word_hash(word: str) -> str:
+    """The hash a list entry is stored as: salted, lower-case, and with any run
+    of hyphens, underscores or spaces as one space — so `red fox`, `red-fox`
+    and `red_fox` are the same entry."""
+    import hashlib
+    normal = _SEPARATORS.sub(" ", word.lower()).strip()
+    return hashlib.sha256((WORD_SALT + normal).encode("utf-8")).hexdigest()
+
+
+def _phrases(line: str):
+    """Every run of up to MAX_PHRASE words in a line, joined as written.
+
+    `foo`, `foo-bar` and `foo bar` are all candidates, so an entry matches on
+    word boundaries, whichever separator the text uses.
+    """
+    low = line.lower()
+    pieces = list(_PIECE.finditer(low))
+    for i, first in enumerate(pieces):
+        for j in range(i, min(i + MAX_PHRASE, len(pieces))):
+            if j > i and not _JOINER.match(low[pieces[j - 1].end():pieces[j].start()]):
+                break
+            yield low[first.start():pieces[j].end()]
+
+
+def _whole_tree(root: Path):
+    """Every text file in the repository, not only what the plugin ships."""
+    skip_dirs = {".git", "__pycache__", ".venv", "node_modules"}
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or skip_dirs & set(path.parts):
+            continue
+        if path.suffix.lower() in (".png", ".jpg", ".gif", ".pdf", ".pyc"):
+            continue
+        yield path
+
+
+def check_no_private_words_in_tree(root: Path) -> Result:
+    """The organisation's vocabulary, checked over the whole tree, from hashes.
+
+    The plain-text list stays local (see `check_no_local_vocabulary`). This
+    reads `scripts/private-words.sha256` instead, so it runs anywhere —
+    including CI — and covers tests, docs and diagrams as well as the plugin.
+    Refresh the file with `scripts/hash-private-words.py`.
+    """
+    name = "no private words anywhere in the tree"
+    listed = root / HASHED_WORDS
+    if not listed.is_file():
+        return Result(name, True, f"SKIPPED — no {HASHED_WORDS}", skipped=True)
+    hashes = {line.split("#", 1)[0].strip()
+              for line in listed.read_text(encoding="utf-8").splitlines()}
+    hashes.discard("")
+    problems, files = [], 0
+    for path in _whole_tree(root):
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (UnicodeDecodeError, OSError):
+            continue
+        files += 1
+        for n, line in enumerate(lines, 1):
+            if any(word_hash(p) in hashes for p in _phrases(line)):
+                problems.append(f"{path.relative_to(root)}:{n}  a listed word")
+    return Result(name, not problems,
+                  f"{len(hashes)} hashed words, {files} files" if not problems
+                  else f"{len(problems)} finding(s)", problems)
+
+
 def check_no_retired_names(root: Path) -> Result:
     """Shipped content must not name something that no longer exists.
 
@@ -700,6 +778,7 @@ CHECKS = (
     check_no_local_strings,
     check_no_retired_names,
     check_no_local_vocabulary,
+    check_no_private_words_in_tree,
 )
 
 

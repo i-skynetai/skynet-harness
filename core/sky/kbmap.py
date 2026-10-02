@@ -198,8 +198,11 @@ class KBMap:
         path = path or (CONFIG_DIR / MAP_FILE)
         if not path.exists():
             raise KBMapError(
-                f"no KB map at {path}. Run `sky setup init` with the profile your "
-                "administrator sent you."
+                f"no KB map at {path}, so no knowledge base is connected. "
+                "To see the policy work without one: `sky policy lint`, "
+                "`sky policy reviewer push`, `sky selftest`. To connect a "
+                "knowledge base, write that file (docs/getting-started.md, step 3), "
+                "or run `sky setup init <profile.json>` if you were given a profile."
             )
         try:
             raw = json.loads(path.read_text())

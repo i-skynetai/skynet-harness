@@ -109,12 +109,11 @@ is a separate and optional repository.
   given a knowledge base for one run ([hosts/README.md](hosts/README.md)).
 - Inside a run, the agent could also write straight into `.sky/pending/`, the folder
   `sky ship` reads ([SH-037](ROADMAP.md#sh-037)).
-- Open correctness bugs are listed as P0 rows in [ROADMAP.md](ROADMAP.md).
+- Planned work and known gaps are rows in [ROADMAP.md](ROADMAP.md).
 
 ## Status
 
-**v2.1.1.** The last [changelog](CHANGELOG.md) entry; not yet tagged. Fixes for 2.1.2
-are in progress. **543 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
+**v2.1.2.** See the [changelog](CHANGELOG.md). Not yet tagged as a release. **559 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
 CI with `sky selftest`.
 
 ## Documentation

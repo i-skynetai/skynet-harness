@@ -1,7 +1,7 @@
 {
   "name": "sky",
   "description": "Skynet Harness \u2014 spec-driven SDLC for coding agents: twenty /sky:* skills and six agents that ground every task in your team's knowledge base, under a policy, and render every outward write for a person to run.",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "author": {
     "name": "SKY"
   }

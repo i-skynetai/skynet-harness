@@ -6,10 +6,14 @@
 python3 -m unittest discover -s core/tests -t core
 ```
 
-543 cases, standard library only — no pytest, no install step. CI runs the same
+559 cases, standard library only — no pytest, no install step. CI runs the same
 command, then `./core/bin/sky selftest`, which fails if the plugin's copy of the runtime
 has drifted from `core/`. Both must pass before a change is considered. After editing
 anything in `core/sky/`, refresh the copy with `python3 scripts/vendor-runtime.py`.
+
+`selftest` also checks the whole tree for a private list of organisation names, using
+only their salted hashes in `scripts/private-words.sha256`. The plain list stays on the
+maintainer's machine; after changing it, run `python3 scripts/hash-private-words.py`.
 
 ## Picking and claiming work
 

@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased — 2.1.2
+## v2.1.2 — 2026-10-02
 
-Correctness fixes found in the release review. Each has a test that fails on the old code.
+All ten correctness bugs on the roadmap (SH-001 to SH-010) are closed, each with a
+test. Not yet tagged.
 
 - **SH-002** — the Safety check ran the guard outside a managed run, where it stands
   aside, so Safety read DOWN and every developer build was refused. It now asks this
@@ -14,6 +15,22 @@ Correctness fixes found in the release review. Each has a test that fails on the
 - **SH-036** — the guard reads past git's global options, so `git -C . push` is denied.
 - **SH-007** — the documented knowledge-base map has the real path and loads as written.
 - **SH-050** — CI runs `sky selftest`.
+- **SH-004** — a managed run can reach `sky ship`. The agent writes requests into
+  `.sky/outbox/`; when it exits, the runtime seals and files them. The agent never runs
+  `sky`, and no role gained shell rights.
+- **SH-005** — `sky selftest` checks the whole tree for private names, from a committed
+  list of salted hashes, so CI runs it without the plain list.
+- **SH-006** — the `test` skill runs local tests only; no role holds a tool for shared
+  test environments.
+- **SH-008** — `sky host` and `hosts/README.md` follow the launcher: Codex runs the
+  reviewer role only, Kimi no managed role.
+- **SH-009** — `sky kb which --kb <name>` says the KB was chosen with `--kb`.
+- **SH-010** — six documented features with no code behind them are removed from the
+  docs, the plugin and the code comments; [the roadmap row](ROADMAP.md#sh-010) lists them.
+- **The guard fails closed inside a managed run** when it cannot load a policy: it
+  denies every command and says why. Outside a managed run it still stands aside.
+- **`sky doctor` with no KB map** points to the no-setup demo and to how to connect a
+  knowledge base.
 - Tests no longer depend on the machine's git remote; the suite passes in a fresh clone.
 - README rewritten to the shared documentation standard, with a sixty-second demo.
 
