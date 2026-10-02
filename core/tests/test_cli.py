@@ -109,6 +109,14 @@ class WhenAKBExists(unittest.TestCase):
         self.assertIn("team_kb", out)
         self.assertIn("default", out)
 
+    def test_kb_which_with_kb_says_it_was_chosen(self):
+        """SH-009: naming a KB that is not the default must not say 'default'."""
+        code, out, _ = run("--kb-map", str(self.map), "--kb", "notes_kb", "kb", "which")
+        self.assertEqual(code, 0)
+        self.assertIn("notes_kb", out)
+        self.assertIn("chosen with --kb", out)
+        self.assertNotIn("default", out)
+
     def test_an_unknown_kb_lists_the_real_ones(self):
         code, _, err = run("--kb-map", str(self.map), "--kb", "typo", "kb", "which")
         self.assertEqual(code, 1)

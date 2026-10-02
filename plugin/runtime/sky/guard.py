@@ -17,12 +17,11 @@ caught, the last is not. This stops the ordinary attempt and the honest
 mistake, which together are nearly all of them. It is not a sandbox, and
 documenting it as one would be the actual danger.
 
-**It fails open by default, and says so out loud.** A guard that fails closed
-turns a missing runtime into a session where nothing works; a guard that fails
-open turns it into a session with one layer fewer. Which is right depends on
-the installation, so it is `guard.fails` in the policy — and either way the
-reason goes to stderr rather than being swallowed, because a guard that is
-silently absent is worse than one that is absent.
+**With no policy, it fails closed inside a managed run.** A run started by
+`sky build` was promised these rules; if the guard cannot load them, it denies
+every command and says why, rather than letting the run continue with a layer
+silently missing. Outside a managed run it stands aside, as it does for every
+command there. Either way the reason is said out loud, never swallowed.
 
 The ledger is the other half: every tool call the guard saw, appended to the
 run's own event file. Not to enforce anything — to answer "what did it actually
@@ -109,6 +108,12 @@ def in_managed_run() -> bool:
     return os.environ.get("SKY_LAUNCHED") == "1"
 
 
+#: Shown to the person when a managed run's guard has no rules to apply.
+NO_POLICY_IN_RUN = ("the sky guard could not load a policy, so inside this managed run "
+                    "it denies every command. Fix the policy (`sky policy lint`) and "
+                    "start the run again.")
+
+
 def decide(payload: dict, policy) -> Verdict:
     """What to tell the host about this tool call.
 
@@ -131,7 +136,7 @@ def decide(payload: dict, policy) -> Verdict:
         # aside" on every command in an ordinary session is noise.
         return Verdict("allow")
     if policy is None:
-        return Verdict("allow", "no policy was loaded, so the guard stood aside")
+        return Verdict("deny", NO_POLICY_IN_RUN)
 
     for piece in split_commands(command):
         found = policy.denied_command(piece)

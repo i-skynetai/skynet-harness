@@ -35,20 +35,29 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .launcher import HAND_ROLES
+
 #: Versions these packages were written against. Printed into the package, so
 #: a mismatch later is visible rather than mysterious.
 SUPPORTED = {"codex": "codex-cli 0.149.0", "kimi": "0.20.0"}
 
-#: What each host can enforce. `roles` is what it may therefore be asked to do.
+#: What each host can enforce. `roles` is what it may therefore be asked to do,
+#: and it is the launcher's table, not a second copy: three places once gave
+#: three answers (SH-008), and the generous ones were labels, not limits.
 CAN_ENFORCE = {
     "codex": ("an operating-system sandbox (`--sandbox read-only`), and "
               "per-run configuration overrides — but nothing that tells one "
               "read role from another",
-              ("reviewer",)),
+              tuple(sorted(HAND_ROLES["codex"]))),
     "kimi": ("nothing beyond the prose in these files — there is no role "
-             "selection and no tool allowlist",
-             ("reviewer",)),
+             "selection, no tool allowlist and no per-run knowledge base",
+             tuple(sorted(HAND_ROLES["kimi"]))),
 }
+
+
+def roles_line(roles) -> str:
+    """The roles a host may run, or plainly none."""
+    return ", ".join(roles) if roles else "none — no managed run on this host"
 
 
 #: What every generated configuration says about itself, and the record of
@@ -132,7 +141,7 @@ Everything else in these files is **prose**, and prose works because you are
 cooperative. Claude is the only host that takes a named agent with a tool
 allowlist, which is the one layer that is a boundary rather than a request.
 
-**Roles you may be asked to run here: {', '.join(roles)}.** Not because the
+**Roles you may be asked to run here: {roles_line(roles)}.** Not because the
 others are unimportant, but because this host cannot keep them inside their
 limits, and a role that is not enforced is a label.
 

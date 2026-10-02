@@ -244,9 +244,8 @@ class TheGuardsCommandRules(unittest.TestCase):
         self.assertEqual(p.denied_command("gh pr merge 42").action, "pr.merge")
         self.assertEqual(p.denied_command("gh pr create").action, "pr.open")
 
-    def test_the_guard_fails_open(self):
-        """A hook on every tool call must not break ten people's work."""
-        self.assertTrue(Policy.load(SHIPPED).guard_fails_open)
+    def test_the_policy_says_the_guard_fails_closed_in_a_run(self):
+        self.assertTrue(Policy.load(SHIPPED).guard_fails_closed_in_run)
 
 
 class TheFileThatActuallyShips(unittest.TestCase):

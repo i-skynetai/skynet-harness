@@ -114,7 +114,12 @@ def cmd_kb(args) -> int:
     except (KBMapError, NoKBForPath) as exc:
         print(f"sky kb: {exc}", file=sys.stderr)
         return EXIT_PROBLEM
-    reason = "this directory belongs to it" if kbmap.owner_of(Path.cwd()) else "it is the default"
+    if args.kb:
+        reason = "chosen with --kb"
+    elif kbmap.owner_of(Path.cwd()):
+        reason = "this directory belongs to it"
+    else:
+        reason = "it is the default"
     print(f"{kb.name}   ({reason})")
     return EXIT_OK
 
@@ -466,10 +471,10 @@ def _claude_json(args) -> Path | None:
 def cmd_guard(args) -> int:
     """PreToolUse. Reads the host's JSON on stdin, answers on stdout.
 
-    **Fails open, loudly.** If the policy cannot be loaded, the command is
-    allowed and the reason goes to stderr — a guard that turns a missing policy
-    into a session where nothing works is a guard that gets uninstalled, and an
-    uninstalled guard protects nothing. Tier A, the tool allowlist, is the
+    **With no policy, fails closed inside a managed run, loudly.** The run was
+    promised these rules, so every command is denied and the reason goes to
+    stderr and to the host. Outside a managed run the guard stands aside, as
+    it does for every command there. Tier A, the tool allowlist, is the
     boundary; this is the layer under it.
     """
     try:
@@ -484,7 +489,9 @@ def cmd_guard(args) -> int:
         if policy is None:
             raise PolicyError("none is installed and none was given")
     except (PolicyError, OSError) as exc:
-        print(f"sky guard: no policy ({exc}); standing aside", file=sys.stderr)
+        where_said = ("denying every command in this managed run"
+                      if guard.in_managed_run() else "standing aside")
+        print(f"sky guard: no policy ({exc}); {where_said}", file=sys.stderr)
         policy = None
     verdict = guard.decide(payload, policy)
     guard.record(payload, verdict)
@@ -568,7 +575,7 @@ def cmd_host(args) -> int:
         print(f"  wrote {path}")
     enforces, roles = hosts.CAN_ENFORCE[args.host_name]
     print(f"\n{args.host_name} enforces {enforces}.")
-    print(f"Roles it may be asked to run: {', '.join(roles)}.")
+    print(f"Roles it may be asked to run: {hosts.roles_line(roles)}.")
     return EXIT_OK
 
 

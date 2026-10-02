@@ -338,9 +338,10 @@ guard:
   # make somebody's own agent less capable in an unrelated repository.
   scope: harness_runs_only
 
-  # A hook that runs on every tool call must not be able to break ten people's
-  # work over a typo in itself. On its own error it allows and records.
-  fails: open
+  # When the guard cannot load this policy. Inside a managed run it denies
+  # every command and says why: the run was promised these rules. Outside a
+  # managed run it stands aside, as it does for every command there.
+  fails: closed-in-run
 
 # ── writing to the knowledge base ────────────────────────────────────────
 ingest:

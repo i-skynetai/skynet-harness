@@ -395,8 +395,13 @@ class Policy:
                         broker=spec.broker if spec else "")
 
     @property
-    def guard_fails_open(self) -> bool:
-        return str(self.guard.get("fails") or "open") == "open"
+    def guard_fails_closed_in_run(self) -> bool:
+        """What the policy says the guard does when it cannot load the policy.
+
+        Informational: with no policy loaded, the guard cannot read this field,
+        so the behaviour is fixed in `guard.decide` and this states it.
+        """
+        return str(self.guard.get("fails") or "closed-in-run") == "closed-in-run"
 
     # ── the role agent files ─────────────────────────────────────────────
     def agent_tools_line(self, role: str) -> str:

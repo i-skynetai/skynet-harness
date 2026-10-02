@@ -18,5 +18,7 @@ if command -v sky >/dev/null 2>&1; then
 elif [ -x "$DIR/sky" ]; then
     exec "$DIR/sky" guard
 fi
-echo "sky-guard: no runtime found, so this command was not judged." >&2
-printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"the sky guard could not run; the tool allowlist still applies"}}\n'
+# Inside a managed run (checked above) the run was promised the policy. With
+# no runtime to apply it, deny rather than let the run go on unguarded.
+echo "sky-guard: no runtime found, so this managed run's commands are denied." >&2
+printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"the sky guard could not run, so inside this managed run every command is denied. Reinstall the plugin or put sky on PATH, then start the run again."}}\n'

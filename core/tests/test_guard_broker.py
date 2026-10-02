@@ -120,11 +120,42 @@ class TheGuardJudgesEachCommand(unittest.TestCase):
             with self.subTest(payload=payload):
                 self.assertEqual(guard.decide(payload, POLICY).decision, "allow")
 
-    def test_with_no_policy_it_stands_aside_and_says_so(self):
-        """Fails open — and never silently, which is the whole bargain."""
-        v = guard.decide(bash("git push origin dev"), None)
-        self.assertEqual(v.decision, "allow")
-        self.assertIn("no policy", v.reason)
+    def test_with_no_policy_a_managed_run_denies_everything_and_says_why(self):
+        """Fails closed inside a run — and never silently."""
+        for command in ("git push origin dev", "ls", "pytest"):
+            with self.subTest(command=command):
+                v = guard.decide(bash(command), None)
+                self.assertEqual(v.decision, "deny")
+                self.assertIn("could not load a policy", v.reason)
+
+    def test_with_no_policy_outside_a_run_it_stands_aside(self):
+        saved = os.environ.pop("SKY_LAUNCHED", None)
+        try:
+            self.assertEqual(guard.decide(bash("git push"), None).decision, "allow")
+        finally:
+            if saved is not None:
+                os.environ["SKY_LAUNCHED"] = saved
+
+    def test_the_command_denies_with_no_policy_in_a_run(self):
+        """End to end through `sky guard`, with no policy anywhere to find."""
+        import subprocess
+        import tempfile
+        home = tempfile.mkdtemp()
+        out = subprocess.run(
+            [sys.executable, "-m", "sky", "--policy",
+             str(Path(home) / "missing.yaml"), "guard"],
+            cwd=str(REPO / "core"), capture_output=True, text=True, timeout=30,
+            input=json.dumps(bash("ls")),
+            env={"PATH": "/usr/bin:/bin", "HOME": home, "SKY_LAUNCHED": "1"})
+        body = json.loads(out.stdout)["hookSpecificOutput"]
+        self.assertEqual(body["permissionDecision"], "deny", out.stderr)
+        self.assertIn("denying every command", out.stderr)
+
+    def test_the_hook_script_denies_when_no_runtime_is_found(self):
+        script = (REPO / "plugin" / "bin" / "sky-guard").read_text()
+        tail = script.split('if [ "$SKY_LAUNCHED" != "1" ]', 1)[1]
+        self.assertIn('"permissionDecision":"deny"', tail)
+        self.assertNotIn('"permissionDecision":"allow"', tail)
 
 
 class TheHookOutputShape(unittest.TestCase):

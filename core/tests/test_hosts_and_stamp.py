@@ -126,10 +126,22 @@ class TheHostPackages(unittest.TestCase):
         kimi = hosts.build("kimi", POLICY, profile=A_PROFILE).files["RULES.md"]
         self.assertIn("cannot stop you editing a file", kimi)
 
-    def test_kimi_is_offered_read_roles_only(self):
+    def test_kimi_is_offered_no_role(self):
+        """SH-008: the launcher refuses every Kimi role, so the package must too."""
         _, roles = hosts.CAN_ENFORCE["kimi"]
-        self.assertEqual(roles, ("reviewer",))
-        self.assertNotIn("developer", roles)
+        self.assertEqual(roles, ())
+        kimi = hosts.build("kimi", POLICY, profile=A_PROFILE).files["RULES.md"]
+        self.assertIn("none — no managed run on this host", kimi)
+
+    def test_the_three_role_tables_agree(self):
+        """SH-008: launcher, `sky host` and hosts/README.md give one answer."""
+        from sky import launcher
+        readme = (REPO / "hosts" / "README.md").read_text()
+        for host in ("codex", "kimi"):
+            with self.subTest(host=host):
+                self.assertEqual(set(hosts.CAN_ENFORCE[host][1]),
+                                 set(launcher.HAND_ROLES[host]))
+        self.assertIn("Codex may be asked for\n`reviewer` only; Kimi for no role", readme)
 
     def test_codex_is_not_offered_developer_either(self):
         _, roles = hosts.CAN_ENFORCE["codex"]

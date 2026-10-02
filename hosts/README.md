@@ -21,6 +21,9 @@ Measured from `codex --help` and `kimi --help`, not assumed:
 | kimi | `--skills-dir`, `config.toml` | the skills load; no role selection at all |
 
 That table is why the roles are not offered everywhere. Codex may be asked for
-`architect`, `reviewer` and `security`; Kimi for `reviewer` only. Not because
+`reviewer` only; Kimi for no role, because it has no way to set the knowledge base for
+one run, so a managed Kimi run could read whichever knowledge base the person's own
+settings name. The launcher's `HAND_ROLES` (`core/sky/launcher.py`) is the one table;
+`sky host` and this page follow it, and a test fails if they differ. Not because
 the other roles matter less, but because **a role a host cannot keep inside its
 limits is a label**, and each generated package says so in its first paragraph.
