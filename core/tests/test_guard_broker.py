@@ -207,6 +207,8 @@ class TheLedger(unittest.TestCase):
         self.assertEqual(second["decision"], "deny")
         self.assertEqual(second["action"], "push")
 
+    @unittest.skipIf(sys.platform == "win32", "relies on /proc being unwritable; on Windows the path "
+                     "is C:\\proc, which can be created")
     def test_it_never_raises_even_when_it_cannot_write(self):
         """A ledger that can break a run is a ledger someone turns off."""
         os.environ["SKY_RUN_DIR"] = "/proc/nonexistent/nowhere"

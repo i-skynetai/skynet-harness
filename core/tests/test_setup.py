@@ -87,6 +87,7 @@ class TheTokenIsNeverShown(unittest.TestCase):
 
 
 class TheTokenFile(unittest.TestCase):
+    @unittest.skipIf(sys.platform == "win32", "Windows has no POSIX file modes; chmod 0600 cannot make a file private there")
     def test_it_is_written_at_600(self):
         root = a_home()
         run_init(root)
@@ -303,6 +304,8 @@ class WhatInitWrites(unittest.TestCase):
         self.assertFalse((root / "cfg" / "env").exists())
 
 
+@unittest.skipIf(sys.platform == "win32", "runs the #!/usr/bin/env python3 helper through the shell, "
+                 "as the host does on macOS; how the host runs it on Windows is unmeasured")
 class TheHelperObeysTheHostsContract(unittest.TestCase):
     """Driven the way the host drives it: a shell, and environment variables.
 

@@ -176,7 +176,7 @@ def check_the_wall(root: Path) -> Result:
             continue
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if re.match(r"\s*(?:from|import)\s+plugin\b", line):
-                offenders.append(f"{path.relative_to(root)}:{n}  {line.strip()}")
+                offenders.append(f"{path.relative_to(root).as_posix()}:{n}  {line.strip()}")
     return Result("core does not import plugin", not offenders,
                   "the wall holds" if not offenders else f"{len(offenders)} import(s)",
                   offenders)
@@ -540,7 +540,7 @@ def check_agent_references(root: Path) -> Result:
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             for match in named.finditer(line):
                 if match.group(1) not in agents:
-                    problems.append(f"{path.relative_to(root)}:{n}  names the "
+                    problems.append(f"{path.relative_to(root).as_posix()}:{n}  names the "
                                     f"`{match.group(1)}` agent, which does not exist")
     return Result("every agent named by a skill exists", not problems,
                   f"{len(agents)} agents" if not problems
@@ -560,7 +560,7 @@ def check_no_credentials(root: Path) -> Result:
         except UnicodeDecodeError:
             continue
         for finding in redaction.find(text):
-            problems.append(f"{path.relative_to(root)}:{finding}")
+            problems.append(f"{path.relative_to(root).as_posix()}:{finding}")
     return Result("no credentials in the plugin", not problems,
                   "clean" if not problems else f"{len(problems)} finding(s)",
                   problems)
@@ -581,7 +581,7 @@ def check_no_local_strings(root: Path) -> Result:
         except UnicodeDecodeError:
             continue
         for n, line in enumerate(lines, 1):
-            where = f"{path.relative_to(root)}:{n}"
+            where = f"{path.relative_to(root).as_posix()}:{n}"
             for match in _URL.finditer(line):
                 # `${SKY_KB_URL}` and `<your-host>` are how a URL is supposed
                 # to be written, and must not be reported as one.
@@ -642,7 +642,7 @@ def check_no_local_vocabulary(root: Path, words: list[str] | None = None) -> Res
         for n, line in enumerate(lines, 1):
             for word, pattern in patterns:
                 if pattern.search(line):
-                    problems.append(f"{path.relative_to(root)}:{n}  {word!r}")
+                    problems.append(f"{path.relative_to(root).as_posix()}:{n}  {word!r}")
     return Result("no local vocabulary in the plugin", not problems,
                   f"{len(words)} words checked" if not problems
                   else f"{len(problems)} finding(s)", problems)
@@ -720,7 +720,7 @@ def check_no_private_words_in_tree(root: Path) -> Result:
         files += 1
         for n, line in enumerate(lines, 1):
             if any(word_hash(p) in hashes for p in _phrases(line)):
-                problems.append(f"{path.relative_to(root)}:{n}  a listed word")
+                problems.append(f"{path.relative_to(root).as_posix()}:{n}  a listed word")
     return Result(name, not problems,
                   f"{len(hashes)} hashed words, {files} files" if not problems
                   else f"{len(problems)} finding(s)", problems)
@@ -743,18 +743,18 @@ def check_no_retired_names(root: Path) -> Result:
         for n, line in enumerate(lines, 1):
             for name, instead in RETIRED_NAMES.items():
                 if re.search(rf"(?<![\w-]){re.escape(name)}(?![\w-])", line):
-                    problems.append(f"{path.relative_to(root)}:{n}  {name!r} is "
+                    problems.append(f"{path.relative_to(root).as_posix()}:{n}  {name!r} is "
                                     f"retired — use {instead}")
             for prefix, instead in RETIRED_PREFIXES.items():
                 # No trailing boundary: a prefix is meant to be followed by
                 # more. The leading one still stands, so `SKY_VAI_` or a word
                 # ending in `vai-` is not reported.
                 if re.search(rf"(?<![\w-]){re.escape(prefix)}", line):
-                    problems.append(f"{path.relative_to(root)}:{n}  {prefix!r} "
+                    problems.append(f"{path.relative_to(root).as_posix()}:{n}  {prefix!r} "
                                     f"is retired — use {instead}")
             for pattern, instead in RETIRED_SOURCES:
                 if pattern.search(line):
-                    problems.append(f"{path.relative_to(root)}:{n}  reads a "
+                    problems.append(f"{path.relative_to(root).as_posix()}:{n}  reads a "
                                     f"retired source — {instead}")
     return Result("no retired names in the plugin", not problems,
                   f"{len(RETIRED_NAMES) + len(RETIRED_PREFIXES) + len(RETIRED_SOURCES)} "

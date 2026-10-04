@@ -46,7 +46,9 @@ def vendor(write: bool = True) -> list[str]:
             shutil.rmtree(TARGET)
         TARGET.mkdir(parents=True)
         for name, body in wanted.items():
-            (TARGET / name).write_text(body, encoding="utf-8")
+            # newline="\n": on Windows text mode would write CRLF, and the
+            # copy would differ byte for byte from the core it mirrors.
+            (TARGET / name).write_text(body, encoding="utf-8", newline="\n")
     return drift
 
 

@@ -57,7 +57,8 @@ class Habits(unittest.TestCase):
                 self.assertIn("H6", detail(brain, Part.HABITS))
 
     def test_a_plugin_the_host_does_not_list_is_missing(self):
-        saved = probes.subprocess.run
+        saved, saved_which = probes.subprocess.run, probes.shutil.which
+        probes.shutil.which = lambda name: f"/usr/bin/{name}"
         probes.subprocess.run = lambda *a, **k: type(
             "R", (), {"stdout": "Installed plugins:\n\n  demo@demo-sdd\n    Status: enabled\n",
                       "stderr": "", "returncode": 0})()
@@ -65,12 +66,13 @@ class Habits(unittest.TestCase):
             brain = Brain()
             probes.probe_habits(brain, "claude")
         finally:
-            probes.subprocess.run = saved
+            probes.subprocess.run, probes.shutil.which = saved, saved_which
         self.assertEqual(brain.state_of(Part.HABITS), State.MISSING)
         self.assertIn("marketplace", detail(brain, Part.HABITS))
 
     def test_installed_but_disabled_is_down_because_nothing_loads(self):
-        saved = probes.subprocess.run
+        saved, saved_which = probes.subprocess.run, probes.shutil.which
+        probes.shutil.which = lambda name: f"/usr/bin/{name}"
         probes.subprocess.run = lambda *a, **k: type(
             "R", (), {"stdout": "Installed plugins:\n\n  sky@sky\n    Version: 0.4.0\n"
                                 "    Status: disabled\n", "stderr": "", "returncode": 0})()
@@ -78,7 +80,7 @@ class Habits(unittest.TestCase):
             brain = Brain()
             probes.probe_habits(brain, "claude")
         finally:
-            probes.subprocess.run = saved
+            probes.subprocess.run, probes.shutil.which = saved, saved_which
         self.assertEqual(brain.state_of(Part.HABITS), State.DOWN)
         self.assertIn("not enabled", detail(brain, Part.HABITS))
 

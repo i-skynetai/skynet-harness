@@ -49,6 +49,8 @@ class Rule1_SavedCodeNotRederived(unittest.TestCase):
     def test_the_contract_ships(self):
         self.assertTrue((PLUGIN / "SKILLS.md").is_file())
 
+    @unittest.skipIf(sys.platform == "win32", "executes render-diagram.py through its shebang, "
+                     "which Windows cannot")
     def test_the_renderer_exists_and_runs(self):
         script = PLUGIN / "scripts" / "render-diagram.py"
         self.assertTrue(os.access(script, os.X_OK))

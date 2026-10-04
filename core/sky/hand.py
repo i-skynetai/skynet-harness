@@ -50,8 +50,11 @@ class Result:
                 + (f" (exit {self.exit_code})" if self.exit_code is not None else ""))
 
 
-def _stop(process: subprocess.Popen) -> None:
+def _stop(process: subprocess.Popen, job=None) -> None:
     """Ask the whole group, then insist. A hand has children."""
+    if os.name == "nt":
+        _stop_windows(process, job)
+        return
     for sig in (signal.SIGTERM, signal.SIGKILL):
         if process.poll() is not None:
             return
@@ -69,6 +72,61 @@ def _stop(process: subprocess.Popen) -> None:
             continue
 
 
+def _kernel32():
+    """kernel32 with the calls used here typed, so handles survive on 64-bit."""
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+    kernel32.CreateJobObjectW.argtypes = (wintypes.LPVOID, wintypes.LPCWSTR)
+    kernel32.AssignProcessToJobObject.argtypes = (wintypes.HANDLE, wintypes.HANDLE)
+    kernel32.TerminateJobObject.argtypes = (wintypes.HANDLE, wintypes.UINT)
+    kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+    return kernel32
+
+
+def _windows_job(process: subprocess.Popen):
+    """Windows' answer to a process group: a job object, or None.
+
+    Windows has no process groups and no SIGKILL. `taskkill /T` walks the
+    parent links, but those break whenever a middle process has exited — a
+    shell that started something in the background, say — and the orphan
+    keeps the output pipe open, so the read loop waits on it for ever. A job
+    holds every descendant however it was started, and ends them all at once.
+    """
+    kernel32 = _kernel32()
+    job = kernel32.CreateJobObjectW(None, None)
+    if not job:
+        return None
+    if not kernel32.AssignProcessToJobObject(job, int(process._handle)):
+        kernel32.CloseHandle(job)
+        return None
+    return job
+
+
+def _stop_windows(process: subprocess.Popen, job=None) -> None:
+    """End the job, then the tree by its parent links, then the hand itself."""
+    if process.poll() is not None and not job:
+        return
+    if job:
+        _kernel32().TerminateJobObject(job, 1)
+    if process.poll() is None:
+        try:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(process.pid)],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           timeout=10)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        try:
+            process.kill()
+        except OSError:
+            pass
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        pass
+
+
 def run(command: list[str], *, env: dict[str, str], cwd: Path, log_path: Path,
         hard_cap: int = HARD_CAP_SEC, silence_cap: int = SILENCE_CAP_SEC,
         on_line=None) -> Result:
@@ -81,6 +139,7 @@ def run(command: list[str], *, env: dict[str, str], cwd: Path, log_path: Path,
     except OSError as exc:
         return Result(False, "failed", None, log_path, 0.0, f"cannot open log: {exc}")
 
+    job = None
     try:
         try:
             process = subprocess.Popen(
@@ -95,6 +154,8 @@ def run(command: list[str], *, env: dict[str, str], cwd: Path, log_path: Path,
                           f"{command[0]} is not on PATH")
         except OSError as exc:
             return Result(False, "failed", None, log_path, 0.0, str(exc))
+        if os.name == "nt":
+            job = _windows_job(process)    # start_new_session is POSIX-only
 
         state = {"last": time.monotonic(), "stopped_by": ""}
         tail: list[str] = []
@@ -109,11 +170,11 @@ def run(command: list[str], *, env: dict[str, str], cwd: Path, log_path: Path,
                 now = time.monotonic()
                 if now - started > hard_cap:
                     state["stopped_by"] = "hard-cap"
-                    _stop(process)
+                    _stop(process, job)
                     return
                 if now - state["last"] > silence_cap:
                     state["stopped_by"] = "silent"
-                    _stop(process)
+                    _stop(process, job)
                     return
                 time.sleep(1)
 
@@ -147,3 +208,5 @@ def run(command: list[str], *, env: dict[str, str], cwd: Path, log_path: Path,
         return Result(ok, reason, code, log_path, seconds, "".join(tail))
     finally:
         log.close()
+        if job:
+            _kernel32().CloseHandle(job)

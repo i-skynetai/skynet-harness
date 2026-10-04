@@ -25,7 +25,10 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-CONFIG_DIR = Path(os.environ.get("SKY_CONFIG_DIR", "~/.config/sky")).expanduser()
+# `os.path.expanduser`, not `Path.expanduser`: on Windows the latter raises when
+# the environment names no home (a hook can be run with a stripped one), and
+# raising at import would take the guard down before it could deny anything.
+CONFIG_DIR = Path(os.path.expanduser(os.environ.get("SKY_CONFIG_DIR", "~/.config/sky")))
 MAP_FILE = "kb-map.json"
 
 # A name is what a person types after `/sky:kb`, and it is also the key that

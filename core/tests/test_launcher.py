@@ -266,6 +266,8 @@ class TheHandCommand(unittest.TestCase):
             import json
             servers = json.loads(path.read_text())["mcpServers"]
             self.assertEqual(sorted(servers), ["code", "kb"])
+            if sys.platform == "win32":
+                self.skipTest("Windows has no POSIX file modes; chmod 0600 cannot make a file private there")
             self.assertEqual(path.stat().st_mode & 0o077, 0)
         finally:
             env.close()
@@ -282,6 +284,8 @@ class FindingsFromReview(unittest.TestCase):
         os.environ["SKY_TEST_PAT"] = "test-token"
 
     # ── the git proof passed on any failure, not on the block ────────────
+    @unittest.skipIf(sys.platform == "win32", "the fake git is a #!/bin/sh script with no .exe, "
+                     "put on PATH with ':', which Windows can neither find nor run")
     def test_an_unrelated_git_failure_is_not_a_pass(self):
         fake = Path(tempfile.mkdtemp())
         (fake / "git").write_text("#!/bin/sh\necho 'fatal: arbitrary failure' >&2\nexit 128\n")

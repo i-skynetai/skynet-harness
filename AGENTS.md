@@ -30,7 +30,7 @@ tag. Check public history as well as the working tree for private material.
 
 Local test success does not prove hosted CI or a fresh install. Record skipped tests,
 optional-provider checks and live checks separately. Review work never implies permission
-to publish. Do not push to public repositories from the restricted work laptop.
+to publish. Only Codex pushes: Claude Code must never run git push (a pre-push hook and Claude settings refuse it) and instead sends Codex a push request through agent-bridge. Codex may push projects under projects/ from this laptop to their verified connected GitHub repositories. Keep private plans, career records, credentials and employer material private. This does not authorise publishing the career-plan root, force-pushing or deleting remote branches.
 
 ## Documentation
 

@@ -88,7 +88,7 @@ def _repo_policy() -> Path | None:
 
 def _installed_policy() -> Path | None:
     """The newest installed plugin's policy, if the plugin is installed."""
-    cache = Path(PLUGIN_CACHE).expanduser()
+    cache = Path(os.path.expanduser(PLUGIN_CACHE))
     if not cache.is_dir():
         return None
     found: list[tuple[tuple, Path]] = []
@@ -222,7 +222,7 @@ class Policy:
         if override:
             candidate = Path(override).expanduser()
             return candidate if candidate.is_file() else None
-        configured = Path(CONFIG_POLICY).expanduser()
+        configured = Path(os.path.expanduser(CONFIG_POLICY))
         if configured.is_file():
             return configured
         # The plugin's own `bin/sky` sets this. Without it, a runtime running

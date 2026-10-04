@@ -77,9 +77,9 @@ MANIFEST_FILE = "installed.json"
 HELPER_FILE = "sky-headers"
 #: Where a user-installed command belongs on a Unix machine. `~/.local/bin` is
 #: on PATH by default on most systems and is the conventional place for one.
-LAUNCHER_DIR = Path("~/.local/bin").expanduser()
+LAUNCHER_DIR = Path(os.path.expanduser("~/.local/bin"))
 #: Where the host keeps user-scoped MCP servers. The user's file, not ours.
-CLAUDE_JSON = Path("~/.claude.json").expanduser()
+CLAUDE_JSON = Path(os.path.expanduser("~/.claude.json"))
 
 _KEY_OK = re.compile(r"^[A-Z][A-Z0-9_]*$")
 

@@ -71,6 +71,8 @@ class G1_ASummaryCannotSmuggleInACommand(unittest.TestCase):
         self.assertEqual(live, [], f"these lines would run: {live}")
 
 
+@unittest.skipIf(sys.platform == "win32", "executes plugin/bin/sky and the installed launcher through "
+                 "their shebangs, with HOME (ignored on Windows) and a POSIX PATH")
 class G2_TheBareCommandWorks(unittest.TestCase):
     """`plugin/bin/sky` worked; `sky` did not, and every skill types `sky`."""
 

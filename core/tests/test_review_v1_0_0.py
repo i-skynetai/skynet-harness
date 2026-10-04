@@ -43,6 +43,8 @@ class F1_ThePluginCarriesItsRuntime(unittest.TestCase):
         self.assertTrue((REPO / "plugin" / "runtime" / "sky" / "cli.py").is_file())
         self.assertTrue(os.access(REPO / "plugin" / "bin" / "sky", os.X_OK))
 
+    @unittest.skipIf(sys.platform == "win32", "executes plugin/bin/sky through its shebang and isolates "
+                     "the home with HOME, which Windows ignores")
     def test_it_runs_with_an_empty_environment_and_no_home(self):
         """The reviewer's own acceptance: empty home, minimal PATH."""
         root = Path(tempfile.mkdtemp())
@@ -144,7 +146,7 @@ class F5_TheIdentityNamesMatch(unittest.TestCase):
                                  task="t", directory=Path("/tmp/run1"))
         variables = dict(env.variables) if hasattr(env, "variables") else dict(env)
         self.assertEqual(variables["SKY_AGENT_ID"], "a1")
-        self.assertEqual(variables["SKY_RUN_DIR"], "/tmp/run1")
+        self.assertEqual(variables["SKY_RUN_DIR"], str(Path("/tmp/run1")))
 
     def test_the_ledger_then_has_somewhere_to_write(self):
         root = Path(tempfile.mkdtemp())
@@ -186,6 +188,7 @@ class F6_SetupDoesNotDamageWhatItFinds(unittest.TestCase):
                          "https://theirs/mcp")
         self.assertFalse((root / "cfg" / "env").exists(), "a token was written")
 
+    @unittest.skipIf(sys.platform == "win32", "Windows has no POSIX file modes; chmod 0600 cannot make a file private there")
     def test_the_file_mode_is_preserved(self):
         root, claude = self.world()
         setup.init(self.profile(), "tok", config_dir=root / "cfg",
@@ -253,6 +256,8 @@ class F7_SeveralKnowledgeBases(unittest.TestCase):
                          "https://h/mcp/")
         self.assertEqual(self.map.catalogue().name, "sky_kb")
 
+    @unittest.skipIf(sys.platform == "win32", "executes the sky-headers helper through its shebang, "
+                     "which Windows cannot")
     def test_two_tenants_on_one_address_are_not_ambiguous(self):
         """They share an instance token, so there is one right answer."""
         out = subprocess.run([str(self.root / "cfg" / "sky-headers")],

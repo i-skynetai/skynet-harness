@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **SH-053** — the core and its tests run on Windows 11. Stopping a hand no longer
+  uses `SIGKILL`, which Windows lacks and which hung the suite: the hand runs in a
+  job object, so its children stop with it. The core no longer fails to start when
+  the environment names no home, runs Python test suites with its own interpreter
+  rather than `python3`, finds git on the hand's PATH, and reports repository paths
+  with forward slashes. The vendor script writes the plugin's copy with LF endings.
+  Twenty tests of POSIX-only behaviour (file modes, running shebang scripts and the
+  `sh` helpers directly) are skipped on Windows, each with its reason.
+
 ## v2.1.2 — 2026-10-02
 
 All ten correctness bugs on the roadmap (SH-001 to SH-010) are closed, each with a

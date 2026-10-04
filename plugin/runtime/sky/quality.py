@@ -28,7 +28,9 @@ run at all* is the brain's.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -37,6 +39,10 @@ from pathlib import Path
 NO_MATCH = "sky_probe_no_such_test_zzq"
 
 TIMEOUT = 60
+#: Windows has no `python3`; what answers to the name there is usually the
+#: Store's stand-in, which exits 9009 and would read as a broken suite. The
+#: interpreter running this is the nearest honest answer.
+PYTHON = sys.executable if os.name == "nt" else "python3"
 
 
 @dataclass(frozen=True)
@@ -142,7 +148,7 @@ def detect(root: Path, *, _descend: bool = True) -> Runner | NoRunner:
     if (root / "pytest.ini").is_file() or (root / "setup.cfg").is_file() and \
             "[tool:pytest]" in _reads(root / "setup.cfg") or "[tool.pytest" in pyproject:
         return Runner("pytest",
-                      ("python3", "-m", "pytest", "--collect-only", "-q", "-k", NO_MATCH),
+                      (PYTHON, "-m", "pytest", "--collect-only", "-q", "-k", NO_MATCH),
                       frozenset({5}), ("no tests ran", "no tests collected"))
 
     npm = _npm_runner(root)
@@ -160,7 +166,7 @@ def detect(root: Path, *, _descend: bool = True) -> Runner | NoRunner:
     for directory in ("tests", "test"):
         if (root / directory).is_dir():
             return Runner("unittest",
-                          ("python3", "-m", "unittest", "discover",
+                          (PYTHON, "-m", "unittest", "discover",
                            "-s", directory, "-p", f"{NO_MATCH}*.py"),
                           frozenset({5}), ("no tests ran",))
 

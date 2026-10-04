@@ -417,5 +417,7 @@ class TheWholePathWhenTheBrainIsReady(unittest.TestCase):
                 carrying.append(path)
         self.assertEqual([p.name for p in carrying], ["mcp.json"],
                          f"the token is in {[str(p) for p in carrying]}; only mcp.json may hold it")
+        if sys.platform == "win32":
+            self.skipTest("Windows has no POSIX file modes; chmod 0600 cannot make a file private there")
         mode = stat.S_IMODE(carrying[0].stat().st_mode)
         self.assertEqual(mode, 0o600, f"mcp.json is {oct(mode)}, not private")

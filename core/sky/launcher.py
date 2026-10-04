@@ -223,12 +223,16 @@ def prove_git_blocked(env: HandEnv, cwd: Path | None = None) -> tuple[bool, str]
     askpass = env.variables.get("GIT_ASKPASS", "")
     probe = "protocol=https\nhost=dev.azure.com\n\n"
 
-    if shutil.which("git") is None:
-        return False, ("git is not on PATH, so the block cannot be proven. "
-                       "Refusing rather than assuming.")
+    # Looked up on the hand's PATH, not ours: that is the git the hand would
+    # run. POSIX exec searches the child's PATH anyway; Windows searches the
+    # parent's, so without this the proof could test a different git.
+    git = shutil.which("git", path=env.variables.get("PATH"))
+    if git is None:
+        return False, ("git is not on the hand's PATH, so the block cannot be "
+                       "proven; refusing rather than assuming.")
     try:
         out = subprocess.run(
-            ["git", "credential", "fill"],
+            [git, "credential", "fill"],
             input=probe, capture_output=True, text=True, timeout=15,
             env=env.variables, cwd=str(cwd) if cwd else None,
         )

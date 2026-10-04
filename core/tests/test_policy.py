@@ -450,7 +450,7 @@ class AFreshCloneCanReadThePolicyItShipsWith(unittest.TestCase):
              % str(REPO / "plugin" / "runtime")],
             capture_output=True, text=True)
         self.assertEqual(out.returncode, 0, out.stderr)
-        self.assertTrue(out.stdout.strip().endswith("plugin/policy.yaml"),
+        self.assertTrue(Path(out.stdout.strip()).as_posix().endswith("plugin/policy.yaml"),
                         f"vendored copy resolved to {out.stdout.strip()!r}")
 
     def test_an_installed_policy_still_wins_over_the_checkout(self):

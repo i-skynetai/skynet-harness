@@ -85,7 +85,9 @@ class TheWatchdogs(unittest.TestCase):
     def test_children_are_killed_with_the_parent(self):
         """A hand spawns a test runner; killing only the parent orphans it."""
         marker = Path(tempfile.mkdtemp()) / "child-still-alive"
-        script = (f"sh -c 'sleep 30; touch {marker}' & "
+        # Quoted, and with forward slashes: an unquoted Windows path loses its
+        # backslashes in sh, so the marker landed elsewhere and the check passed.
+        script = (f"sh -c 'sleep 30; touch \"{marker.as_posix()}\"' & "
                   f"wait")
         hand.run(["sh", "-c", script], env=dict(os.environ), cwd=Path.cwd(),
                  log_path=tmp_log(), hard_cap=30, silence_cap=2)

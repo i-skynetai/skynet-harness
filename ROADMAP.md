@@ -104,6 +104,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-050 | [CI runs `sky selftest`](#sh-050) — *good first issue* | ci | P1 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-051 | [CI on macOS, and Python 3.11 checked](#sh-051) | ci | P2 | M | Ready | |
 | SH-052 | [Install without a clone](#sh-052) | distribution | P2 | M | Needs decision | |
+| SH-053 | [The core and its tests run on Windows](#sh-053) | distribution | P2 | M | In review | @arupmmi07, 2026-10-03 |
 
 ## Details
 
@@ -369,6 +370,15 @@ a test pins the probe's answer on 3.11.
 <a id="sh-052"></a>**SH-052 — Install without a clone.** There is no package metadata; the
 runtime reaches people by clone, by `sky setup` copying a launcher, or inside the
 plugin. *Decision needed:* a package installable with `pipx`, or clone and plugin only.
+
+<a id="sh-053"></a>**SH-053 — The core and its tests run on Windows.** On Windows 11 the
+core suite fails 48 tests and hangs: stopping a hand uses `signal.SIGKILL`, which Windows
+lacks, and tests assume file modes, `sh` wrapper scripts and shebang execution. *Done
+when:* `python -m unittest discover -s core/tests -t core` passes on Windows, with every
+POSIX-only check skipped with a stated reason, and still passes on Linux.
+Out of scope, still POSIX-only: the launcher `sky setup init` writes is a shebang
+script in `~/.local/bin`, and how a Windows host runs the `sky-headers` helper is not
+measured.
 
 ## Release review — 2026-10-01
 
