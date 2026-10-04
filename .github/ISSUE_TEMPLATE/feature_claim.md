@@ -4,7 +4,7 @@ about: Take a Ready feature from ROADMAP.md
 title: "Claim SH-XXX: "
 ---
 
-**Feature** — the ID and name from [ROADMAP.md](https://github.com/arupmmi07/skynet-harness/blob/main/ROADMAP.md), e.g. `SH-030 — sky runs:
+**Feature** — the ID and name from [ROADMAP.md](https://github.com/i-skynetai/skynet-harness/blob/main/ROADMAP.md), e.g. `SH-030 — sky runs:
 list and show run records`.
 
 **Plan** — two or three sentences: what you will change, and the test you will add.

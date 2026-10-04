@@ -3,7 +3,7 @@ name: Propose a feature
 about: Something the harness should check, refuse, record or connect to, that is not on the roadmap
 ---
 
-<!-- Check ROADMAP.md first: https://github.com/arupmmi07/skynet-harness/blob/main/ROADMAP.md
+<!-- Check ROADMAP.md first: https://github.com/i-skynetai/skynet-harness/blob/main/ROADMAP.md
 If it is there, use "Claim a feature" instead. An accepted proposal gets an SH ID and a
 row in ROADMAP.md. -->
 

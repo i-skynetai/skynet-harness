@@ -1,6 +1,6 @@
 # Skynet Harness
 
-[![tests](https://github.com/arupmmi07/skynet-harness/actions/workflows/tests.yml/badge.svg)](https://github.com/arupmmi07/skynet-harness/actions/workflows/tests.yml)
+[![tests](https://github.com/i-skynetai/skynet-harness/actions/workflows/tests.yml/badge.svg)](https://github.com/i-skynetai/skynet-harness/actions/workflows/tests.yml)
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![licence](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 
@@ -35,7 +35,7 @@ so a team using two of them keeps two sets of rules, and they drift apart.
 You need Python 3.11 or newer. No install, no account:
 
 ```bash
-git clone https://github.com/arupmmi07/skynet-harness.git
+git clone https://github.com/i-skynetai/skynet-harness.git
 cd skynet-harness
 ./sky policy lint
 ./sky policy developer push
@@ -76,7 +76,7 @@ than assumed harmless. `./sky selftest` checks the repository against itself.
 ![The layers: an optional planner on top, the harness, the knowledge base, and the engine underneath](docs/images/sky-solution.png)
 
 The coding agent does the thinking and acting. The harness supplies the role, the
-skills and the boundary. [Ethan](https://github.com/arupmmi07/ethan), a planner on top,
+skills and the boundary. [Ethan](https://github.com/i-skynetai/ethan), a planner on top,
 is a separate and optional repository.
 
 ## What it does

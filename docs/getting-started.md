@@ -8,7 +8,7 @@ No install, no account, no knowledge base. Python 3.11 or newer is the only
 requirement — the core is standard library.
 
 ```bash
-git clone https://github.com/arupmmi07/skynet-harness.git
+git clone https://github.com/i-skynetai/skynet-harness.git
 cd skynet-harness
 
 ./sky policy lint                    # does the shipped policy hold together?
