@@ -67,9 +67,15 @@ planner — share one set of roles and one knowledge-base map](images/launch-pat
 
 ## Two tiers, named honestly
 
-**Tier A — the tool allowlist.** Decided before the model exists. A role that never
-receives `Bash` cannot run a command, and no string it emits changes that. This is the
-boundary.
+**Tier A — the agent definition.** Claude's `--agent sky:<role>` selects the
+definition whose `tools:` list controls tool availability. The launcher refuses to
+start if that definition is missing, unreadable or differs from the expanded policy
+tool list. A role without `Bash` cannot run a command. `--allowedTools` only
+pre-approves the role's calls so the run does not prompt; both flags are passed.
+
+Run `python scripts/check-role-boundary.py --out <record.json>` with a logged-in
+Claude CLI to check this mechanism against a recorded host version. This live check
+uses temporary files and is separate from unit tests and CI.
 
 **Tier B — the guard.** Exists because tier A is all-or-nothing: a developer role *does*
 get `Bash`, for tests and local commits, and inside that grant `git push` has to be

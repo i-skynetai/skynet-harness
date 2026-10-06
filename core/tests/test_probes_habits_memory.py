@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import sys
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -38,6 +40,18 @@ def a_kb(**over) -> KB:
 
 
 class Habits(unittest.TestCase):
+    def test_missing_captured_stdout_reports_instead_of_crashing(self):
+        """SH-053: a failed Windows decoder left stdout as None."""
+        brain = Brain()
+        result = SimpleNamespace(stdout=None, stderr="", returncode=0)
+        with patch.object(probes.shutil, "which", return_value="claude"), \
+                patch.object(probes.subprocess, "run", return_value=result) as run:
+            probes.probe_habits(brain, "claude")
+        self.assertIs(brain.state_of(Part.HABITS), State.MISSING)
+        self.assertIn("host lists no", detail(brain, Part.HABITS))
+        self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
+        self.assertEqual(run.call_args.kwargs["errors"], "replace")
+
     def test_it_asks_the_host_and_reports_what_it_found(self):
         brain = Brain()
         probes.probe_habits(brain, "claude")

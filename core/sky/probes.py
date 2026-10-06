@@ -12,6 +12,10 @@ happen. A probe that reported those as errors would have the truth backwards.
 
 Not all ten are implemented yet; the ones that are not report MISSING with the
 reason, which is the honest state rather than a silent omission.
+
+SH-053 Windows follow-up: decode subprocess output as UTF-8 with replacement.
+The host may print characters absent from the Windows code page; a failed
+reader thread can otherwise leave stdout as None and crash the probe.
 """
 from __future__ import annotations
 
@@ -217,8 +221,9 @@ def probe_hand(brain: Brain, command: str = "claude") -> None:
         return
     try:
         out = subprocess.run([binary, "--version"], capture_output=True, text=True,
+                             encoding="utf-8", errors="replace",
                              timeout=20, stdin=subprocess.DEVNULL)
-        version = out.stdout.strip() or out.stderr.strip()
+        version = (out.stdout or "").strip() or (out.stderr or "").strip()
         if out.returncode != 0 or not version:
             brain.add(Part.SHORT_TERM, State.DOWN,
                       f"{command} --version exited {out.returncode}")
@@ -241,8 +246,9 @@ def _probe_model(brain: Brain, binary: str, command: str) -> None:
     """
     try:
         out = subprocess.run([binary, "--help"], capture_output=True, text=True,
+                             encoding="utf-8", errors="replace",
                              timeout=20, stdin=subprocess.DEVNULL)
-        blob = (out.stdout + out.stderr)
+        blob = (out.stdout or "") + (out.stderr or "")
         if "--model" not in blob:
             brain.add(Part.THINKING, State.DEGRADED,
                       f"{command} does not report which model it runs — "
@@ -271,6 +277,7 @@ def probe_actions(brain: Brain) -> None:
         return
     try:
         out = subprocess.run(["git", "push", "--dry-run"], capture_output=True,
+                             encoding="utf-8", errors="replace",
                              text=True, timeout=30, stdin=subprocess.DEVNULL)
         if out.returncode == 0:
             brain.add(Part.ACTIONS, State.DOWN,
@@ -384,6 +391,7 @@ def _guard_answers(policy_path=None) -> bool | None:
                           "tool_input": {"command": "git push origin main"}})
     try:
         out = subprocess.run(_guard_command(), input=payload, text=True,
+                             encoding="utf-8", errors="replace",
                              capture_output=True, timeout=20,
                              env=_guard_env(policy_path))
         body = json.loads(out.stdout or "{}")
@@ -459,6 +467,7 @@ def probe_habits(brain: Brain, hand: str = "claude") -> None:
         return
     try:
         out = subprocess.run(["claude", "plugin", "list"], capture_output=True,
+                             encoding="utf-8", errors="replace",
                              text=True, timeout=TIMEOUT, stdin=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         brain.add(Part.HABITS, State.DOWN, "the host did not answer `plugin list`")
@@ -467,7 +476,7 @@ def probe_habits(brain: Brain, hand: str = "claude") -> None:
         brain.add(Part.HABITS, State.DOWN, f"could not ask the host: {exc}")
         return
 
-    text = out.stdout + out.stderr
+    text = (out.stdout or "") + (out.stderr or "")
     entry = re.search(r"^\s*[^\s]*\s*(sky@\S+)\s*$(.*?)(?=^\s*[^\s]*\s*\S+@|\Z)",
                       text, re.M | re.S)
     if entry is None:
@@ -763,6 +772,34 @@ _PENDING = {
 }
 
 
+def probe_agent_definitions(brain: Brain, policy=None, hand: str = "claude") -> None:
+    """Compare every offered Claude role to its expanded policy tool set.
+
+    A bad definition is MISSING authority, including drift: a file's presence
+    is not proof that the host will hold the intended boundary.
+    """
+    from .agent_definitions import DefinitionError, check_definition
+    from .launcher import HAND_ROLES
+    # Definitions are policy-derived Safety diagnostics, not an independent
+    # readiness part. Removing policy changes Safety alone. The launcher still
+    # refuses a bad requested definition directly, including for review roles.
+    def report(state, detail):
+        brain.add(Part.SAFETY, state, detail, name="agent definitions")
+    if hand != "claude":
+        report(State.NA, "this hand does not use Claude agent definitions")
+        return
+    if policy is None:
+        report(State.MISSING, "no policy to compare")
+        return
+    try:
+        for role in sorted(HAND_ROLES["claude"]):
+            check_definition(policy, role)
+    except DefinitionError as exc:
+        report(State.MISSING, str(exc))
+        return
+    report(State.OK, "all four role definitions match the expanded policy tools")
+
+
 def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,
             deep: bool = False, no_kb: str = "") -> Brain:
     """Probe every part. With no knowledge base, still probe the rest.
@@ -783,6 +820,7 @@ def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,
     probe_hand(brain, hand)
     probe_actions(brain)
     probe_safety(brain, policy)
+    probe_agent_definitions(brain, policy, hand)
     probe_quality(brain, cwd)
     probe_habits(brain, hand)
     if kb is None:

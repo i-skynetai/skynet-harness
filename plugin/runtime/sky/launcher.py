@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .kbmap import KB
+from .agent_definitions import DefinitionError, check_definition
 from .policy import Policy
 from .readiness import Brain, Kind, Part
 
@@ -234,6 +235,7 @@ def prove_git_blocked(env: HandEnv, cwd: Path | None = None) -> tuple[bool, str]
         out = subprocess.run(
             [git, "credential", "fill"],
             input=probe, capture_output=True, text=True, timeout=15,
+            encoding="utf-8", errors="replace",
             env=env.variables, cwd=str(cwd) if cwd else None,
         )
     except subprocess.TimeoutExpired:
@@ -242,17 +244,18 @@ def prove_git_blocked(env: HandEnv, cwd: Path | None = None) -> tuple[bool, str]
     except OSError as exc:
         return False, f"could not run git ({exc}); refusing rather than assuming"
 
-    if "password=" in out.stdout:
+    stdout, stderr = out.stdout or "", out.stderr or ""
+    if "password=" in stdout:
         return False, ("git handed back a password inside the launched environment. "
                        "The block is not working; refusing to start.")
 
-    blocked = out.returncode != 0 and askpass and askpass in out.stderr
+    blocked = out.returncode != 0 and askpass and askpass in stderr
     if not blocked:
         return False, (
             f"could not confirm the block: git exited {out.returncode} and the "
             f"askpass program was not named in its output. A pass needs the "
             f"block's own fingerprint, not merely the absence of a password. "
-            f"stderr: {out.stderr.strip()[:120]!r}"
+            f"stderr: {stderr.strip()[:120]!r}"
         )
 
     detail = "git refuses to produce a credential, and names the askpass block as why"
@@ -276,10 +279,12 @@ def _remote_reachable_check(env: HandEnv, cwd: Path | None) -> bool | None:
         return None
     try:
         has_remote = subprocess.run(["git", "remote"], capture_output=True, text=True,
+                                    encoding="utf-8", errors="replace",
                                     timeout=10, cwd=str(cwd), env=env.variables)
-        if has_remote.returncode != 0 or not has_remote.stdout.strip():
+        if has_remote.returncode != 0 or not (has_remote.stdout or "").strip():
             return None
         push = subprocess.run(["git", "push", "--dry-run"], capture_output=True,
+                              encoding="utf-8", errors="replace",
                               text=True, timeout=25, cwd=str(cwd), env=env.variables)
         return push.returncode != 0
     except (subprocess.TimeoutExpired, OSError):
@@ -315,8 +320,8 @@ def hand_command(hand: str, role: str, mcp_config: Path, prompt: str,
     being able to do anything.
 
     The tool list comes from the policy, never from here. **A policy is
-    required to start anything at all**, including a read-only role: the tool
-    allowlist *is* tier A, the strongest in-session control there is, so
+    required to start anything at all**, including a read-only role: the
+    agent definition carries tier A, the strongest in-session control, so
     launching without one means launching a hand with whatever tools it happens
     to have. That is a larger hole than the missing-Safety case the readiness
     check already refuses.
@@ -345,6 +350,13 @@ def hand_command(hand: str, role: str, mcp_config: Path, prompt: str,
                       f"has nothing to enforce")
     cmd = list(HAND_COMMANDS[hand])
     if hand == "claude":
+        try:
+            check_definition(policy, role)
+        except DefinitionError as exc:
+            raise Refused(str(exc)) from exc
+        # --agent sky:<role> selects the definition whose tools line is the
+        # availability boundary. --allowedTools only pre-approves the role's
+        # tools so the run does not prompt; it does not restrict availability.
         # The prompt goes FIRST, before any option, because `--allowedTools`
         # takes `<tools...>` — a variadic list that consumes every following
         # token until the next `-`-prefixed one. With the prompt appended last

@@ -329,6 +329,7 @@ EVENT_KINDS = (
     "run.start", "run.refused", "run.finish", "run.usage",
     "git.block.checked", "hand.command", "hand.start", "hand.end",
     "intent.filed", "intent.refused",
+    "agent.definition.checked", "launch_refused",
 )
 
 RUN_EVENT = Schema(

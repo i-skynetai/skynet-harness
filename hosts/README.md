@@ -16,7 +16,7 @@ Measured from `codex --help` and `kimi --help`, not assumed:
 
 | host | mechanism | what it buys |
 |---|---|---|
-| claude | a named agent with a tool allowlist | **tier A — the boundary** |
+| claude | `--agent sky:<role>`, with a checked definition's `tools:` list | **tier A — the boundary**; `--allowedTools` pre-approves calls |
 | codex | `--profile` layering config, `--sandbox read-only` | a real limit for reading; nothing per-role |
 | kimi | `--skills-dir`, `config.toml` | the skills load; no role selection at all |
 

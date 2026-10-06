@@ -229,6 +229,7 @@ def check(root: Path) -> Result:
     try:
         out = subprocess.run(list(found.command), cwd=str(root),
                              capture_output=True, text=True, timeout=TIMEOUT,
+                             encoding="utf-8", errors="replace",
                              stdin=subprocess.DEVNULL)
     except FileNotFoundError:
         return Result("missing", f"{found.command[0]} is not on PATH, so "
@@ -240,7 +241,7 @@ def check(root: Path) -> Result:
     except OSError as exc:
         return Result("down", f"{found.name} could not be started: {exc}", found.name)
 
-    said = (out.stdout + out.stderr).lower()
+    said = ((out.stdout or "") + (out.stderr or "")).lower()
     # The exit code is interpreted per runner. pytest and unittest exit 5 for
     # "nothing matched", which is the healthy answer, so a generic
     # returncode-means-failure reading would invert this probe.
@@ -262,6 +263,6 @@ def check(root: Path) -> Result:
         return Result("missing",
                       f"{found.name} is configured here but is not installed — "
                       f"install it and this passes", found.name)
-    tail = " ".join((out.stderr or out.stdout).split())[-160:]
+    tail = " ".join((out.stderr or out.stdout or "").split())[-160:]
     return Result("down", f"{found.name} failed to start: exit {out.returncode} — {tail}",
                   found.name)

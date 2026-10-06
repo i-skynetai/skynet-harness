@@ -87,11 +87,12 @@ class Observation:
     state: State
     detail: str = ""
     blocks: tuple[Kind, ...] = ()
+    name: str = ""  # A named diagnostic under a part, not another readiness part.
 
     def __str__(self) -> str:
         mark = {State.OK: "ok", State.DEGRADED: "degraded", State.MISSING: "MISSING",
                 State.DOWN: "DOWN", State.NA: "n/a"}[self.state]
-        return f"{self.part.value:<18} {mark:<9} {self.detail}"
+        return f"{self.name or self.part.value:<18} {mark:<9} {self.detail}"
 
 
 @dataclass
@@ -99,12 +100,12 @@ class Brain:
     """A set of observations, and what they permit."""
     observations: list[Observation] = field(default_factory=list)
 
-    def add(self, part: Part, state: State, detail: str = "") -> None:
-        self.observations.append(Observation(part, state, detail))
+    def add(self, part: Part, state: State, detail: str = "", *, name: str = "") -> None:
+        self.observations.append(Observation(part, state, detail, name=name))
 
     def state_of(self, part: Part) -> State:
         for o in self.observations:
-            if o.part is part:
+            if o.part is part and not o.name:
                 return o.state
         return State.MISSING
 
@@ -115,7 +116,7 @@ class Brain:
             state = self.state_of(part)
             if not state.usable:
                 out.append(next(
-                    (o for o in self.observations if o.part is part),
+                    (o for o in self.observations if o.part is part and not o.name),
                     Observation(part, State.MISSING, "not probed"),
                 ))
         return out
@@ -136,7 +137,7 @@ class Brain:
             head += f"      NOT: {', '.join(cannot)}"
         lines = [head, ""]
         for o in sorted(self.observations, key=lambda o: list(Part).index(o.part)):
-            lines.append("  " + str(o))
+            lines.append(("    " if o.name else "  ") + str(o))
         for kind in cannot:
             blocking = self.blockers(Kind(kind))
             names = ", ".join(b.part.value for b in blocking)

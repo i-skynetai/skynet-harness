@@ -147,6 +147,7 @@ def run(command: list[str], *, env: dict[str, str], cwd: Path, log_path: Path,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL,      # never wait for an answer nobody will give
                 text=True, bufsize=1,
+                encoding="utf-8", errors="replace",
                 start_new_session=True,        # its own group, so children die with it
             )
         except FileNotFoundError:
