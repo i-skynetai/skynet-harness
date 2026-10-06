@@ -7,11 +7,10 @@ dependencies of its own, so adding one here would add one there.
 place the rule *a brain with no Safety may answer and review, but may not
 build* is applied, because it runs before the model exists.
 
-`build` refuses twice, for two different reasons, and both are worth keeping
-straight. **No policy at all** stops it immediately: the tool allowlist is tier
-A, the strongest in-session control there is, so without one a role name is a
-label rather than a boundary. **A brain that is not ready** stops it after the
-probes, naming the part to fix.
+`build` refuses without a policy or a matching Claude agent definition: that
+definition carries tier A, so a role name alone is a label rather than a
+boundary. A brain that is not ready stops after the probes, naming the part
+to fix.
 """
 from __future__ import annotations
 
@@ -26,6 +25,7 @@ from . import broker, guard, hand, hosts, launcher, probes, recorder, selftest, 
 from .kbmap import CONFIG_DIR, KBMap, KBMapError, NoKBForPath
 from .policy import Policy, PolicyError
 from .readiness import Kind
+from .agent_definitions import DefinitionError, check_definition
 
 EXIT_OK, EXIT_PROBLEM, EXIT_MISUSE = 0, 1, 2
 
@@ -165,6 +165,22 @@ def cmd_build(args) -> int:
     run = recorder.Run.start(role=args.role, task=args.task, kb=kb.name, agent_id=agent_id)
     print(f"run {run.run_id}   {agent_id}   KB {kb.name}", flush=True)
 
+    if args.hand == "claude":
+        try:
+            definition = check_definition(policy, args.role)
+        except DefinitionError as exc:
+            print(f"  agent definitions  MISSING  {exc}")
+            run.event("launch_refused", hand=args.hand, role=args.role, reason=str(exc))
+            run.refused("agent definition failed", detail=str(exc))
+            run.finish("refused")
+            print(f"\nsky build refused — {exc}", file=sys.stderr)
+            _emit(args, outcome="refused", ok=False, stage="agent-definition",
+                  reason=str(exc), run_id=run.run_id, directory=run.directory,
+                  agent_id=agent_id, kb=kb.name)
+            return EXIT_PROBLEM
+        print(f"  agent definitions  ok       {args.role}: {definition}")
+        run.event("agent.definition.checked", role=args.role, file=str(definition))
+
     # 2. readiness — before anything is built, and before anything is started
     brain = probes.run_all(kb, hand=args.hand, policy=policy, cwd=Path.cwd())
     try:
@@ -202,6 +218,7 @@ def cmd_build(args) -> int:
             cmd = launcher.hand_command(args.hand, args.role, mcp, args.task or "",
                                         policy)
         except launcher.Refused as exc:
+            run.event("launch_refused", hand=args.hand, role=args.role, reason=str(exc))
             run.refused("hand cannot enforce the role", hand=args.hand, role=args.role)
             run.finish("refused")
             print(f"\nsky build refused — {exc}", file=sys.stderr)
@@ -281,7 +298,14 @@ def cmd_policy(args) -> int:
     if policy is None:
         return EXIT_PROBLEM
 
+    directory = Path(args.what) if args.what else \
+        (policy.path.parent / "agents" if policy.path else Path("agents"))
     if args.policy_action == "lint":
+        problems = policy.artifact_problems(directory)
+        if problems:
+            for problem in problems:
+                print(problem)
+            return EXIT_PROBLEM
         # Loading already ran the lint and refused a broken file, so reaching
         # here means it is clean. Saying so plainly is the point of the command.
         shown = policy.path
@@ -294,19 +318,23 @@ def cmd_policy(args) -> int:
               f"{len(policy.guard.get('deny_commands') or ())} guard rules")
         return EXIT_OK
 
-    if args.policy_action in ("sync-agents", "check-agents"):
+    if args.policy_action in ("render", "sync-agents", "check-agents"):
         # The agent files live beside the policy, in the plugin.
         directory = Path(args.what) if args.what else \
             (policy.path.parent / "agents" if policy.path else Path("agents"))
-        write = args.policy_action == "sync-agents"
-        changed = policy.sync_agents(directory, write=write)
+        write = args.policy_action != "check-agents"
+        try:
+            changed = policy.render(directory) if write else policy.sync_agents(directory, write=False)
+        except (PolicyError, OSError, UnicodeError) as exc:
+            print(f"policy render refused: {exc}", file=sys.stderr)
+            return EXIT_PROBLEM
         if not changed:
             print(f"{directory}: all {len(policy.roles)} role agents match the policy")
             return EXIT_OK
         for item in changed:
             print(("updated " if write else "DRIFTED ") + item)
         if not write:
-            print("\n    Run `sky policy sync-agents` to bring them back in line.")
+            print("\n    Run `sky policy render` to bring them back in line.")
         return EXIT_OK if write else EXIT_PROBLEM
 
     if args.policy_action == "show":
@@ -322,6 +350,11 @@ def cmd_policy(args) -> int:
         print(f"\n  never, for anyone ({len(never)}):")
         for action in sorted(never, key=lambda a: a.name):
             print(f"      {action.name:<20} {action.never}")
+        granted = {skill for role in policy.roles_named() for skill in policy.skills_for(role)}
+        ungranted = sorted(set(policy.skills) - granted)
+        if ungranted:
+            print("\n  declared, granted to no role (procedure alignment: SH-082):")
+            print("      " + ", ".join(ungranted))
         return EXIT_OK
 
     # `sky policy check <role> <action>` — the same call the guard makes.
@@ -706,7 +739,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pol = sub.add_parser("policy", help="what each role may do, and why")
     pol.add_argument("policy_action", nargs="?", default="show",
-                     help="show · lint · sync-agents · check-agents · "
+                     help="show · lint · render · sync-agents · check-agents · "
                           "a role name, with an action")
     pol.add_argument("what", nargs="?",
                      help="the action when checking a role, or the agents "

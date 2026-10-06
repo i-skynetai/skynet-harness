@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- **SH-064** — roles own skills and skills own tools. The policy gains `tools:` bindings
+  (each tool names the action it performs; MCP tools carry a reviewer), `skills:` with a
+  tool list per shipped skill, and roles with `base_tools` and granted `skills`. A tool
+  bound to an outward or never action is never rendered into an agent. `sky policy render`
+  writes the agents' `tools:` lines and `plugin/registry.json`; `sky policy lint` fails on a
+  stale registry or a drifted agent file. Legacy `tools:` roles keep working unchanged.
+  Eleven skills whose procedures call tools their roles do not hold are declared but not
+  granted; `sky policy show` lists them (SH-082).
+- **SH-011** — the role boundary on Claude Code is the agent definition, not
+  `--allowedTools`, which only pre-approves. The launcher now refuses to start a role
+  whose `plugin/agents/<role>.md` is missing or lists different tools from the policy,
+  records `launch_refused`, and shows the check in `sky build --dry-run` and as a row
+  under Safety in `sky doctor`. `scripts/check-role-boundary.py` reproduces the three
+  live cases against a logged-in CLI; the record for Claude Code 2.1.286 is in
+  `docs/features/`. Every host subprocess in the core now reads UTF-8 with replacement.
+- **3.0 design** — `docs/features/3.0-governed-sessions.md` and roadmap rows SH-060 to
+  SH-081: governed ordinary sessions, roles own skills, policy layers under one
+  ceiling, session cards, a built-in optional bridge, one handover format, a context
+  protocol with a recorded manifest.
+
 - **SH-053** — the core and its tests run on Windows 11. Stopping a hand no longer
   uses `SIGKILL`, which Windows lacks and which hung the suite: the hand runs in a
   job object, so its children stop with it. The core no longer fails to start when

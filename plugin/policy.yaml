@@ -161,101 +161,179 @@ tool_groups:
 # `tools` is the host-enforced allowlist — tier A, the strongest in-session
 # control. `may` is what the role can do at all. `needs_human` is what it may
 # prepare and not perform.
+tools:
+  Read: "repo.read"
+  Grep: "repo.read"
+  Glob: "repo.read"
+  Edit: "repo.edit"
+  Write: "repo.edit"
+  "Bash(git add:*)": "commit.local"
+  "Bash(git commit:*)": "commit.local"
+  "Bash(git status:*)": "repo.read"
+  "Bash(git diff:*)": "repo.read"
+  "Bash(git log:*)": "repo.read"
+  "Bash(npm test:*)": "test.run"
+  "Bash(pytest:*)": "test.run"
+  "Bash(make test:*)": "test.run"
+  mcp__kb__kb_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_similarity_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_agentic_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_graph_query:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_context_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_layer_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_ontologies_list:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_ontologies_get:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_jobs_status:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__kb__kb_jobs_output:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__search_definitions:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__get_definition:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__get_source:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__view_signatures:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__inspect_symbol:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__get_dependencies:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__find_related_code:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__summarize_impact:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__coverage_by_path:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__list_files:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__list_indexed_repos:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__get_repo_status:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__repo_health_report:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_similarity_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_agentic_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_graph_query:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_context_search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_ontologies_list:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__catalogue__kb_ontologies_get:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+
+# Skills declare tools; roles grant skills. Procedure alignment is SH-082.
+skills:
+  adr:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "+kb_read", "+code_read"]
+  analyze:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "+kb_read", "+code_read"]
+  ask:
+    tools: ["Read", "Grep", "Glob", "+kb_read"]
+  bugfix:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(npm test:*)", "Bash(pytest:*)", "Bash(make test:*)", "+kb_read", "+code_read"]
+  build:
+    tools: []
+  code:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"]
+  context:
+    tools: ["Read", "Grep", "Glob", "+kb_read", "+code_read"]
+  design:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "+kb_read", "+code_read"]
+  doctor:
+    tools: []
+  impact:
+    tools: ["Read", "Grep", "Glob", "mcp__kb__kb_similarity_search", "mcp__kb__kb_graph_query", "mcp__kb__kb_ontologies_get"]
+  ingest:
+    tools: ["Read", "+kb_read"]
+  learn:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "+kb_read"]
+  review:
+    tools: ["Read", "Grep", "Glob", "+kb_read", "+code_read"]
+  secure:
+    tools: ["Read", "Grep", "Glob", "+kb_read", "+code_read"]
+  setup:
+    tools: []
+  ship:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"]
+  skills:
+    tools: ["Read", "Grep", "Glob", "+catalogue_read"]
+  spec:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(npm test:*)", "Bash(pytest:*)", "Bash(make test:*)", "+kb_read", "+code_read"]
+  sync:
+    tools: ["Read", "Edit", "Write", "Grep", "Glob", "+catalogue_read"]
+  test:
+    tools: ["Read", "Grep", "Glob", "Bash(npm test:*)", "Bash(pytest:*)", "Bash(make test:*)"]
+
 roles:
   developer:
     purpose: "implement a bounded change, with tests, and stop"
-    tools:
-      - Read
-      - Edit
-      - Write
-      - Grep
-      - Glob
-      - "Bash(git add:*)"
-      - "Bash(git commit:*)"
-      - "Bash(git status:*)"
-      - "Bash(git diff:*)"
-      - "Bash(git log:*)"
-      - "Bash(npm test:*)"
-      - "Bash(pytest:*)"
-      - "Bash(make test:*)"
-      - +kb_read
-      - +code_read
-      - +catalogue_read
-    may:
-      - repo.read
-      - repo.edit
-      - test.run
-      - commit.local
-      - code.index.read
-      - kb.read
-      - ticket.read
-      - pr.read
-      - ci.read
-    needs_human:
-      - push
-      - pr.open
-      - ticket.comment
-      - ticket.transition
-      - kb.ingest
-
+    base_tools: ["Read", "Edit", "Write", "Grep", "Glob"]
+    skills: ["code", "test", "context", "skills", "ask", "bugfix", "review", "secure", "ship"]
+    may: ["repo.read", "repo.edit", "test.run", "commit.local", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
+    needs_human: ["push", "pr.open", "ticket.comment", "ticket.transition", "kb.ingest"]
   reviewer:
     purpose: "read a change and say APPROVED or BLOCKED, with file and line"
-    tools:
-      - Read
-      - Grep
-      - Glob
-      - +kb_read
-      - +code_read
-      - +catalogue_read
-    may:
-      - repo.read
-      - code.index.read
-      - kb.read
-      - ticket.read
-      - pr.read
-      - ci.read
-    needs_human:
-      - ticket.comment
-      - kb.ingest
-
+    base_tools: ["Read", "Grep", "Glob"]
+    skills: ["context", "skills", "ask", "impact", "review"]
+    may: ["repo.read", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
+    needs_human: ["ticket.comment", "kb.ingest"]
   architect:
     purpose: "design, the spec gate, impact walk; produce documents, not code"
-    tools:
-      - Read
-      - Grep
-      - Glob
-      - +kb_read
-      - +code_read
-      - +catalogue_read
-    may:
-      - repo.read
-      - code.index.read
-      - kb.read
-      - ticket.read
-      - pr.read
-      - ci.read
-    needs_human:
-      - ticket.comment
-      - kb.ingest
-
+    base_tools: ["Read", "Grep", "Glob"]
+    skills: ["context", "skills", "ask", "impact"]
+    may: ["repo.read", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
+    needs_human: ["ticket.comment", "kb.ingest"]
   security:
     purpose: "scan a change for secrets, permission drift and CI tampering"
-    tools:
-      - Read
-      - Grep
-      - Glob
-      - +kb_read
-      - +code_read
-      - +catalogue_read
-    may:
-      - repo.read
-      - code.index.read
-      - kb.read
-      - ticket.read
-      - pr.read
-      - ci.read
-    needs_human:
-      - kb.ingest
+    base_tools: ["Read", "Grep", "Glob"]
+    skills: ["context", "skills", "ask", "impact", "secure"]
+    may: ["repo.read", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
+    needs_human: ["kb.ingest"]
 
 # ── tier B: what the guard hook denies during a run ──────────────────────
 # A command string can be rewritten, so this is a real control and not a

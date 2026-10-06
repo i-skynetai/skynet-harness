@@ -94,8 +94,9 @@ is a separate and optional repository.
 
 ## What it is not
 
-- **Not a sandbox.** The tool list is the real boundary: a role without `Bash` cannot
-  run a command. The guard hook is a second layer that matches command text. It stops
+- **Not a sandbox.** Claude's agent definition (`--agent sky:<role>`) is the tool
+  boundary; the launcher refuses a missing or drifted definition. `--allowedTools`
+  pre-approves calls. The guard hook matches command text. It stops
   the ordinary attempt and the honest mistake, not a determined one.
 - **Not a model or an agent.** It runs the one you have.
 - **Not unattended.** Outward actions are printed for a person to run.
@@ -113,7 +114,7 @@ is a separate and optional repository.
 
 ## Status
 
-**v2.1.2.** See the [changelog](CHANGELOG.md). Not yet tagged as a release. **559 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
+**v2.1.2.** See the [changelog](CHANGELOG.md). Not yet tagged as a release. **612 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
 CI with `sky selftest`.
 
 ## Documentation

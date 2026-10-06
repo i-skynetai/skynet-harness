@@ -171,6 +171,28 @@ class ItAgreesWithPyYaml(unittest.TestCase):
             with self.subTest(case=name):
                 yaml.safe_load(text)                      # must not raise
 
+    def test_quoted_mapping_keys_match_pyyaml(self):
+        import yaml
+        for text in ('"Bash(git commit:*)": repo.edit\n',
+                     "'Bash(git status:*)': repo.read\n",
+                     '"Read": repo.read\n',
+                     "'it''s read': repo.read\n"):
+            with self.subTest(text=text):
+                self.assertEqual(parse(text), yaml.safe_load(text))
+
+
+class QuotedToolKeys(unittest.TestCase):
+    def test_quoted_bash_pattern_mapping_key_preserves_colon(self):
+        for quote in ('"', "'"):
+            self.assertEqual(parse(f'{quote}Bash(git commit:*){quote}: repo.edit\n'),
+                             {"Bash(git commit:*)": "repo.edit"})
+        self.assertEqual(parse('items:\n  - "Bash(git commit:*)": repo.edit\n'),
+                         {"items": [{"Bash(git commit:*)": "repo.edit"}]})
+
+    def test_duplicate_quoted_and_plain_key_is_refused(self):
+        with self.assertRaisesRegex(YamlishError, "set twice"):
+            parse('Read: repo.read\n"Read": repo.edit\n')
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

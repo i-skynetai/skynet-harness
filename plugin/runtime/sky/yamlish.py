@@ -45,8 +45,8 @@ from typing import Any
 
 #: A mapping key. Deliberately narrow: a value like "Bash(git add:*)" contains a
 #: colon, and a looser rule would read it as a key and silently restructure the
-#: document. Keys in this dialect are plain identifiers, always.
-_KEY = re.compile(r"^([A-Za-z_][A-Za-z0-9_.\-]*)\s*:(?:\s+(.*))?$")
+#: document. Quoted string keys also support literal tool patterns.
+_KEY = re.compile(r'''^([A-Za-z_][A-Za-z0-9_.\-]*|"(?:[^"\\]|\\.)*"|'(?:[^']|'')*')\s*:(?:\s+(.*))?$''')
 _INT = re.compile(r"^-?\d+$")
 
 #: Words different YAML versions disagree about. YAML 1.1 (which PyYAML still
@@ -289,6 +289,8 @@ def _mapping(lines: list[_Line], i: int, indent: int) -> tuple[dict, int]:
                 f"expected `key: value`, got {line.text!r}. This reader takes a "
                 f"small subset of YAML on purpose")
         key, inline = match.group(1), (match.group(2) or "").strip()
+        if key.startswith(('"', "'")):
+            key = _quoted(key, line.number, key[0])
         if key in out:
             # PyYAML takes the last one silently. In a policy file a duplicated
             # key means two rules were written and one is being ignored.

@@ -74,6 +74,20 @@ across tenants. This is not a setting and is never offered as one.
 
 ---
 
+## Skills own tools
+
+In `policy.yaml`, roles grant ordered `skills` and optional `base_tools`; skills
+declare their tools. Groups expand before top-level tool bindings are checked.
+Each new-style tool binds to a permitted action, and MCP bindings require a
+`reviewed_by` handle. Outward tools remain unavailable: prepare intents instead.
+Legacy role `tools` lists still work and cannot be mixed with the new keys.
+
+Run `sky policy render` after a policy change. It preserves existing role templates
+and writes their tools plus the plugin source `registry.json`; it refuses malformed
+or missing templates before writing. `sync-agents` is an alias, `check-agents`
+reports drift, and `sky policy lint` checks the registry as well as agent files.
+`sky policy show` names declared skills granted to no role (SH-082).
+
 ## If any of this is missing
 
 `sky setup doctor` answers the configuration questions — is there a map, does

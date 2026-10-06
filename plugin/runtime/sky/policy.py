@@ -30,6 +30,8 @@ of them are working from the same rules, not that the rules cannot be evaded.
 from __future__ import annotations
 
 import os
+import hashlib
+import json
 import re
 import shlex
 from dataclasses import dataclass
@@ -193,10 +195,17 @@ class Policy:
     tickets: dict
     tool_groups: dict[str, tuple[str, ...]] = None       # type: ignore[assignment]
     path: Path | None = None
+    bindings: dict = None       # type: ignore[assignment]
+    skills: dict = None         # type: ignore[assignment]
+    body: dict = None           # type: ignore[assignment]
 
     def __post_init__(self) -> None:
         if self.tool_groups is None:
             self.tool_groups = {}
+        if self.bindings is None:
+            self.bindings = {}
+        if self.skills is None:
+            self.skills = {}
 
     # ── loading ──────────────────────────────────────────────────────────
     @classmethod
@@ -259,7 +268,14 @@ class Policy:
         raw_groups = body.get("tool_groups") or {}
         if not isinstance(raw_groups, dict):
             raise PolicyError("`tool_groups:` must be a mapping of name to tools")
-        groups = {name: tuple(tools or ()) for name, tools in raw_groups.items()}
+        for name, tools in raw_groups.items():
+            if not isinstance(tools, list) or any(not isinstance(t, str) for t in tools):
+                raise PolicyError(f"tool group {name!r}: tools must be a list of strings")
+        groups = {name: tuple(tools) for name, tools in raw_groups.items()}
+        bindings = body.get("tools", {})
+        skills = body.get("skills", {})
+        if not isinstance(bindings, dict) or not isinstance(skills, dict):
+            raise PolicyError("`tools:` and `skills:` must be mappings")
         raw_version = body.get("version")
         if not isinstance(raw_version, int) or isinstance(raw_version, bool):
             raise PolicyError(
@@ -273,6 +289,9 @@ class Policy:
             tickets=body.get("tickets") or {},
             tool_groups=groups,
             path=path,
+            bindings=bindings,
+            skills=skills,
+            body=body,
         )
         problems = policy.lint()
         if problems:
@@ -334,7 +353,50 @@ class Policy:
         """
         if role not in self.roles:
             raise PolicyError(f"{role!r} is not a role in this policy")
-        return self._resolve(self.roles[role].get("tools") or (), role)
+        spec = self.roles[role]
+        if "tools" in spec:
+            return self._resolve(spec.get("tools") or (), role)
+        names = list(spec.get("base_tools") or ())
+        for skill in self.skills_for(role):
+            if skill not in self.skills:
+                raise PolicyError(f"{role}: skill {skill!r} is not defined")
+            names.extend(self.skills[skill].get("tools") or ())
+        resolved = self._resolve(names, role)
+        # Even a mutated Policy cannot expose an outward or never tool.
+        tools = []
+        for tool in resolved:
+            action = self.actions.get(self.binding(tool))
+            if action is not None and not action.outward and not action.never:
+                tools.append(tool)
+        return tuple(tools)
+
+    def binding(self, tool: str) -> str | None:
+        spec = self.bindings.get(tool)
+        action = spec if isinstance(spec, str) else \
+            (spec.get("action") if isinstance(spec, dict) else None)
+        return action if isinstance(action, str) and action else None
+
+    def skills_for(self, role: str) -> tuple[str, ...]:
+        if role not in self.roles:
+            raise PolicyError(f"{role!r} is not a role in this policy")
+        return tuple(self.roles[role].get("skills") or ())
+
+    def annotation_problems(self, inventory: dict | None = None) -> list[str]:
+        """SH-067 hook for provider annotations; SH-064 validates reviewed_by.
+
+        No annotation claims are made until inventory checking is implemented.
+        Offline policy loading never needs a provider inventory.
+        """
+        return []
+
+    @property
+    def new_style(self) -> bool:
+        return any("tools" not in spec for spec in self.roles.values())
+
+    def digest(self) -> str:
+        canonical = json.dumps(self.body, sort_keys=True, ensure_ascii=False,
+                               separators=(",", ":"))
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     def _resolve(self, names, where: str) -> tuple[str, ...]:
         out: list[str] = []
@@ -423,25 +485,108 @@ class Policy:
         Returns the roles that changed (or would change). An empty list means
         the files already agree with the policy.
         """
-        changed: list[str] = []
-        for role in self.roles_named():
-            path = Path(directory) / f"{role}.md"
-            if not path.is_file():
-                changed.append(f"{role}: {path} does not exist")
-                continue
-            text = path.read_text(encoding="utf-8")
-            wanted = self.agent_tools_line(role)
-            replaced, count = re.subn(r"(?m)^tools:.*$", lambda _m: wanted, text,
-                                      count=1)
-            if count == 0:
-                changed.append(f"{role}: {path.name} has no `tools:` line")
-                continue
-            if replaced == text:
-                continue
-            changed.append(role)
+        replacements, problems = self._agent_replacements(Path(directory))
+        if problems:
             if write:
-                path.write_text(replaced, encoding="utf-8")
+                raise PolicyError("agent render refused before writing:\n" + "\n".join(problems))
+            return problems + [role for role, _, _, _ in replacements]
+        if write:
+            structural = self.lint()
+            if structural:
+                raise PolicyError("\n".join(structural))
+            for _, path, _, replaced in replacements:
+                path.write_bytes(replaced.encode("utf-8"))
+        return [role for role, _, _, _ in replacements]
+
+    def _agent_replacements(self, directory: Path) -> tuple[list, list[str]]:
+        """Preflight all targets before a render writes any of them."""
+        replacements, problems = [], []
+        for role in self.roles_named():
+            path = directory / f"{role}.md"
+            try:
+                text = path.read_bytes().decode("utf-8")
+                lines = text.splitlines(keepends=True)
+                if not lines or lines[0].strip() != "---":
+                    raise ValueError("missing opening frontmatter delimiter")
+                end = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
+                # Claude agent headers use rest-of-line description scalars,
+                # including VERDICT: APPROVED. Policy YAML's colon rules must
+                # not reject or rewrite that host format. Only tools values
+                # are interpreted; every other field is preserved verbatim.
+                header, field = {}, ""
+                for line in lines[1:end]:
+                    raw = line.rstrip("\r\n")
+                    if not raw.strip() or raw.startswith("#"):
+                        continue
+                    if raw.startswith((" ", "- ")) and field == "tools":
+                        header[field] += "\n" + raw
+                        continue
+                    match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):[ \t]*(.*)", raw)
+                    if not match:
+                        raise ValueError("unparsable frontmatter line")
+                    field, value = match.groups()
+                    if field in header:
+                        raise ValueError(f"duplicate frontmatter field {field!r}")
+                    header[field] = value
+                if header.get("name") != role:
+                    raise ValueError(f"frontmatter name must be {role!r}")
+                if "tools" not in header:
+                    raise ValueError("missing frontmatter tools: line")
+                value = yamlish.parse("tools: " + header["tools"])["tools"]
+                tools = [t.strip() for t in value.split(",")] if isinstance(value, str) else value
+                if (not isinstance(tools, list) or not tools or
+                        any(not isinstance(t, str) or not t.strip() for t in tools)):
+                    raise ValueError("tools: contains an empty or non-string tool")
+                indices = [i for i in range(1, end) if lines[i].startswith("tools:")]
+                if len(indices) != 1:
+                    raise ValueError("frontmatter must have one tools: line")
+                i = indices[0]
+                newline = "\r\n" if lines[i].endswith("\r\n") else \
+                    ("\n" if lines[i].endswith("\n") else "")
+                # A block tools list belongs to this generated field too.
+                stop = i + 1
+                while stop < end and (lines[stop].startswith((" ", "\t", "- "))):
+                    stop += 1
+                del lines[i + 1:stop]
+                lines[i] = self.agent_tools_line(role) + newline
+                replaced = "".join(lines)
+                if text != replaced:
+                    replacements.append((role, path, text, replaced))
+            except (OSError, UnicodeError, ValueError, StopIteration, yamlish.YamlishError) as exc:
+                problems.append(f"{role}: {path}: {exc or 'missing closing frontmatter delimiter'}")
+        return replacements, problems
+
+    def registry(self) -> dict:
+        return {"digest": self.digest(), "agents": {
+            f"sky:{role}": {"tools": list(self.tools_for(role)),
+                            "source": "plugin", "status": "active"}
+            for role in self.roles_named()}}
+
+    def render(self, directory: Path) -> list[str]:
+        """Render role templates and the plugin source registry after preflight."""
+        changed = self.sync_agents(directory, write=True)
+        if self.new_style:
+            path = Path(directory).parent / "registry.json"
+            wanted = json.dumps(self.registry(), indent=2, ensure_ascii=False) + "\n"
+            if not path.is_file() or path.read_bytes() != wanted.encode("utf-8"):
+                path.write_bytes(wanted.encode("utf-8"))
+                changed.append("registry.json")
         return changed
+
+    def artifact_problems(self, directory: Path) -> list[str]:
+        """CLI-only artifact lint; loading never depends on generated files."""
+        if not self.new_style:
+            return []
+        problems = [f"agent drift: {item}; run sky policy render"
+                    for item in self.sync_agents(directory, write=False)]
+        path = Path(directory).parent / "registry.json"
+        try:
+            actual = json.loads(path.read_text(encoding="utf-8"))
+            if actual != self.registry():
+                problems.append(f"{path}: stale registry; run sky policy render")
+        except (OSError, UnicodeError, ValueError):
+            problems.append(f"{path}: missing or malformed registry; run sky policy render")
+        return problems
 
     # ── agent cards ──────────────────────────────────────────────────────
     def check_agent_card(self, card: dict) -> list[str]:
@@ -503,6 +648,52 @@ class Policy:
         if not self.actions:
             problems.append("no actions are defined")
 
+        def string_list(spec, key, where):
+            value = spec.get(key, [])
+            if not isinstance(value, list) or any(not isinstance(t, str) or not t for t in value):
+                problems.append(f"{where}: {key} must be a list of nonempty strings")
+                return []
+            return value
+
+        for tool, binding in self.bindings.items():
+            if (not isinstance(tool, str) or not tool or
+                    not isinstance(binding, (str, dict)) or
+                    not isinstance(self.binding(tool), str) or not self.binding(tool)):
+                problems.append(f"tool {tool!r}: binding must name an action")
+                continue
+            if self.binding(tool) not in self.actions:
+                problems.append(f"tool {tool!r}: {self.binding(tool)!r} is not a defined action")
+            if tool.startswith("mcp__") and (
+                    not isinstance(binding, dict) or
+                    not isinstance(binding.get("reviewed_by"), str) or
+                    not binding["reviewed_by"].strip()):
+                problems.append(f"tool {tool!r}: MCP binding requires reviewed_by")
+
+        skill_tools = {}
+        for skill, spec in self.skills.items():
+            if not isinstance(skill, str) or not skill:
+                problems.append(f"skill {skill!r}: name must be a nonempty string")
+            if not isinstance(spec, dict):
+                problems.append(f"skill {skill!r}: must be a mapping")
+                continue
+            if "tools" not in spec:
+                problems.append(f"skill {skill!r}: missing tools list")
+            if "roles" in spec:
+                problems.append(f"skill {skill!r}: roles key is not allowed; roles grant skills")
+            names = string_list(spec, "tools", f"skill {skill}")
+            try:
+                skill_tools[skill] = self._resolve(names, f"skill {skill}")
+            except PolicyError as exc:
+                problems.append(str(exc))
+                continue
+            for tool in skill_tools[skill]:
+                action = self.binding(tool)
+                if action is None:
+                    problems.append(f"skill {skill}: tool {tool!r} has no binding")
+                elif action in self.actions and (self.actions[action].outward or self.actions[action].never):
+                    problems.append(f"skill {skill}: tool {tool!r} action {action!r} is outward or never; "
+                                    "outward actions are prepared as intents in .sky/outbox/, not called")
+
         write_tools = ("Edit", "Write", "NotebookEdit", "Bash")
         for role, spec in sorted(self.roles.items()):
             if not isinstance(spec, dict):
@@ -510,8 +701,35 @@ class Policy:
                 continue
             may = list(spec.get("may") or ())
             needs = list(spec.get("needs_human") or ())
+            if "tools" in spec and ("base_tools" in spec or "skills" in spec):
+                problems.append(f"{role}: legacy tools cannot be mixed with base_tools or skills")
             try:
-                tools = list(self._resolve(spec.get("tools") or (), role))
+                if "tools" in spec:
+                    tools = list(self._resolve(spec.get("tools") or (), role))
+                else:
+                    base = string_list(spec, "base_tools", role)
+                    grants = string_list(spec, "skills", role)
+                    sources = [("base_tools", self._resolve(base, role))]
+                    for skill in grants:
+                        if skill not in self.skills:
+                            problems.append(f"{role}: skill {skill!r} is not defined")
+                        else:
+                            sources.append((skill, skill_tools.get(skill, ())))
+                    tools = []
+                    for source, members in sources:
+                        for tool in members:
+                            if tool not in tools:
+                                tools.append(tool)
+                            action = self.binding(tool)
+                            context = f"{role}: skill {source}: tool {tool!r} action {action!r}"
+                            if action is None:
+                                problems.append(context + " has no binding")
+                            elif action in self.actions:
+                                if self.actions[action].outward or self.actions[action].never:
+                                    problems.append(context + " is outward or never; outward actions are "
+                                                    "prepared as intents in .sky/outbox/, not called")
+                                elif action not in may + needs:
+                                    problems.append(context + " is not in may or needs_human")
             except PolicyError as exc:
                 problems.append(str(exc))
                 tools = []
@@ -556,8 +774,20 @@ class Policy:
         for name, members in sorted(self.tool_groups.items()):
             if not members:
                 problems.append(f"tool group {name!r} is empty")
-            unused = not any(f"+{name}" in (s.get("tools") or ())
-                             for s in self.roles.values() if isinstance(s, dict))
+            used_names = []
+            for spec in self.roles.values():
+                if not isinstance(spec, dict):
+                    continue
+                used_names.extend(spec.get("tools") or ())
+                base = spec.get("base_tools")
+                if isinstance(base, list):
+                    used_names.extend(base)
+                grants = spec.get("skills")
+                for skill in grants if isinstance(grants, list) else ():
+                    definition = self.skills.get(skill, {})
+                    if isinstance(definition, dict) and isinstance(definition.get("tools"), list):
+                        used_names.extend(definition["tools"])
+            unused = f"+{name}" not in used_names
             if unused:
                 problems.append(f"tool group {name!r} is defined and used by no role")
 

@@ -65,6 +65,37 @@ relaxed by the next person who finds it inconvenient.
 A role a host cannot enforce is not offered. If a coding agent cannot restrict tools
 the way a role requires, that role is unavailable on that host rather than approximated.
 
+## Skills own tools
+
+Version 1 policies can give a role `base_tools` and an ordered `skills` list.
+Each skill declares `tools`, including `+group` references. The role receives the
+base tools followed by its skills' tools, with group expansion and duplicates
+removed in first-seen order. Roles grant skills; a skill cannot declare `roles`.
+Legacy role `tools` lists retain their validation and need no bindings or registry;
+they cannot be mixed with either new role key, even an empty one.
+
+The policy's top-level `tools` maps each tool to an action: a string is shorthand
+for a mapping containing `action`. A mapping may also name `reviewed_by`; every
+MCP binding requires that reviewer handle. A tool used for both reading and
+writing binds to its write action. Every new-style tool needs a binding to an
+existing action in the role's `may` or `needs_human`. Outward and `never` tools
+cannot be granted, even indirectly through a group: outward actions are prepared
+as intents in `.sky/outbox/`, not called. Provider annotation checks are reserved
+for SH-067; the offline annotation hook currently reports no annotation problems.
+
+`sky policy render` (also `sync-agents`) checks every existing role template before
+writing, preserves its metadata and body, and renders tools plus the plugin source
+`registry.json`. Missing, malformed or misnamed templates refuse the whole render.
+The registry records active `sky:<role>` identities and a SHA-256 digest of parsed
+policy JSON: mapping keys sorted, list order preserved, UTF-8, no generated artifacts.
+Comments and whitespace do not affect that digest. `sky policy lint` additionally
+refuses missing or stale registries and agent drift; loading a policy needs neither
+artifact. `check-agents` checks drift without writing. `show` names declared skills
+granted to no role; procedure alignment is tracked in SH-082.
+
+The effective project `.sky/registry.json` and replacement identities belong to
+SH-065/SH-062; this row renders only the plugin source registry.
+
 ## The two tiers
 
 **Tier A — the tool allowlist.** Fixed before the model exists. A reviewer never
