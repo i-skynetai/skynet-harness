@@ -103,7 +103,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
 | SH-050 | [CI runs `sky selftest`](#sh-050) — *good first issue* | ci | P1 | S | Done — 2.1.2 | @arupmmi07 |
-| SH-051 | [CI on macOS, and Python 3.11 checked](#sh-051) | ci | P2 | M | Ready | |
+| SH-051 | [CI on macOS, and Python 3.11 checked](#sh-051) | ci | P2 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-052 | [Install without a clone](#sh-052) | distribution | P2 | M | Needs decision | |
 | SH-053 | [The core and its tests run on Windows](#sh-053) | distribution | P2 | M | In review | @arupmmi07, 2026-10-03 |
 
@@ -398,6 +398,11 @@ only. The test-runner probe expects plain `unittest` to exit 5 or say "no tests 
 an empty selection (`core/sky/quality.py:162`), and whether Python 3.11 — which the
 README supports — does either is not checked. *Done when:* the matrix adds macOS, and
 a test pins the probe's answer on 3.11.
+*Progress, 2026-10-06:* CI's 3.11 job had failed since f3751b6: on 3.11 `python -m
+unittest` exits 0 and prints "Ran 0 tests" for an empty selection, where 3.12 exits 5 and
+prints "NO TESTS RAN". The probe now reads both as healthy; one test pins the answer per
+interpreter and one feeds the probe a 3.11-style answer on any interpreter. The macOS
+runner is still open.
 
 <a id="sh-052"></a>**SH-052 — Install without a clone.** There is no package metadata; the
 runtime reaches people by clone, by `sky setup` copying a launcher, or inside the

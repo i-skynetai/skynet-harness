@@ -165,10 +165,13 @@ def detect(root: Path, *, _descend: bool = True) -> Runner | NoRunner:
 
     for directory in ("tests", "test"):
         if (root / directory).is_dir():
+            # Python 3.12 exits 5 and prints "NO TESTS RAN" for an empty
+            # selection; 3.11 exits 0 and prints "Ran 0 tests … OK". Both are
+            # the healthy answer, so both phrases are read (SH-051).
             return Runner("unittest",
                           (PYTHON, "-m", "unittest", "discover",
                            "-s", directory, "-p", f"{NO_MATCH}*.py"),
-                          frozenset({5}), ("no tests ran",))
+                          frozenset({5}), ("no tests ran", "ran 0 tests"))
 
     if _descend:
         found = []

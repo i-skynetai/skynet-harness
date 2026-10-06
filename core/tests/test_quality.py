@@ -33,14 +33,38 @@ def a_repo(**files) -> Path:
 
 class TheExitCodeTrap(unittest.TestCase):
     def test_the_measurement_this_rests_on_still_holds(self):
-        """`python -m unittest` exits 5 when nothing matches. Pinned, because
-        the whole probe reads that number as healthy."""
+        """What `python -m unittest` does when nothing matches, pinned per
+        interpreter, because the whole probe reads that answer as healthy.
+        3.12 and later exit 5 and say NO TESTS RAN; 3.11 exits 0 and says
+        Ran 0 tests (SH-051)."""
         out = subprocess.run(
             [sys.executable, "-m", "unittest", "discover", "-s", "tests",
              "-p", "zzz_matches_nothing*.py"],
             cwd=REPO, capture_output=True, text=True, timeout=60)
-        self.assertEqual(out.returncode, 5)
-        self.assertIn("NO TESTS RAN", out.stdout + out.stderr)
+        said = out.stdout + out.stderr
+        if sys.version_info >= (3, 12):
+            self.assertEqual(out.returncode, 5)
+            self.assertIn("NO TESTS RAN", said)
+        else:
+            self.assertEqual(out.returncode, 0)
+            self.assertIn("Ran 0 tests", said)
+
+    def test_a_3_11_style_answer_reads_as_healthy_on_any_interpreter(self):
+        """Exit 0 with "Ran 0 tests … OK" is what Python 3.11 prints. The probe
+        must read it as healthy whichever interpreter runs the probe (SH-051)."""
+        import subprocess as sp
+        root = a_repo(**{"tests/__init__.py": ""})
+        fake = sp.CompletedProcess(args=[], returncode=0,
+                                   stdout="\n----\nRan 0 tests in 0.000s\n\nOK\n",
+                                   stderr="")
+        real = quality.subprocess.run
+        quality.subprocess.run = lambda *a, **k: fake
+        try:
+            result = quality.check(root)
+        finally:
+            quality.subprocess.run = real
+        self.assertEqual(result.state, "ok", result.detail)
+        self.assertEqual(result.runner, "unittest")
 
     def test_zero_tests_is_healthy_even_though_the_exit_code_is_five(self):
         """Against this repository, which really does use unittest."""

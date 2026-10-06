@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **SH-051, in part** — the test-runner probe reads Python 3.11's answer to an empty
+  selection (exit 0, "Ran 0 tests") as healthy, as it already did 3.12's (exit 5, "NO
+  TESTS RAN"). CI's 3.11 job had failed on this since the Windows port.
 - **SH-064** — roles own skills and skills own tools. The policy gains `tools:` bindings
   (each tool names the action it performs; MCP tools carry a reviewer), `skills:` with a
   tool list per shipped skill, and roles with `base_tools` and granted `skills`. A tool
