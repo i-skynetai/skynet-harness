@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>
+  </defs>
+  <rect width="900" height="360" fill="#ffffff"/>
+  <text x="20" y="30" font-size="18" font-weight="600" fill="#222">Sessions hand work to each other; the control panel holds handovers only</text>
+
+  <rect x="20" y="70" width="250" height="170" rx="8" fill="#f4f6fa" stroke="#9aa5b8"/>
+  <text x="36" y="96" font-weight="600" fill="#222">Control-panel session</text>
+  <text x="36" y="118" fill="#444">card: topic = programme</text>
+  <text x="36" y="138" fill="#444">holds goals and handovers</text>
+  <text x="36" y="158" fill="#444">no specialist work itself</text>
+  <text x="36" y="188" font-family="Consolas, monospace" fill="#222">/sky:dispatch</text>
+  <text x="36" y="208" fill="#444">picks a session by its card</text>
+
+  <rect x="325" y="70" width="250" height="170" rx="8" fill="#eef7f0" stroke="#4f8a5b"/>
+  <text x="341" y="96" font-weight="600" fill="#222">Topic session: ingestion</text>
+  <text x="341" y="118" fill="#444">card: scope = src/ingest/**</text>
+  <text x="341" y="138" fill="#444">roles: developer, reviewer</text>
+  <text x="341" y="158" fill="#444">own memory location</text>
+  <text x="341" y="188" fill="#444">agents: context → developer</text>
+  <text x="341" y="208" fill="#444">→ reviewer → security</text>
+
+  <rect x="630" y="70" width="250" height="170" rx="8" fill="#fff9e8" stroke="#b58900"/>
+  <text x="646" y="96" font-weight="600" fill="#222">Reviewer session</text>
+  <text x="646" y="118" fill="#444">card: modes = review-only</text>
+  <text x="646" y="138" fill="#444">fresh viewpoint, no history</text>
+  <text x="646" y="158" fill="#444">of the topic session</text>
+  <text x="646" y="188" fill="#444">Claude, or Codex when a</text>
+  <text x="646" y="208" fill="#444">Codex hand is configured</text>
+
+  <!-- arrows -->
+  <line x1="270" y1="120" x2="323" y2="120" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="275" y="112" font-size="12" fill="#444">goal</text>
+  <line x1="325" y1="200" x2="272" y2="200" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="258" y="222" font-size="12" fill="#444">handover</text>
+  <line x1="575" y1="120" x2="628" y2="120" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="572" y="112" font-size="12" fill="#444">review</text>
+  <line x1="630" y1="200" x2="577" y2="200" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="565" y="222" font-size="12" fill="#444">handover</text>
+
+  <rect x="20" y="270" width="860" height="70" rx="8" fill="#fff" stroke="#9aa5b8"/>
+  <text x="36" y="294" font-weight="600" fill="#222">Every message: registration id · message id · created · time-to-live · mode · run stamp · "grants nothing"</text>
+  <text x="36" y="316" fill="#444">Local transport, one OS user, no network port. The receiver applies its own policy and its card's modes.</text>
+  <text x="36" y="334" fill="#444">Scope ownership is a heartbeat lease: scheduling, not a filesystem boundary.</text>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>
+    <marker id="d" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b3261e"/></marker>
+  </defs>
+  <rect width="900" height="420" fill="#ffffff"/>
+  <text x="20" y="30" font-size="18" font-weight="600" fill="#222">A session in a managed project</text>
+
+  <!-- parent session -->
+  <rect x="20" y="60" width="380" height="340" rx="8" fill="#f4f6fa" stroke="#9aa5b8"/>
+  <text x="36" y="86" font-weight="600" fill="#222">Ordinary session (parent)</text>
+  <text x="36" y="106" fill="#444">reads, plans, routes · keeps its own tools and credentials</text>
+
+  <rect x="36" y="126" width="348" height="54" rx="6" fill="#fff" stroke="#9aa5b8"/>
+  <text x="48" y="148" fill="#222">1  SessionStart hook → <tspan font-family="Consolas, monospace">sky session brief</tspan></text>
+  <text x="48" y="168" fill="#444">project · card · policy layers · KB · bridge · fixes</text>
+
+  <rect x="36" y="196" width="348" height="54" rx="6" fill="#fff" stroke="#9aa5b8"/>
+  <text x="48" y="218" fill="#222">2  "design X, then build it" → <tspan font-family="Consolas, monospace">/sky:dispatch</tspan></text>
+  <text x="48" y="238" fill="#444">routing table picks a governed agent or workflow</text>
+
+  <rect x="36" y="266" width="348" height="54" rx="6" fill="#fff6f5" stroke="#b3261e"/>
+  <text x="48" y="288" fill="#222">3  <tspan font-family="Consolas, monospace">Agent(general-purpose)</tspan> → <tspan font-family="Consolas, monospace">sky route</tspan></text>
+  <text x="48" y="308" fill="#b3261e">denied: agents here are governed and recorded</text>
+
+  <rect x="36" y="336" width="348" height="54" rx="6" fill="#fff6f5" stroke="#b3261e"/>
+  <text x="48" y="358" fill="#222">4  <tspan font-family="Consolas, monospace">git push</tspan> → guard (tier B)</text>
+  <text x="48" y="378" fill="#b3261e">denied: goes through sky ship</text>
+
+  <!-- children -->
+  <rect x="500" y="60" width="380" height="200" rx="8" fill="#eef7f0" stroke="#4f8a5b"/>
+  <text x="516" y="86" font-weight="600" fill="#222">Governed agents (children) — tier A</text>
+  <text x="516" y="106" fill="#444">tool list rendered from the policy; nothing else is callable</text>
+  <rect x="516" y="124" width="160" height="48" rx="6" fill="#fff" stroke="#4f8a5b"/>
+  <text x="528" y="144" fill="#222">architect</text><text x="528" y="162" fill="#444" font-size="12">Read, Grep, kb_*, code_*</text>
+  <rect x="704" y="124" width="160" height="48" rx="6" fill="#fff" stroke="#4f8a5b"/>
+  <text x="716" y="144" fill="#222">developer</text><text x="716" y="162" fill="#444" font-size="12">+ Edit, Write, tests, commit</text>
+  <rect x="516" y="190" width="160" height="48" rx="6" fill="#fff" stroke="#4f8a5b"/>
+  <text x="528" y="210" fill="#222">reviewer · security</text><text x="528" y="228" fill="#444" font-size="12">read only</text>
+  <rect x="704" y="190" width="160" height="48" rx="6" fill="#fff" stroke="#4f8a5b"/>
+  <text x="716" y="210" fill="#222">context-retriever</text><text x="716" y="228" fill="#444" font-size="12">index first, then verify</text>
+
+  <!-- outward -->
+  <rect x="500" y="290" width="380" height="110" rx="8" fill="#fff9e8" stroke="#b58900"/>
+  <text x="516" y="316" font-weight="600" fill="#222">Outward actions — a person runs them</text>
+  <text x="516" y="338" fill="#444">push · pull request · ticket comment · KB write</text>
+  <text x="516" y="358" fill="#444">agent writes an intent to <tspan font-family="Consolas, monospace">.sky/outbox/</tspan></text>
+  <text x="516" y="378" fill="#444"><tspan font-family="Consolas, monospace">sky ship</tspan> prints the commands and runs none</text>
+
+  <!-- arrows -->
+  <line x1="384" y1="223" x2="498" y2="150" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="880" y1="260" x2="880" y2="288" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+</svg>

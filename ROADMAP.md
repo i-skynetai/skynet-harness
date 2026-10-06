@@ -62,6 +62,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-008 | [One answer to which roles run on which host](#sh-008) | hosts | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-009 | [`sky kb which` gives the real reason](#sh-009) — *good first issue* | cli | P0 | S | Done — 2.1.2 | @arupmmi07 |
 | SH-010 | [Promises with no code behind them](#sh-010) | docs | P0 | M | Done — 2.1.2 | @arupmmi07 |
+| SH-011 | [Prove the live role boundary on Claude Code](#sh-011) | hosts | P0 | M | In review | @arupmmi07, 2026-10-05 |
 
 ### 2.2.0 — clone and run
 
@@ -105,6 +106,37 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-051 | [CI on macOS, and Python 3.11 checked](#sh-051) | ci | P2 | M | Ready | |
 | SH-052 | [Install without a clone](#sh-052) | distribution | P2 | M | Needs decision | |
 | SH-053 | [The core and its tests run on Windows](#sh-053) | distribution | P2 | M | In review | @arupmmi07, 2026-10-03 |
+
+### 3.0 — governed sessions
+
+One design note covers these rows, with the four decisions they share:
+[docs/features/3.0-governed-sessions.md](docs/features/3.0-governed-sessions.md). It
+ships as one release, in the order the note gives. SH-069 is unused.
+
+| ID | Feature | Area | P | Size | Status | Owner |
+|---|---|---|---|---|---|---|
+| SH-060 | [A team installs the plugin once](#sh-060) | distribution | P1 | M | Ready | |
+| SH-061 | [A session learns what it is at start](#sh-061) | sessions | P1 | S | Ready | |
+| SH-062 | [Specialist work goes to a governed agent](#sh-062) | routing | P1 | M | Ready | |
+| SH-063 | [The guard covers managed projects](#sh-063) | guard | P1 | S | Ready | |
+| SH-064 | [Roles own skills, skills own tools, agents are rendered](#sh-064) | policy | P1 | M | In review | @arupmmi07, 2026-10-05 |
+| SH-065 | [Three policy layers under one ceiling](#sh-065) | policy | P1 | M | Ready | |
+| SH-066 | [`/sky:author`: a proposal, then `sky policy apply`](#sh-066) | skills | P1 | M | Ready | |
+| SH-067 | [Every tool a skill names exists on the host](#sh-067) | policy | P1 | S | Ready | |
+| SH-068 | [A context manifest built from recorded calls](#sh-068) | context | P2 | M | Ready | |
+| SH-070 | [Session cards](#sh-070) | sessions | P1 | S | Ready | |
+| SH-071 | [`sky bridge`: the Claude transport](#sh-071) | bridge | P1 | L | Ready | |
+| SH-072 | [One implementation owner per scope](#sh-072) | bridge | P1 | S | Ready | |
+| SH-073 | [`/sky:handover`: one local format between sessions](#sh-073) | sessions | P1 | S | Ready | |
+| SH-074 | [`/sky:dispatch`: local, then remote](#sh-074) | routing | P1 | M | Ready | |
+| SH-075 | [Declared workflows: validation](#sh-075) | policy | P1 | S | Ready | |
+| SH-076 | [One memory folder per topic](#sh-076) | sessions | P2 | S | Needs decision | |
+| SH-077 | [The demo knowledge base is the reference adapter](#sh-077) | demo | P2 | M | Ready | |
+| SH-078 | [`sky bridge`: Codex delivery](#sh-078) | bridge | P2 | M | Ready | |
+| SH-079 | [Declared workflows: execution](#sh-079) | policy | P1 | M | Ready | |
+| SH-080 | [The context budget is enforced](#sh-080) | context | P2 | M | Ready | |
+| SH-081 | [A handover reaches the knowledge base as an intent](#sh-081) | broker | P2 | S | Ready | |
+| SH-082 | [Every skill's procedure uses only tools its roles hold](#sh-082) | skills | P1 | M | Needs decision | |
 
 ## Details
 
@@ -380,6 +412,237 @@ Out of scope, still POSIX-only: the launcher `sky setup init` writes is a sheban
 script in `~/.local/bin`, and how a Windows host runs the `sky-headers` helper is not
 measured.
 
+<a id="sh-011"></a>**SH-011 — Prove the live role boundary on Claude Code.** The launcher
+passes `--allowedTools` and calls it the boundary (`core/sky/launcher.py:348`–`:357`),
+and the README says a role without `Bash` cannot run a command. Claude Code's reference
+says `--allowedTools` only pre-approves; what restricts is the agent definition the
+launcher also passes with `--agent sky:<role>`, which `hosts/README.md:19` already names.
+A maintainer probe on Claude Code 2.1.286 confirmed both: `--agent` with `tools: Read`
+left one tool; `--allowedTools Read` left every tool, and `Edit` ran
+([docs/features/SH-011-probe-2026-10-05.md](docs/features/SH-011-probe-2026-10-05.md)).
+*Done when:* an integration check, run against a recorded
+Claude Code version, shows a reviewer run cannot call `Edit`, `Bash` or an unlisted MCP
+tool and a developer run gets no tool outside its list, with the observed tool events
+kept; the launcher refuses to start when the agent definition is missing or differs from
+what the policy renders; the launcher comments and the README say which mechanism is the
+boundary. A finite denylist does not count as default deny.
+*Progress, 2026-10-05:* `core/sky/agent_definitions.py` checks the role's agent file
+against the expanded policy before a Claude launch; `sky build` refuses with the role,
+file and first differing tool and records `launch_refused`; `--dry-run` and `sky doctor`
+show the check as a named row under Safety. `scripts/check-role-boundary.py` runs the
+three live cases against a logged-in CLI (not in CI); its record for 2.1.286 is
+[docs/features/SH-011-role-boundary-2026-10-05.json](docs/features/SH-011-role-boundary-2026-10-05.json).
+Twenty-one tests. Along the way every host subprocess in the core now reads UTF-8 with
+replacement, a Windows follow-up to SH-053.
+
+### 3.0 — governed sessions
+
+The design, the four decisions and the facts each row depends on are in
+[docs/features/3.0-governed-sessions.md](docs/features/3.0-governed-sessions.md).
+Every *Done when* names its failure cases; each is a test.
+
+<a id="sh-060"></a>**SH-060 — A team installs the plugin once.** Each person adds the
+plugin by hand and nothing checks that they did. *Done when:* a sample repository holds
+the documented `.claude/settings.json` (`extraKnownMarketplaces`, `enabledPlugins`) and
+`sky setup team` prints the same two install commands for the case where trust was not
+yet granted; `sky doctor` reports `plugin: MISSING` when the plugin is not enabled and
+`ok` when it is; tested offline for the settings and the doctor rows, and once by an
+authenticated integration check whose host version is recorded. Failure cases: trust
+declined, marketplace unreachable, plugin disabled after install.
+
+<a id="sh-061"></a>**SH-061 — A session learns what it is at start.** No hook speaks at
+session start. *Done when:* a `SessionStart` hook runs `sky session brief`, whose output
+names the project, the card or "none; run `sky session new`", the policy layers in
+force, the KB status, the bridge status, and the fixing command for each missing thing;
+the same text is a section of `sky doctor`. Failure cases: outside a managed project the
+hook prints nothing; a malformed `project.yaml` yields one line saying so and nothing
+else; KB or bridge unreachable is reported, not hidden; resume behaves as start.
+
+<a id="sh-062"></a>**SH-062 — Specialist work goes to a governed agent.** In a managed
+project Claude can start `general-purpose` or any ad-hoc agent
+(`plugin/skills/context/SKILL.md:23`). *Done when:* a `PreToolUse` hook on `Agent` runs
+`sky route`, which allows `sky:*`, the org plugin's agents and rendered project agents,
+and denies the rest with a reason naming `/sky:dispatch`; the `context` skill's fallback
+is removed. Failure cases: outside a managed project everything is allowed; malformed
+hook input is denied; a policy that will not load denies with the reason; a name that
+collides between plugins is denied; an allowed agent the host does not have is reported
+by `doctor`. Tested with recorded hook inputs.
+
+<a id="sh-063"></a>**SH-063 — The guard covers managed projects.** `guard.scope` is
+`harness_runs_only`. *Done when:* the value `managed_projects` exists; the guard applies
+in any session whose repository root holds `.sky/project.yaml`, from any subdirectory or
+worktree of it, and stands aside elsewhere. Failure cases: a policy that will not load in
+a managed project denies every guarded command with the reason; `fails: closed-in-run`
+keeps its meaning for `sky build` runs; a `cd` inside the run does not change the answer.
+
+<a id="sh-064"></a>**SH-064 — Roles own skills, skills own tools, agents are rendered.**
+A role lists tools; no skill can be granted or carry its tools; each agent's list is
+kept by hand in two places. *Done when:* the policy has `tools:` bindings (name →
+action), `skills:` with `tools`, and roles with `base_tools` and `skills`
+(`roles.<r>.skills` is the only authoritative list); `sky policy render` writes every
+plugin agent's `tools:` line and the project agents and skills into `.claude/`; the
+shipped roles render to the lists they hold today. Failure cases, each a lint failure:
+a rendered file that differs from the policy; an unknown skill, role or action; a skill
+that names its roles; a project agent whose name collides with a plugin agent; a union
+that would hand a role a tool bound to an action it lacks.
+*Progress, 2026-10-05:* the policy has `tools:` bindings (tool → action, `reviewed_by` on every
+MCP tool), `skills:` for all twenty skills, and roles with `base_tools` and ordered `skills`;
+`sky policy render` writes the agents' `tools:` lines and `plugin/registry.json` with the
+policy digest; the shipped conversion leaves the four agent lines byte-identical. Skills
+whose procedures need tools their roles lack are declared but not granted (SH-082), and
+`sky policy show` lists them. Twenty-six tests, plus three for quoted keys in the YAML reader.
+
+<a id="sh-065"></a>**SH-065 — Three policy layers under one ceiling.** One file; a team
+cannot add to it without editing the plugin. *Done when:* `sky policy` reads shipped,
+then the org plugin named in `project.yaml`, then `.sky/policy.yaml`; a later layer may
+add skills, bindings, agents, workflows and cards, and remove a grant; `sky policy show
+--layers` says where each grant came from. Failure cases, each a lint failure: a layer
+that plainly allows an outward action; binds a tool to an unknown action; changes an
+action's classification or `never`; changes the guard's scope or failure mode; re-grants
+through an alias, a new skill or a new agent what an upper layer removed; a named org
+plugin that is not installed.
+
+<a id="sh-066"></a>**SH-066 — `/sky:author`: a proposal, then `sky policy apply`.** No
+way to add a skill, bind tools or change a rule except by hand; and the policy says an
+agent may never promote a skill or change a permission. *Done when:* `/sky:author` takes
+a request in words, searches the catalogue first, checks every tool it would bind exists
+in the session and has an action, writes `.sky/proposals/<id>/` (skill folder and policy
+patch), runs lint against the would-be result, and stops; `sky policy apply <id>`, run by
+a person, moves it into the layer and renders. Failure cases: a missing tool names the
+server to connect and stops; a lint failure in the would-be result is shown and nothing
+is written outside the proposal; before `apply`, a second session sees the old policy and
+the old tools (tested by reading the effective policy from another process); an
+org-layer proposal is a patch against the org plugin's source, and `apply` refuses to
+write into an installed copy.
+
+<a id="sh-067"></a>**SH-067 — Every tool a skill names exists on the host.**
+`scripts/check-allowlists.py` checks role tools against live servers, not skills, and
+has no list of the host's built-ins. *Done when:* it checks `skills:` and `tools:`
+bindings too, knows each hand's built-in tool names, and fails on a name no server and no
+hand provides. Failure cases: a server that is configured but unreachable now is
+reported as such, not as a missing tool; an offline run uses the recorded inventory and
+says so.
+
+<a id="sh-068"></a>**SH-068 — A context manifest built from recorded calls.** The
+retrieval order is advice in prompts; nothing says what a pack used. *Done when:* the
+ledger records each retrieval call the `context-retriever` makes, with source and
+response size; `sky context manifest` builds a `context-manifest` from those events with
+per-item size, a measured total and the counting method named (schema change: today it
+has `budget_tokens` only and `additionalProperties: false`); the run record keeps it.
+Failure cases: a malformed manifest is refused; an unavailable index is an event, not a
+silence; a verification call before any index call is marked in the manifest.
+
+<a id="sh-070"></a>**SH-070 — Session cards.** A session has a name and a folder and
+nothing that says what it owns. *Done when:* `sky session new <name> --topic --scope
+--roles --hand` writes `.sky/sessions/<name>.yaml` against a schema (name, topic, scope
+as canonical paths, roles, hand, owner, created); `sky session list` reads them. Failure
+cases: a malformed card, a duplicate name, an unsupported role or hand, a scope path
+outside the repository — each refused with the reason.
+
+<a id="sh-071"></a>**SH-071 — `sky bridge`: the Claude transport.** Nothing that ships
+lets sessions hand work to each other. *Done when:* `core/sky/bridge/` holds the
+registry, Claude inbox delivery and the wake hook, with tests; a session registers by
+presenting its card and the host session id; a message carries registration id, message
+id, `created`, time-to-live, mode and the sender's run stamp, and an envelope line that
+it grants nothing; the transport is a local database and opens no network port; `sky
+bridge send|inbox|reply|sessions` work; a round-trip test runs Claude to Claude with no
+Codex configured. Failure cases: unknown or unregistered sender, forged or missing card,
+expired or replayed message id, a mode the receiver's card does not allow, delivery
+failure — each refused or reported with the reason. Write a design note first.
+
+<a id="sh-072"></a>**SH-072 — One implementation owner per scope.** The prototype
+allows one implementation owner per project folder, so two topic sessions in one
+repository cannot both take work. *Done when:* ownership is a lease on a card's scope,
+compared as canonical paths; two disjoint scopes in one repository both take
+implementation work; overlapping ones do not. Failure cases: case-only path differences,
+parent and child paths, and symlinks compare as overlapping; two simultaneous claims
+yield one owner; a lease is released explicitly or expires after a crash and is then
+claimable. Scope ownership is scheduling, not a filesystem boundary, and the docs say so.
+
+<a id="sh-073"></a>**SH-073 — `/sky:handover`: one local format between sessions.**
+Nothing writes or reads `session-summary` between sessions. *Done when:*
+`/sky:handover` writes a summary to `.sky/handovers/`, KB or no KB; a bridge reply
+carries the summary; `sky session brief` seeds a new session on the same topic from the
+latest handover; the schema gains `topic`, makes `kb` optional and opens `role` to policy
+roles. Failure cases: an invalid summary is refused; a handover for another topic is not
+used as a seed; a stale handover is named with its date. Ingestion is SH-081.
+
+<a id="sh-074"></a>**SH-074 — `/sky:dispatch`: local, then remote.** Routing a goal is
+done by a person. *Done when (local, ships with SH-062):* `/sky:dispatch` reads
+`routing:` from the policy, picks an agent or a workflow in this session, states the
+choice and why, and runs it. *Done when (remote, after SH-071 and SH-073):* it can pick
+a named session from the cards, send over the bridge, and record the handover it gets
+back. Failure cases: an ambiguous or missing route is asked, not guessed; a target
+session that is not registered, or whose card denies the mode, is refused with the
+reason.
+
+<a id="sh-075"></a>**SH-075 — Declared workflows: validation.** The order context →
+gate → build → review → ship lives in prompts and in people. *Done when:* `workflows:`
+in the policy lists steps, each naming an agent in this session, a named session, or a
+hand; the shipped `feature` workflow includes a duplicate check against tickets, PRs and
+the KB; `sky policy lint` checks every step names something that exists. Failure cases:
+a cycle, an unknown agent or session, a step naming an outward action as if it ran it.
+
+<a id="sh-076"></a>**SH-076 — One memory folder per topic.** The host keeps memory per
+working folder, so every session opened from one folder loads every topic's notes.
+*Done when:* `sky session new --folder` creates the topic folder with the card, `sky
+doctor` warns when cards share a folder, and the guide shows the layout. Failure cases:
+a card whose folder does not exist; two cards in one folder.
+
+<a id="sh-077"></a>**SH-077 — The demo knowledge base is the reference adapter.** The
+demo KB (SH-020) answers the knowledge port; it does not show how a team's own source
+plugs in. *Done when:* it answers the protocol's search and graph capabilities through a
+`.sky/context.yaml` adapter, and the context contract tests run offline against it.
+Failure cases: a malformed adapter, an unsupported capability, an unreachable index.
+*Depends on:* SH-020, SH-024.
+
+<a id="sh-078"></a>**SH-078 — `sky bridge`: Codex delivery.** The Claude transport
+(SH-071) carries nothing to a Codex session. *Done when:* a Codex hand configured in
+`project.yaml` can receive and reply; the managed Codex reviewer keeps its read-only
+sandbox. Failure cases: with no Codex hand the route is skipped with a stated reason; a
+Codex thread held by two processes is refused.
+
+<a id="sh-079"></a>**SH-079 — Declared workflows: execution.** A validated workflow does
+not yet run. *Done when:* `/sky:dispatch` runs one step by step and records each.
+Failure cases: a failed gate stops the developer step; a missing optional session is
+skipped and said; the `ship` step prints commands and executes none.
+
+<a id="sh-080"></a>**SH-080 — The context budget is enforced.** A manifest (SH-068)
+records size; nothing acts on it. *Done when:* `context.max_tokens` in `project.yaml`
+is applied to the measured total; over budget the pack is not delivered, the retriever
+returns the manifest and a finding, and a person may approve a larger budget for the
+task. Failure cases: exactly at the cap delivers; cap plus one does not; a missing
+budget uses the shipped default and says so.
+
+<a id="sh-081"></a>**SH-081 — A handover reaches the knowledge base as an intent.**
+Writing to the KB is outward and a person runs it, and today the broker refuses
+`kb.ingest` as unsupported (`core/sky/broker.py:217`). *Done when:* `/sky:handover` with
+a KB configured drops a `kb.ingest` intent in `.sky/outbox/`; the runtime validates it
+against the schema and seals it; the broker renders it as a human-executable step — the
+exact command or the manual instruction, with the stamp and the source file shown —
+and `sky ship` prints it in order with its provenance. Failure cases: no KB — the local
+handover is still written and no intent is made; a payload or stamp that fails the gate
+is refused at sealing; a refused approval means no remote write happens while the local
+handover stays; a direct ingest call from an agent is not in any rendered tool list.
+*Decision needed:* the human execution contract — a printed command, or an instruction
+to run `sky ingest <file>` which itself asks for confirmation.
+
+<a id="sh-082"></a>**SH-082 — Every skill's procedure uses only tools its roles hold.** When
+skills were given their tool lists for SH-064, eleven procedures turned out to call
+things no role holds: `adr`, `analyze` and `design` write files or run the renderer
+from a read-only role; `ingest` and `learn` call `kb_documents_ingest` and
+`kb_jobs_logs` (SH-038); `review` posts after confirmation; `spec` delegates with
+`Agent`; `sync` activates files, which SH-066 forbids; `build`, `doctor` and `setup` run
+`sky` commands no role lists. SH-064 declares those skills and grants none of them beyond
+the tools their roles already have, and `sky policy show` lists them as "declared,
+granted to no role". *Decision needed, per skill:* rewrite the procedure to prepare
+(an intent, a proposal, a document for the owner) instead of act; move the step to the
+parent session or a person; or grant a tool and say which action it binds to. *Done
+when:* no skill in the plugin names a tool outside its roles' rendered lists, checked by
+a test over `plugin/skills/*/SKILL.md`, and the "granted to no role" list is empty or
+every entry is a parent-only skill marked as such in its frontmatter. *Depends on:*
+SH-064, SH-038, SH-066.
+
 ## Release review — 2026-10-01
 
 | ID | Feature | Area | P | Size | Status | Owner |
@@ -389,3 +652,7 @@ measured.
 **Verified:** Resolve the five documentation-check failures: early PNG, PNG embeds in README/architecture, quick-start section and numbered steps. Demonstrate an offline complete run, not only readiness diagnostics.
 
 *Progress, 2026-10-01:* the five documentation-check failures are fixed (24 pass, 0 fail). Still open: an offline complete run, which needs SH-020.
+
+*Added, 2026-10-05:* the 3.0 design note's two figures (`docs/images/governed-session`
+and `sessions-and-bridge`) are PNG on the page with SVG beside, and the note has a
+Diagram sources appendix; `check-docs.py` passes with the note included.

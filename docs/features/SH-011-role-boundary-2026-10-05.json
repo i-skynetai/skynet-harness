@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-06T03:04:53.634844+00:00",
+  "host_version": "2.1.286 (Claude Code)",
+  "cases": [
+    {
+      "case": "agent",
+      "flags": [
+        "--agent",
+        "ro"
+      ],
+      "expected_file_state": "original",
+      "tools_reported": "Read",
+      "edit_reported": "unavailable",
+      "ok": true,
+      "exit_code": 0,
+      "permission_denials": [],
+      "file_state": "original"
+    },
+    {
+      "case": "control",
+      "flags": [],
+      "expected_file_state": "changed",
+      "tools_reported": "Agent, Artifact, Bash, Edit, Glob, Grep, ListAgents, PowerShell, Read, ReportFindings, ScheduleWakeup, ShareOnboardingGuide, Skill, ToolSearch, Workflow, Write",
+      "edit_reported": "succeeded",
+      "ok": true,
+      "exit_code": 0,
+      "permission_denials": [],
+      "file_state": "changed"
+    },
+    {
+      "case": "allowed-tools",
+      "flags": [
+        "--allowedTools",
+        "Read"
+      ],
+      "expected_file_state": "changed",
+      "tools_reported": "Agent, Artifact, Bash, Edit, Glob, Grep, ListAgents, PowerShell, Read, ReportFindings, ScheduleWakeup, ShareOnboardingGuide, Skill, ToolSearch, Workflow, Write",
+      "edit_reported": "succeeded",
+      "ok": true,
+      "exit_code": 0,
+      "permission_denials": [],
+      "file_state": "changed"
+    }
+  ],
+  "ok": true,
+  "note": "Recorded by scripts/check-role-boundary.py on a maintainer laptop; MCP tool names of that session removed. See SH-011-probe-2026-10-05.md."
+}
