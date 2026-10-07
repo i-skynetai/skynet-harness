@@ -81,7 +81,7 @@ The [user guide](docs/user-guide.md) walks through each step with its output.
 - **Checks readiness first.** `sky doctor` names what is missing before a run starts.
 - **Keeps a record the model cannot write.** Identity, events, each tool call and the
   usage the agent reported.
-- **The twenty SDLC skills** cover context, design, review, testing, bug fixing and
+- **The twenty-one SDLC skills** cover context, design, review, testing, bug fixing and
   more, so a workflow is a repeatable step and not one long prompt.
 - **Planned, as rows:** codebase discovery that records what your code already
   decided, decisions kept and found again, evals that measure whether retrieval was
@@ -108,7 +108,7 @@ The [user guide](docs/user-guide.md) walks through each step with its output.
 
 ## Status
 
-**v2.1.2.** The 3.0 rows are in progress; see the [changelog](CHANGELOG.md). **842
+**v2.1.2.** The 3.0 rows are in progress; see the [changelog](CHANGELOG.md). **871
 tests**, standard library only, on Python 3.11, 3.12 and 3.13 in CI with `sky selftest`.
 
 ## Documentation

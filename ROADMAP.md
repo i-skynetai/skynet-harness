@@ -141,7 +141,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | Ready | |
 | SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | Ready | |
-| SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | Ready | |
+| SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | In review | @arupmmi07, 2026-10-06 |
 | SH-088 | [Codebase discovery: what the code already decided](#sh-088) | context | P1 | L | Ready | |
 | SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | Ready | |
 | SH-090 | [`sky eval`: right context, smallest context](#sh-090) | evals | P1 | L | Ready | |
@@ -730,6 +730,13 @@ claimed complete. `sky setup init --local` bootstraps a managed project with no 
 service. The doctor's focus row searches a real title and names it. The offline example
 under `examples/` runs the six commands against five public sample documents and the
 reviewer dry run passes. Forty-seven tests.
+*Slice 5, 2026-10-06 (SH-087):* decisions have a lifecycle. An agent proposes (`sky kb decide
+propose --from <file>|-`, or the `decide` skill returns the proposal text); only a person
+accepts, rejects or supersedes, and the runtime writes the approval evidence (actor,
+session, event, digest, method) as a new revision — refused under SKY_LAUNCHED, refused
+at `sky kb put` when an agent supplies approval fields. `decisions.find` ranks candidates
+and flags `closes` only for accepted + current + in-scope decisions with a verified
+evidence revision. Four event kinds. Twenty-nine tests.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never

@@ -31,7 +31,7 @@ TOOLS = [
      "annotations": {"readOnlyHint": True}},
     {"name": "decisions_find", "description": "Return ranked decision candidates and explicit applicability.",
      "inputSchema": _schema({"question": _TEXT, "k": _K, "project": _TEXT, "scope": _TEXT,
-                             "evidence_revision": _TEXT}, ("question", "project", "scope")),
+                             "evidence_revision": _TEXT}, ("question", "scope")),
      "annotations": {"readOnlyHint": True}},
     {"name": "decisions_record", "description": "Runtime write requiring out-of-band human confirmation.",
      "inputSchema": _schema({"metadata": {"type": "object"}, "body": _TEXT}, ("metadata", "body")),
@@ -96,25 +96,14 @@ class Server:
             frontier = next_frontier
         return {"hits": found, "findings": sorted(set(findings))}
 
-    def decisions_find(self, question, project, scope, k=10, evidence_revision=None):
-        words, hits = tokens(question), []
-        records = [r["metadata"] for r in self.store.records() if r["metadata"]["type"] == "decision"]
-        superseded = {id for r in records if r["project"] == project for id in r["supersedes"]}
-        for meta in records:
-            if meta["project"] != project:
-                continue
-            score = max([len(words & tokens(meta["question"]))] +
-                        [len(words & tokens(alias)) for alias in meta["aliases"]])
-            if not score:
-                continue
-            applies = (_scope_applies(meta["scope"], scope) and meta["status"] == "accepted" and
-                       meta["id"] not in superseded and bool(meta.get("approval")) and
-                       evidence_revision is not None and meta["evidence_revision"] == evidence_revision)
-            hits.append({"id": meta["id"], "question": meta["question"], "answer": meta["answer"],
-                         "scope": meta["scope"], "decided_on": meta["recorded_at"], "score": score,
-                         "applicable": applies, "status": meta["status"]})
-        # Recency is never a tie breaker; conflicting ties remain candidates.
-        return sorted(hits, key=lambda h: (-h["score"], h["id"]))[:k]
+    def decisions_find(self, question, project=None, scope=".", k=10, evidence_revision=None):
+        from .decisions import find
+        hits = find(self.store, question, project=project, scope=scope,
+                    k=k, evidence_revision=evidence_revision)
+        # Keep the original applicability field for existing protocol clients.
+        for hit in hits:
+            hit["applicable"] = hit["closes"]
+        return hits
 
     def call(self, name, arguments):
         from .kbstore import validate_schema

@@ -1,30 +1,43 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:sky:schema:run-event",
-  "title": "run-event",
-  "description": "one fact appended by the runtime while a run happens",
-  "type": "object",
-  "properties": {
-    "t": {
-      "type": "integer",
-      "description": "unix seconds; the recorder writes a float too",
-      "x-written-by": "runtime"
-    },
-    "kind": {
-      "type": "string",
-      "minLength": 1,
-      "description": "what happened",
-      "x-written-by": "runtime"
-    }
-  },
-  "required": [
-    "kind"
-  ],
-  "additionalProperties": true,
-  "x-known-kinds": [
-    "run.start", "run.refused", "run.finish", "run.usage",
-    "git.block.checked", "hand.command", "hand.start", "hand.end",
-    "intent.filed", "intent.refused",
-    "agent.definition.checked", "launch_refused", "kb.put"
-  ]
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "urn:sky:schema:run-event",
+    "title":  "run-event",
+    "description":  "one fact appended by the runtime while a run happens",
+    "type":  "object",
+    "properties":  {
+                       "t":  {
+                                 "type":  "integer",
+                                 "description":  "unix seconds; the recorder writes a float too",
+                                 "x-written-by":  "runtime"
+                             },
+                       "kind":  {
+                                    "type":  "string",
+                                    "minLength":  1,
+                                    "description":  "what happened",
+                                    "x-written-by":  "runtime"
+                                }
+                   },
+    "required":  [
+                     "kind"
+                 ],
+    "additionalProperties":  true,
+    "x-known-kinds":  [
+                          "run.start",
+                          "run.refused",
+                          "run.finish",
+                          "run.usage",
+                          "git.block.checked",
+                          "hand.command",
+                          "hand.start",
+                          "hand.end",
+                          "intent.filed",
+                          "intent.refused",
+                          "agent.definition.checked",
+                          "launch_refused",
+                          "kb.put",
+                          "decision.proposed",
+                          "decision.accepted",
+                          "decision.rejected",
+                          "decision.superseded"
+                      ]
 }

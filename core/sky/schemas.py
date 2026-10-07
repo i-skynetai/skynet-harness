@@ -334,6 +334,7 @@ EVENT_KINDS = (
     "intent.filed", "intent.refused",
     "agent.definition.checked", "launch_refused",
     "kb.put",
+    "decision.proposed", "decision.accepted", "decision.rejected", "decision.superseded",
 )
 
 RUN_EVENT = Schema(

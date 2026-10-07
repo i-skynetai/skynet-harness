@@ -277,13 +277,15 @@ class LocalStore(unittest.TestCase):
         other = {**self.decision(), "id": "decision-other", "answer": "RPC"}
         self.save_decision(other)
         server = kbserve.Server(self.store)
-        hits = server.decisions_find("HTTP client", "fixture", ".", evidence_revision="checkout-1")
+        hits = server.decisions_find("services", "fixture", ".", evidence_revision="checkout-1")
+        # Query the shared question: an option-specific query now legitimately
+        # ranks HTTP above RPC because options participate in retrieval.
         self.assertEqual(len(hits), 2)
         self.assertEqual(hits[0]["score"], hits[1]["score"])
         self.assertTrue(all(hit["applicable"] for hit in hits))
         other["supersedes"] = ["decision-http"]
         self.save_decision(other)
-        hits = server.decisions_find("HTTP client", "fixture", ".", evidence_revision="checkout-1")
+        hits = server.decisions_find("services", "fixture", ".", evidence_revision="checkout-1")
         self.assertFalse(next(h for h in hits if h["id"] == "decision-http")["applicable"])
 
     def test_stdio_initialize_list_call_notifications_and_malformed_frames(self):

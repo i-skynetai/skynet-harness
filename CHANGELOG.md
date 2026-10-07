@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **SH-087** — `/sky:decide`: decisions recorded and found again. A decision has a
+  lifecycle: proposed by an agent (`sky kb decide propose --from <file>|-`, or the
+  `decide` skill returning the proposal text), then accepted, rejected or superseded by
+  a person only; the runtime writes the approval evidence as a new revision and refuses
+  the transition inside a governed session or when an agent supplies approval fields.
+  `decisions.find` ranks candidates by question, title, options and aliases and flags
+  `closes` only for an accepted, current, in-scope decision with a verified evidence
+  revision. Event kinds `decision.proposed|accepted|rejected|superseded`. The `decide`
+  skill is read-only and granted to architect and developer.
 - **SH-084, SH-020, SH-077** — `sky kb init`, the initial discovery of a project's
   documents: README.md, docs/** and `.sky/handovers/**` (or `context.sources` from
   `.sky/project.yaml`) go through the runtime's validated put path; a second run is

@@ -97,7 +97,7 @@ def cmd_doctor(args) -> int:
 
 def cmd_kb(args) -> int:
     """Inspect mapped KBs, or operate the project's validated local store."""
-    if args.kb_action in ("serve", "put", "show", "search", "init"):
+    if args.kb_action in ("serve", "put", "show", "search", "init", "decide"):
         from .kbcommands import execute
         return execute(args)
     try:
@@ -814,8 +814,14 @@ def build_parser() -> argparse.ArgumentParser:
     d.set_defaults(func=cmd_doctor)
 
     k = sub.add_parser("kb", help="which knowledge bases exist, and which one applies here")
-    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search", "init"])
+    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search", "init", "decide"])
     k.add_argument("kb_value", nargs="?", help="file, document id or quoted search query")
+    k.add_argument("decision_id", nargs="?", help="decision id for decide transitions/show")
+    k.add_argument("--from", dest="proposal_from", help="proposal file or - for stdin")
+    k.add_argument("--by", help="replacement decision id for supersede")
+    k.add_argument("--yes", action="store_true", help="confirm exact revision without prompting")
+    k.add_argument("--status", help="decision status filter")
+    k.add_argument("--scope", help="repository-relative decision scope filter")
     k.add_argument("--root", help="explicit repository root for local KB commands")
     k.add_argument("--type", dest="document_type", help="validated document type for put")
     k.add_argument("-k", type=int, default=10, help="maximum search hits (1–100)")

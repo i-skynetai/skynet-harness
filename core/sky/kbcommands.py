@@ -122,6 +122,8 @@ def execute(args):
             return 0
         root = context_sources.repository(explicit=args.root)
         store = Store(root)
+        if action == "decide":
+            return decide(store, args)
         if action == "init":
             if value:
                 raise StoreError("init uses --add <path>, not a positional file")
@@ -170,3 +172,56 @@ def execute(args):
     except (StoreError, context_sources.ContextError, PolicyError, OSError, ValueError, yamlish.YamlishError) as exc:
         print(f"sky kb: {exc}", file=sys.stderr)
         return 1
+
+
+def decide(store, args):
+    from . import decisions
+    action = args.kb_value
+    if action == "list":
+        print(json.dumps(decisions.list_decisions(store, status=args.status, scope=args.scope),
+                         ensure_ascii=False, sort_keys=True, indent=2))
+        return 0
+    if action == "show":
+        print(json.dumps(decisions.show(store, args.decision_id), ensure_ascii=False,
+                         sort_keys=True, indent=2))
+        return 0
+    if action not in ("propose", "accept", "reject", "supersede"):
+        raise StoreError("decide requires propose, accept, reject, supersede, list or show")
+    run = current_run() if action == "propose" else None
+    own_run = run is None
+    if own_run:
+        run = recorder.Run.start(role="runtime", task="sky kb decide " + action,
+                                 kb="local", agent_id="runtime")
+    try:
+        if action != "propose" and "SKY_LAUNCHED" in os.environ:
+            raise StoreError("decision approval is people only; governed agent session refused")
+        if action == "propose":
+            if not args.proposal_from:
+                raise StoreError("propose requires --from <file>|-")
+            if args.proposal_from == "-":
+                text = sys.stdin.read(MAX_DOCUMENT_CHARS + 1)
+                from .kbstore import digest
+                relative = ".sky/decisions/proposals/" + run.run_id + "-" + digest(text)[:16] + ".md"
+                entry = decisions.propose(store, relative, run=run, text=text)
+            else:
+                path = Path(args.proposal_from)
+                try:
+                    relative = (Path.cwd() / path).absolute().relative_to(store.root).as_posix()
+                except ValueError as exc:
+                    raise StoreError("proposal is outside repository") from exc
+                entry = decisions.propose(store, relative, run=run)
+        else:
+            if not args.decision_id:
+                raise StoreError(action + " requires a decision id")
+            entry = decisions.transition(store, args.decision_id, action, run=run,
+                                         by=args.by, confirm=(lambda _: True) if args.yes else None)
+    except (StoreError, OSError, ValueError) as exc:
+        run.refused(str(exc), operation="decision." + action)
+        if own_run:
+            run.finish("refused")
+        raise
+    if own_run:
+        run.finish("stored")
+    print(f"{entry['id']}  {entry['digest']}")
+    print(f"run record: {run.directory}")
+    return 0
