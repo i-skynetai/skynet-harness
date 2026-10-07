@@ -137,6 +137,10 @@ tool_groups:
     - mcp__sky_kb__neighbours
     - mcp__sky_kb__decisions_find
   code_read:
+    - mcp__code__find_symbols
+    - mcp__code__outline_file
+    - mcp__code__read_source
+    - mcp__code__related_symbols
     - mcp__code__search_definitions
     - mcp__code__get_definition
     - mcp__code__get_source
@@ -219,6 +223,18 @@ tools:
     action: "kb.read"
     reviewed_by: "@arupmmi07"
   mcp__code__search_definitions:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__find_symbols:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__outline_file:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__read_source:
+    action: "code.index.read"
+    reviewed_by: "@arupmmi07"
+  mcp__code__related_symbols:
     action: "code.index.read"
     reviewed_by: "@arupmmi07"
   mcp__code__get_definition:

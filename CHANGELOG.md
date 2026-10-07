@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **SH-040, SH-031, SH-068** — the code port, the ledger over MCP calls, the context
+  manifest. `sky context adapter code --from-mcp-json <path> --server <name>` binds a
+  code index behind the protocol's `code` capability, skygraph first; its four read
+  tools are granted through `code_read`, the mutating refresh to no role. In a managed
+  session the ledger records every MCP call — tool, server, a hashed input identity,
+  the characters returned, failures — on `PostToolUse` and `PostToolUseFailure`, beside
+  the Bash guard. `sky context manifest <run>` builds the manifest from those events:
+  per-call source and size, a measured total, the counting method, and findings such
+  as a verification call made before any index lookup.
 - **SH-083, second slice** — `sky kb serve|put|show|search` over the managed project's
   local store; `--write-adapter` puts the `local` source into `.sky/context.yaml`;
   `sky doctor` shows one row per protocol capability and a reviewer dry-run passes

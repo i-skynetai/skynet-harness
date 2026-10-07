@@ -119,6 +119,75 @@
       "format": "date-time",
       "description": "when",
       "x-written-by": "runtime"
+    },
+    "retrievals": {
+      "type": "array",
+      "items": {
+        "title": "context-retrieval",
+        "description": "observed MCP response measurement, not prompt delivery",
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "server alias",
+            "x-written-by": "runtime"
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "hashed call-input identity, not document identity",
+            "x-written-by": "runtime"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "ledger order",
+            "minimum": 1,
+            "x-written-by": "runtime"
+          },
+          "characters": {
+            "type": "integer",
+            "description": "measured Unicode code points",
+            "minimum": 0,
+            "x-written-by": "runtime"
+          },
+          "failed": {
+            "type": "boolean",
+            "description": "call failed",
+            "x-written-by": "runtime"
+          }
+        },
+        "required": [
+          "source",
+          "id",
+          "sequence",
+          "characters",
+          "failed"
+        ],
+        "additionalProperties": false
+      },
+      "description": "observed MCP calls",
+      "x-written-by": "runtime"
+    },
+    "measured_characters": {
+      "type": "integer",
+      "description": "total observed response characters",
+      "minimum": 0,
+      "x-written-by": "runtime"
+    },
+    "counting_method": {
+      "type": "string",
+      "minLength": 1,
+      "description": "how response characters were measured",
+      "x-written-by": "runtime"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "measurement and ordering findings",
+      "x-written-by": "runtime"
     }
   },
   "required": [

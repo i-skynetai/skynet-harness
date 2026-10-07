@@ -1,0 +1,9 @@
+#!/bin/sh
+# MCP observation is opt-in through project.yaml, not SKY_LAUNCHED.
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if command -v sky >/dev/null 2>&1; then
+    exec sky ledger --mcp
+elif [ -x "$DIR/sky" ]; then
+    exec "$DIR/sky" ledger --mcp
+fi
+exit 0

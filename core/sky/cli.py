@@ -608,8 +608,26 @@ def cmd_ledger(args) -> int:
         payload = json.loads(sys.stdin.read() or "{}")
     except ValueError:
         return EXIT_OK
-    guard.record(payload)
+    if getattr(args, "mcp", False):
+        from . import ledger
+        try:
+            if not isinstance(payload, dict) or not str(payload.get("tool_name", "")).startswith("mcp__"):
+                return EXIT_OK
+            root = context_sources.repository(payload.get("cwd"))
+            ledger.record(payload, context=context_sources.load(root=root))
+        except context_sources.NotManaged:
+            pass
+        except (ValueError, OSError, PolicyError) as exc:
+            print(f"sky ledger: observation failed: {exc}", file=sys.stderr)
+            return EXIT_PROBLEM
+    else:
+        guard.record(payload)
     return EXIT_OK
+
+
+def cmd_context(args):
+    from . import contextcommands
+    return contextcommands.execute(args)
 
 
 
@@ -872,7 +890,18 @@ def build_parser() -> argparse.ArgumentParser:
     g.set_defaults(func=cmd_guard)
 
     lg = sub.add_parser("ledger", help="PostToolUse hook: record one tool call")
+    lg.add_argument("--mcp", action="store_true", help="managed-project MCP observation")
     lg.set_defaults(func=cmd_ledger)
+
+    cx = sub.add_parser("context", help="context adapters and measured retrieval manifests")
+    cx.add_argument("context_action", choices=["adapter", "manifest"])
+    cx.add_argument("context_value", help="code adapter or run id")
+    cx.add_argument("--from-mcp-json")
+    cx.add_argument("--server")
+    cx.add_argument("--repo")
+    cx.add_argument("--branch", default="main")
+    cx.add_argument("--json", action="store_true")
+    cx.set_defaults(func=cmd_context)
 
     b = sub.add_parser("build", help="launch a hand for a task")
     b.add_argument("--role", default="developer")

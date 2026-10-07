@@ -75,6 +75,7 @@ class Field:
     owner: str = MODEL
     choices: tuple[str, ...] = ()
     of: "Schema | None" = None     # for kind="objects"
+    minimum: int | None = None
 
 
 @dataclass(frozen=True)
@@ -172,6 +173,8 @@ def validate(schema: Schema, document: Any, *, source: str = RUNTIME,
         if problem:
             problems.append(prefix + problem)
             continue
+        if f.minimum is not None and value < f.minimum:
+            problems.append(f"{prefix}{f.name}: must be at least {f.minimum}")
         if f.kind == "objects" and f.of is not None:
             for i, item in enumerate(value):
                 problems += validate(f.of, item, source=source,
@@ -460,6 +463,17 @@ CONTEXT_ITEM = Schema(
     ),
 )
 
+CONTEXT_RETRIEVAL = Schema(
+    name="context-retrieval", purpose="observed MCP response measurement, not prompt delivery",
+    fields=(
+        Field("source", "text", "server alias", required=True, owner=RUNTIME),
+        Field("id", "text", "hashed call-input identity, not document identity", required=True, owner=RUNTIME),
+        Field("sequence", "int", "ledger order", required=True, owner=RUNTIME, minimum=1),
+        Field("characters", "int", "measured Unicode code points", required=True, owner=RUNTIME, minimum=0),
+        Field("failed", "bool", "call failed", required=True, owner=RUNTIME),
+    ),
+)
+
 CONTEXT_MANIFEST = Schema(
     name="context-manifest",
     purpose="everything the model was given, with its provenance attached",
@@ -473,6 +487,10 @@ CONTEXT_MANIFEST = Schema(
               of=CONTEXT_ITEM, owner=RUNTIME),
         Field("budget_tokens", "int", "the cap retrieval was held to", owner=RUNTIME),
         Field("assembled_at", "timestamp", "when", owner=RUNTIME),
+        Field("retrievals", "objects", "observed MCP calls", of=CONTEXT_RETRIEVAL, owner=RUNTIME),
+        Field("measured_characters", "int", "total observed response characters", owner=RUNTIME, minimum=0),
+        Field("counting_method", "text", "how response characters were measured", owner=RUNTIME),
+        Field("findings", "texts", "measurement and ordering findings", owner=RUNTIME),
     ),
 )
 
@@ -593,6 +611,8 @@ def json_schema(schema: Schema, *, _nested: bool = False) -> dict:
         if f.kind == "objects" and f.of is not None:
             body["items"] = json_schema(f.of, _nested=True)
         body["description"] = f.note
+        if f.minimum is not None:
+            body["minimum"] = f.minimum
         body["x-written-by"] = f.owner
         properties[f.name] = body
     out: dict[str, Any] = {}

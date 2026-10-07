@@ -80,7 +80,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
 | SH-030 | [`sky runs`: list and show run records](#sh-030) — *good first issue* | record | P1 | S | Ready | |
-| SH-031 | [The ledger records every tool call](#sh-031) | record | P1 | S | Ready | |
+| SH-031 | [The ledger records every tool call](#sh-031) | record | P1 | S | In review | @arupmmi07, 2026-10-06 |
 | SH-032 | [No token left in the run record](#sh-032) | record | P1 | S | Ready | |
 | SH-033 | [Pending intents: done, archived, out of git](#sh-033) | broker | P1 | S | Ready | |
 | SH-034 | [Tests the developer role can run in any repository](#sh-034) | policy | P1 | M | Needs decision | |
@@ -93,7 +93,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
-| SH-040 | [A code port, with skygraph as the first server](#sh-040) | ports | P1 | M | Needs decision | |
+| SH-040 | [A code port, with skygraph as the first server](#sh-040) | ports | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-041 | [A ticket port](#sh-041) | ports | P2 | L | Needs decision | |
 | SH-042 | [The build result as a published contract](#sh-042) | ethan | P2 | S | Proposed | |
 | SH-043 | [Codex and Kimi, measured again](#sh-043) | hosts | P3 | M | Proposed | |
@@ -123,7 +123,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-065 | [Three policy layers under one ceiling](#sh-065) | policy | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-066 | [`/sky:author`: a proposal, then `sky policy apply`](#sh-066) | skills | P1 | M | Ready | |
 | SH-067 | [Every tool a skill names exists on the host](#sh-067) | policy | P1 | S | In review | @arupmmi07, 2026-10-06 |
-| SH-068 | [A context manifest built from recorded calls](#sh-068) | context | P2 | M | Ready | |
+| SH-068 | [A context manifest built from recorded calls](#sh-068) | context | P2 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-070 | [Session cards](#sh-070) | sessions | P1 | S | Ready | |
 | SH-071 | [`sky bridge`: the Claude transport](#sh-071) | bridge | P1 | L | Ready | |
 | SH-072 | [One implementation owner per scope](#sh-072) | bridge | P1 | S | Ready | |
@@ -716,6 +716,12 @@ store with no KB map; `kb.put` is a recorded event; the local server's three rea
 bound to `kb.read` and granted through `kb_read`, its write tools to no role. A plain Markdown
 file is accepted with `--type`, its metadata synthesised. Forty-one tests. Next: the code
 port (SH-040) and the ledger over MCP calls (SH-031/068).
+*Slice 3, 2026-10-06:* the code port (`core/sky/codeport.py`) with skygraph as its first
+adapter, written by `sky context adapter code --from-mcp-json <path> --server <name>`; the
+ledger records every MCP call in a managed session (`plugin/bin/sky-ledger-mcp`, hooks on
+`PostToolUse` and `PostToolUseFailure` for `mcp__.*`); `sky context manifest <run>` builds
+the context manifest from those events. Checked against the real skygraph server: the
+`code` row reads `ok`. Forty-six tests.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never

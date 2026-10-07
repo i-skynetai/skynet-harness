@@ -11,7 +11,17 @@
         ]
       }
     ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [{"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger-mcp"}]
+      }
+    ],
     "PostToolUse": [
+      {
+        "matcher": "mcp__.*",
+        "hooks": [{"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger-mcp"}]
+      },
       {
         "matcher": "Bash",
         "hooks": [
