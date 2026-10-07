@@ -64,7 +64,7 @@ python sky selftest
 python sky policy lint
 ```
 
-914 cases in the current development checkout; counts and platform skips vary. CI
+Counts and platform skips vary by revision; record the actual result. CI
 runs the unit suite and selftest on Linux with Python 3.11, 3.12 and 3.13. Record the
 actual results for your commit, including skipped and optional/live checks. A local
 pass does not establish hosted CI or an authenticated host integration.

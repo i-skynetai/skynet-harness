@@ -97,7 +97,7 @@ def git_root(cwd: Path) -> Path | None:
     try:
         out = subprocess.run(["git", "-C", str(cwd), "rev-parse", "--show-toplevel"],
                              capture_output=True, text=True, encoding="utf-8",
-                             errors="replace", timeout=10)
+                             errors="replace", timeout=10, stdin=subprocess.DEVNULL)
     except (OSError, subprocess.TimeoutExpired):
         return None
     text = (out.stdout or "").strip()

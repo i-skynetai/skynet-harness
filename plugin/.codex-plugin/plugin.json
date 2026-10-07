@@ -1,16 +1,17 @@
 {
   "name": "sky",
   "version": "2.1.2",
-  "description": "Project knowledge, team rules, implementation and review workflows for AI coding tasks. Managed Codex launches currently support read-only review.",
+  "description": "Governed implementation and review through shared project context, policy and recorded runs.",
   "author": {
     "name": "SKY"
   },
   "license": "Apache-2.0",
   "skills": "./codex-skills/",
+  "mcpServers": "./codex-dispatch.mcp.json",
   "interface": {
     "displayName": "Skynet Harness",
     "shortDescription": "Shared context and coding workflows",
-    "longDescription": "Use shared project knowledge and decisions to implement or review bounded changes. Workflow instructions do not confer role permissions; managed Codex implementation is not yet available.",
+    "longDescription": "Dispatch bounded implementation and review to governed Codex children in managed local-store projects. Implementation needs a person-admitted plan; the controller checks each action and records observed tool calls. Parent permissions remain the host's.",
     "developerName": "SKY",
     "category": "Productivity",
     "capabilities": [

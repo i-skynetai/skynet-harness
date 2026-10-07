@@ -78,10 +78,9 @@ HAND_COMMANDS = {
 
 #: Which hand can actually enforce a role, and which roles it may therefore run.
 #:
-#: This is not a preference — it is what each product supports today. Only
-#: Claude takes a named agent with a tool allowlist and a single MCP config, so
-#: only Claude can hold a role to its boundary. Codex has an OS sandbox and no
-#: role selection, which is enough for reading and not for a bounded build.
+#: Claude bounds tools through a checked agent definition. Codex's managed local
+#: developer/reviewer controller holds individual approval decisions and isolates
+#: configuration; its legacy remote reviewer retains the read-only exec path.
 #: Kimi has neither: `kimi -p` auto-approves every tool call and has no sandbox.
 #:
 #: An earlier version built a command for any pair. That silently produced a
@@ -90,13 +89,8 @@ HAND_COMMANDS = {
 #: refusing. A review caught it.
 HAND_ROLES = {
     "claude": frozenset({"developer", "reviewer", "architect", "security"}),
-    # One read role, not three. The OS sandbox is Codex's only boundary and it
-    # makes architect, reviewer and security *identical* — none of them can
-    # write, and nothing stops the one asked for a review from doing an
-    # architect's job or the reverse. Offering three was a label pretending to
-    # be enforcement, which is the failure this file exists to avoid. Reviewer
-    # is the narrowest remit of the three.
-    "codex": frozenset({"reviewer"}),
+    # Only the two roles with recorded controller probes are offered.
+    "codex": frozenset({"developer", "reviewer"}),
     # Empty, and that is the finding rather than an omission: Kimi publishes
     # no way to set an MCP server for one run — only `~/.kimi-code/config.toml`,
     # which belongs to the person. A managed Kimi run would therefore read
@@ -107,9 +101,8 @@ HAND_ROLES = {
 }
 
 HAND_LIMITS = {
-    "codex": ("Codex has no role selection, so its boundary is the OS sandbox alone. "
-              "Read-only roles run under --sandbox read-only; a build needs a role "
-              "the sandbox cannot express."),
+    "codex": ("Governed developer/reviewer uses the probed local controller; "
+              "architect/security and unprobed host configurations are not offered."),
     "kimi": ("`kimi -p` auto-approves every tool call and has no sandbox, so no role "
              "can be held to its boundary there. Not offered until that changes."),
 }
@@ -325,10 +318,13 @@ def admission_refused(role, *, run, reason, cwd=None, step_role=None):
 
 
 def start_hand(host, command, **kwargs):
-    """Single host execution dispatch point; governed Codex delegation lands later."""
+    """Single host execution dispatch point, preserving runtime identity."""
     from . import hand
     if host not in HAND_COMMANDS:
         raise Refused(f"unknown hand {host!r}")
+    if host == "codex" and "--sky-governed" in command:
+        from . import codexhost
+        return codexhost.execute(command, **kwargs)
     return hand.run(command, **kwargs)
 
 
@@ -377,7 +373,7 @@ def hand_command(hand: str, role: str, mcp_config: Path, prompt: str,
     if role not in policy.roles:
         raise Refused(f"unknown role {role!r}; policy has "
                       f"{', '.join(policy.roles_named())}")
-    if hasattr(policy, "requires_identity_selection") and policy.requires_identity_selection(role):
+    if hand != "codex" and hasattr(policy, "requires_identity_selection") and policy.requires_identity_selection(role):
         raise Refused("effective identity selection lands with SH-062")
     if role not in HAND_ROLES[hand]:
         allowed = ", ".join(sorted(HAND_ROLES[hand])) or "no roles at all"
@@ -412,6 +408,14 @@ def hand_command(hand: str, role: str, mcp_config: Path, prompt: str,
                 "--allowedTools", ",".join(tools)]
         return cmd
     if hand == "codex":
+        from . import codexcontroller, project
+        effective = project.resolve(Path.cwd(), ignore_overrides=True)
+        if role == "developer" or (effective and (effective.root / ".sky/kb/manifest.json").is_file()):
+            try:
+                codexcontroller.preflight(Path.cwd(), role, task=prompt)
+            except (ValueError, OSError, subprocess.SubprocessError) as exc:
+                raise Refused(str(exc)) from exc
+            return [cmd[0], "--sky-governed"]
         # Codex has no `--mcp-config`. It has `-c key=value`, which layers a
         # value over `~/.codex/config.toml` — verified against codex-cli
         # 0.149.0. Without these the managed run quietly used whatever the

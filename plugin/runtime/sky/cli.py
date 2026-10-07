@@ -410,7 +410,7 @@ def cmd_build(args) -> int:
               seconds=round(result.seconds, 1), run_id=run.run_id,
               directory=run.directory, agent_id=agent_id, kb=kb.name,
               role=args.role, hand=args.hand, usage=report.as_event(),
-              result_text=report.result_text)
+              result_text=shown)
         return EXIT_OK if result.ok else EXIT_PROBLEM
     finally:
         env.close()

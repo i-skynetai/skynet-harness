@@ -27,7 +27,8 @@ Aim for less repeated explanation, fewer corrections and more confident delegati
 Measure results; speed and adoption gains are not yet proven ([adoption guide](docs/adoption.md)).
 
 It installs as a Claude Code or Codex plugin, with a shared Python runtime. Claude specialist
-launches have checked tool lists; Codex supports managed reviews only. People approve
+launches have checked tool lists; Codex supports governed implementation and review
+for managed local-store projects on the probed host version. People approve
 decisions and perform publication. **The full automated workflow is still being built**;
 installation does not enforce every action in an ordinary session. See the current status below.
 
@@ -108,7 +109,7 @@ Dashed paths are planned. See [architecture](docs/architecture.md).
 
 ## What you can use now
 
-- Checked Claude role definitions; Codex reviewer runs in a read-only sandbox.
+- Checked Claude role definitions; Codex developer/reviewer runs use a governed controller.
 - Layered policy, rendered tool lists and recorded host tool inventories.
 - Local document storage, search, `sky kb init` and an optional code-index adapter.
 - Decision proposals and human acceptance, rejection or supersession (SH-087).
@@ -121,7 +122,7 @@ Dashed paths are planned. See [architecture](docs/architecture.md).
 | Host | Supported today | Setup |
 |---|---|---|
 | Claude Code | Managed implementation and specialist reviews | Install the `sky` plugin; follow the team setup above |
-| Codex | Implementation/review workflow skills; managed read-only reviews | Install `sky@sky` with the native plugin installer |
+| Codex | Governed developer/reviewer for managed local projects (0.160.0) | Install `sky@sky` with the native plugin installer |
 
 Install on Codex:
 
@@ -131,18 +132,18 @@ codex plugin add sky@sky
 codex plugin list --marketplace sky
 ```
 
-Start a new Codex chat and use `$sky:code` or `$sky:review`. Native workflows use your
-session permissions; the managed launcher still restricts Codex to read-only review.
-Both hosts must support governed implementation and review; this parity requirement
-is SH-096. See [host setup and verification](hosts/README.md).
+Start a new Codex chat and use `$sky:code` or `$sky:review`. The local dispatch tool
+launches a governed child; implementation needs a person-admitted plan. Approve the
+implementation tool when Codex asks. Parent permissions remain the host's.
+See [setup, approval settings and verified limits](hosts/README.md).
 
 ## Current status
 
 Skynet Harness is under active development. You can use managed specialist runs,
 local document search, approved decision records and run tracking today.
 
-The complete analyze → plan → implement workflow, evals and automatic team setup
-are still being built. People remain responsible for approving decisions and
+Analysis, planning, offline evals and plan admission are available. Automatic
+team setup and the complete session workflow are still being built. People approve decisions and
 publishing changes.
 
 **v2.1.2.** This is the manifest version, not yet tagged. Main includes unreleased

@@ -5,37 +5,28 @@ description: Implement a bounded code change with project context, tests and a r
 
 # Sky code on Codex
 
-This is a native Codex workflow skill. It is not a role permission boundary.
-The managed Sky launcher currently offers Codex read-only reviews only;
-managed implementation parity is tracked as SH-096. Never describe a normal
-Codex coding session as a governed developer launch.
+The parent dispatches work through the bundled runtime. The governed child
+holds the role boundary; this skill does not restrict ordinary parent tools.
+Implementation requires a current plan and a person-issued admission. The
+controller supports managed local-store projects on the recorded host version.
+Unsupported configurations refuse rather than widen permissions.
 
-## Locate the shared package
+## Shared procedures
 
-Use the absolute path of this loaded SKILL.md. Its directory is
-`<plugin-root>/codex-skills/code/`. The plugin root is two directories
-above that directory. Resolve reference paths below against that root,
-not against the user's repository. Do not guess a cache path.
-
-1. Read `SKILLS.md`, `CONFIG.md` and `policy.yaml` from the plugin root.
-2. Read `skills/code/SKILL.md` and follow its procedure. Its `agent:` field
-   describes the Claude role; it does not select or grant a Codex role.
-3. In that shared procedure, `/sky:<name>` means read and follow
-   `skills/<name>/SKILL.md` from this package. Interpret
-   `${CLAUDE_PLUGIN_ROOT}` as the resolved plugin root, not a Codex variable.
-4. The bundled runtime is `bin/sky` in the plugin root. Invoke it as
-   `python <absolute-plugin-root>/bin/sky <arguments>`; on Unix `python3`
-   may be the interpreter name. Run it from the target repository.
+The dispatch server loads the installed shared procedures into the governed
+child and checks them before consuming admission. The parent does not need
+to read cached package files or start Python from its shell.
 
 ## Host permissions and output
 
-For implementation, use the person's Codex workspace permissions. If the
-session is read-only, return a patch or explain the missing write permission;
-do not bypass the sandbox. A review must inspect code without changing it.
-Before either workflow, retrieve project context through configured read
-capabilities. If context is unavailable, state the gap rather than invent it.
+Call the installed sky_dispatch implement tool with a bounded task and root set to the absolute repository root of this session.
+The server validates the managed root and calls
+the governed launcher. Do not execute the work directly in the parent or
+start a nested runtime from the parent shell.
 
-Prepare code, tests or review findings as the shared procedure requires.
-Do not push, open or merge a PR, send a ticket message, approve a decision,
-change permissions or perform remote ingestion. Return proposed outward
-actions for a person. Check results and state what ran, failed or was skipped.
+Inspect the tool's runtime outcome and findings. A completed host turn does
+not prove all acceptance criteria passed; report failed or missing checks.
+For implementation, a person first runs sky plan admit <plan-id> in a terminal.
+Never issue or renew admission from an agent session, bypass a refusal, change
+permissions, push, open a PR, or perform remote ingestion. Explain refusals and
+return proposed outward actions for a person.

@@ -133,15 +133,18 @@ class TheHostPackages(unittest.TestCase):
         kimi = hosts.build("kimi", POLICY, profile=A_PROFILE).files["RULES.md"]
         self.assertIn("none — no managed run on this host", kimi)
 
-    def test_the_three_role_tables_agree(self):
-        """SH-008: launcher, `sky host` and hosts/README.md give one answer."""
+    def test_legacy_exports_and_native_roles_are_distinguished(self):
+        """Read-only exported rules cannot claim the native developer boundary."""
         from sky import launcher
         readme = (REPO / "hosts" / "README.md").read_text()
-        for host in ("codex", "kimi"):
-            with self.subTest(host=host):
-                self.assertEqual(set(hosts.CAN_ENFORCE[host][1]),
-                                 set(launcher.HAND_ROLES[host]))
-        self.assertIn("Codex may be asked for\n`reviewer` only; Kimi for no role", readme)
+        self.assertEqual(hosts.CAN_ENFORCE["codex"][1], ("reviewer",))
+        self.assertEqual(launcher.HAND_ROLES["codex"], {"developer", "reviewer"})
+        self.assertEqual(set(hosts.CAN_ENFORCE["kimi"][1]), launcher.HAND_ROLES["kimi"])
+        self.assertIn("developer, reviewer in managed local-store projects", readme)
+        self.assertIn("Legacy remote reviewer launches remain read-only", readme)
+        package = hosts.build("codex", POLICY, profile=A_PROFILE).files["AGENTS.md"]
+        self.assertIn("Roles you may be asked to run here: reviewer", package)
+        self.assertIn("exported files do not install it", package)
 
     def test_codex_is_not_offered_developer_either(self):
         _, roles = hosts.CAN_ENFORCE["codex"]

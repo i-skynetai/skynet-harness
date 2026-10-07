@@ -1,4 +1,6 @@
-"""The same content, packaged for a coding agent that is not Claude (H6).
+"""Legacy configuration export for coding hosts (H6).
+
+Native Codex developer dispatch uses codexcontroller, not this read-only export.
 
 Claude's packaging *is* the plugin. Codex and Kimi each want their own layout,
 and everything host-specific lives here so adding a third does not touch
@@ -51,13 +53,12 @@ BUILTIN_TOOLS = {
 }
 
 #: What each host can enforce. `roles` is what it may therefore be asked to do,
-#: and it is the launcher's table, not a second copy: three places once gave
-#: three answers (SH-008), and the generous ones were labels, not limits.
+#: These legacy exports are read-only. Native Codex developer support is a
+#: separate controller path, not a permission these generated files grant.
 CAN_ENFORCE = {
-    "codex": ("an operating-system sandbox (`--sandbox read-only`), and "
-              "per-run configuration overrides — but nothing that tells one "
-              "read role from another",
-              tuple(sorted(HAND_ROLES["codex"]))),
+    "codex": ("a read-only sandbox in these legacy export files. Governed "
+              "developer runs require the native plugin and its approval controller",
+              ("reviewer",)),
     "kimi": ("nothing beyond the prose in these files — there is no role "
              "selection, no tool allowlist and no per-run knowledge base",
              tuple(sorted(HAND_ROLES["kimi"]))),
@@ -147,8 +148,8 @@ options named here still exist before relying on them.
 {host} enforces {enforces}.
 
 Everything else in these files is **prose**, and prose works because you are
-cooperative. Claude is the only host that takes a named agent with a tool
-allowlist, which is the one layer that is a boundary rather than a request.
+cooperative. Claude uses a checked named-agent tool list. Native Codex runs
+use a separate approval controller; these exported files do not install it.
 
 **Roles you may be asked to run here: {roles_line(roles)}.** Not because the
 others are unimportant, but because this host cannot keep them inside their

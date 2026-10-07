@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -313,8 +314,7 @@ class FindingsFromReview(unittest.TestCase):
 
     # ── roles were only real on one hand ─────────────────────────────────
     def test_a_hand_that_cannot_enforce_a_role_is_refused_it(self):
-        for hand, role in (("kimi", "reviewer"), ("kimi", "developer"),
-                           ("codex", "developer")):
+        for hand, role in (("kimi", "reviewer"), ("kimi", "developer")):
             with self.subTest(hand=hand, role=role):
                 with self.assertRaises(launcher.Refused) as caught:
                     launcher.hand_command(hand, role, a_mcp_config(), "x", SHIPPED)
@@ -329,4 +329,10 @@ class FindingsFromReview(unittest.TestCase):
     def test_every_offered_pair_is_one_the_hand_can_actually_hold(self):
         for hand, roles in launcher.HAND_ROLES.items():
             for role in roles:
-                launcher.hand_command(hand, role, a_mcp_config(), "x", SHIPPED)
+                with patch("sky.codexcontroller.preflight"):
+                    launcher.hand_command(hand, role, a_mcp_config(), "x", SHIPPED)
+
+    def test_codex_developer_requires_managed_preflight(self):
+        with patch("sky.codexcontroller.preflight", side_effect=ValueError("missing local context")):
+            with self.assertRaisesRegex(launcher.Refused, "missing local context"):
+                launcher.hand_command("codex", "developer", a_mcp_config(), "x", SHIPPED)

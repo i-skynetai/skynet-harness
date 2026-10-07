@@ -459,6 +459,15 @@ def probe_habits(brain: Brain, hand: str = "claude") -> None:
     listing what it loaded — and one step past a configuration check, because
     the answer comes from the product rather than from a file we wrote.
     """
+    if hand == "codex":
+        from .codexcontroller import installed_package, Refused
+        try:
+            package = installed_package()
+        except (Refused, OSError, subprocess.SubprocessError) as exc:
+            brain.add(Part.HABITS, State.MISSING, str(exc))
+        else:
+            brain.add(Part.HABITS, State.OK, f"host lists sky@sky enabled; code/review procedures present ({package.name})")
+        return
     if hand != "claude":
         brain.add(Part.HABITS, State.NA,
                   f"{hand} has no host package yet, so it loads no skills — H6")

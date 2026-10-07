@@ -149,8 +149,8 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-093 | [The README shows an organisation what it gets](#sh-093) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-094 | [Contributor onboarding and documentation consistency](#sh-094) | docs | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
-| SH-095 | [Native Codex plugin installation](#sh-095) | hosts | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
-| SH-096 | [Claude and Codex governed implementation parity](#sh-096) | hosts | P1 | L | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-095 | [Native Codex plugin installation](#sh-095) | hosts | P1 | M | Done | codex-skynet-harness, 2026-10-07 |
+| SH-096 | [Claude and Codex governed implementation parity](#sh-096) | hosts | P1 | L | Done | codex-skynet-harness, 2026-10-07 |
 
 ## Details
 
@@ -954,7 +954,7 @@ Failure cases: no model-run claim from an installer check; no Claude agent front
 claimed as Codex enforcement; no personal config overwritten. Record host version and
 local versus remote installation evidence.
 
-<a id="sh-096"></a>**SH-096 — Claude and Codex governed implementation parity.**
+<a id="sh-096"></a>**SH-096 — Claude and Codex governed implementation parity.** Landed for Codex 0.160.0 developer/reviewer in managed local-store projects; [live and offline evidence](docs/features/SH-096-probe-2026-10-07.md). Native dispatch uses the approved local transport; a person admits the plan and approves the implementation tool. Architect/security and additional host versions/backends remain outside the verified scope.
 Arup requires implementation and review on both hosts (2026-10-07). Native workflow
 skills do not satisfy managed-launch parity. *Done when:* Codex developer and reviewer
 runs demonstrate host-enforced write/read separation, policy-filtered tools and context,

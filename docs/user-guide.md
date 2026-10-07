@@ -43,8 +43,9 @@ reviewer · push: deny — the reviewer role does not have 'push'
 ```
 
 The policy classifies outward actions; it does not execute them. Claude has named
-agent tool boundaries. Codex supports managed reviewer runs with its read-only
-sandbox; Kimi has no managed role ([host limits](../hosts/README.md)).
+agent tool boundaries. Codex supports governed developer/reviewer runs in managed
+local-store projects through its approval controller; Kimi has no managed role
+([host limits](../hosts/README.md)).
 
 ## 2. Install and verify the Claude plugin
 
@@ -252,19 +253,21 @@ For a local checkout, replace the GitHub source with `<harness-checkout>`. Expec
 for implementation or `$sky:review` for review. Python 3.11+ is needed for the
 bundled runtime; the skills do not require a separate global runtime installation.
 
-These native workflows use the session's existing permissions. They are not governed
-developer launches. The current managed Codex launcher supports read-only reviewer
-only; full implementation/review parity is required by SH-096 and still unfinished.
+These workflows call the local dispatch tool, which invokes the governed launcher.
+The parent keeps its normal permissions; the child has policy-checked approvals.
+A person admits a current plan before implementation. Codex may request approval
+for that tool; approval policy `never` refuses it unless the tool is explicitly
+trusted. See [Codex setup and approval instructions](../hosts/README.md#codex).
 
-After configuring a KB profile/default and target readiness, check that managed path:
+After local setup and target readiness, check that managed path:
 
 ```sh
 python <harness-checkout>/sky build --hand codex --role reviewer --dry-run
 ```
 
 After readiness passes, replace `--dry-run` with `--task "Review this change"` for
-an authenticated review. Local stdio-store connectivity has not been verified end to
-end on that launcher. The older `sky host codex --into <chosen-directory>` exports
+an authenticated review. Native local-store implementation and review were verified
+on Codex 0.160.0 ([probe record](features/SH-096-probe-2026-10-07.md)). The older `sky host codex --into <chosen-directory>` exports
 rules/configuration and refuses unowned files; it is not the native installer.
 See [host support and verification](../hosts/README.md).
 
@@ -326,35 +329,29 @@ A retrieved candidate alone does not settle a question.
 - Tool lists and command guards are not an adversarial sandbox. People own decision
   approval and publication; the harness is not an unattended release system.
 - Context manifests record observed calls and returned size. They do not prove the
-  quality of reasoning or enforce a context budget. Evals are SH-090; enforced budgets
+  quality of reasoning or enforce a context budget. Offline evals are available; general enforced budgets
   are SH-080.
 - The local store is a development reference, not a hosted team knowledge service.
-  Remote ingestion remains SH-081. Codex has native implementation/review workflow skills, but its managed launcher
-  supports reviews only; Kimi has no
-  managed role.
+  Remote ingestion remains SH-081. Codex's governed developer/reviewer controller
+  requires local context and the probed 0.160.0 host; architect/security and other
+  controller context backends remain unverified. Kimi has no managed role.
 
 ## 10. The rest of the context loop — work still ahead
 
-The following output is illustrative, not observed behavior. The local store, its CLI
-(`sky kb serve|put|show|search|init`), the code-index adapter and the MCP-call ledger
-have landed (SH-083, SH-084, SH-040, SH-031, SH-068; see section 3a), as has the
-decision lifecycle (SH-087). Analysis/planning are in review; they are not a tagged
-release or the complete governed implementation workflow. The rows below
-are still to come.
+The local store, document and code discovery, decision lifecycle, analysis,
+planning, freshness, offline evals and plan admission are available on main.
+They are unreleased work, rather than a tagged 3.0 release. Native Codex
+implementation and review use the supported path in section 7. Multi-role
+workflow dispatch and the session/team features below remain planned.
 
 | Planned command | Illustrative result | Rows |
 |---|---|---|
-| `sky kb init --discover` | cited knowledge observations, uncovered/partial modules | SH-088 |
-| `/sky:analyze <goal>` | goal analysis is in review; committed earlier versions use analyze for module cards | SH-082/085 |
-| `/sky:plan <analysis-id>` | ordered steps, acceptance and pinned input digests | SH-086 |
-| `/sky:dispatch <plan-id>` | architect/developer/reviewer/security workflow; failure stops advancement | SH-074/075/079/091 |
-| `sky kb refresh` | re-indexed paths and stale knowledge, or recorded failures | SH-089 |
-| `sky eval` | offline recall, precision and character counts; live rubric scores stay separate | SH-090 |
+| `/sky:dispatch <plan-id>` | architect/developer/reviewer/security workflow; failure stops advancement | SH-074/075/079 |
 | `sky session new <name>` / `sky session open <name>` | card and memory-isolated launch command | SH-070/076 |
 | `/sky:author <request>` / `sky policy apply <id>` | reviewed proposal then transactional activation | SH-066 |
 
 An approved decision is reused only while current and applicable; a conflict or stale
-revision leaves the question OPEN. Future admission gates governed implementation
+revision leaves the question OPEN. Plan admission gates governed implementation
 launches, not the parent's own edits. Managed-session MCP hooks record observed calls;
 `sky context manifest <run>` measures those events and returned sizes. A manifest
 does not establish coverage of work outside that path or the quality of reasoning.

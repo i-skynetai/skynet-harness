@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **SH-095, SH-096** — native Codex plugin dispatch and governed implementation/review
+  for managed local-store projects on Codex 0.160.0. The local transport invokes the
+  shared launcher; implementation needs single-use plan admission and host tool approval.
+  Isolated configuration and individual policy checks deny permission widening and
+  unknown actions. Runtime identity, completed MCP calls, hard/silence caps and process
+  cleanup are recorded and tested. Fresh native review and implementation/test probes
+  passed on Windows. Parent permissions remain the host's; architect/security and other
+  controller backends/versions are not claimed. Git root probes close stdin to avoid
+  consuming the MCP transport. Setup, approval settings and limits are documented.
+
 - **SH-090, SH-091** — `sky eval` and the enforced path. `sky eval` runs a golden set
   against the local store offline and reports recall, precision, characters returned and
   a token figure labelled as an estimate, compared with a baseline; a regression exits 1

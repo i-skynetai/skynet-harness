@@ -1,108 +1,107 @@
 # Host support — install Sky on Claude Code or Codex
 
-Sky has native Claude and Codex manifests in the same plugin package. The
-[Codex marketplace](../.agents/plugins/marketplace.json) installs the native
-`code` and `review` workflow skills; Claude uses its existing skills and
-agent definitions. Both include the bundled Python runtime.
+Sky ships native Claude Code and Codex plugins with the same Python runtime.
+Use the host you already have. Install and authenticate its CLI separately;
+Python 3.11+ and Git must be on PATH.
 
-The older `sky host codex` command exports a rules/configuration package and remains
-available. It is not the native plugin installer. The installed plugin and a managed
-launcher run are different: installing workflows does not grant or enforce a role.
+## Supported governed runs
 
-## What each host can actually enforce
-
-Measured from `codex --help` and `kimi --help`, not assumed:
-
-| host | mechanism | what it buys |
+| Host | Roles | Boundary |
 |---|---|---|
-| claude | `--agent sky:<role>`, with a checked definition's `tools:` list | **tier A — the boundary**; `--allowedTools` pre-approves calls |
-| codex | `--profile` layering config, `--sandbox read-only` | a real limit for reading; nothing per-role |
-| kimi | `--skills-dir`, `config.toml` | the skills load; no role selection at all |
+| Claude Code | developer, reviewer, architect, security | Checked `--agent sky:<role>` definition; `--allowedTools` pre-approves |
+| Codex 0.160.0 | developer, reviewer in managed local-store projects | Isolated app-server configuration, read-only permissions and individual policy-checked approvals |
+| Kimi | None | No verified managed boundary |
 
-That table is why the roles are not offered everywhere. Codex may be asked for
-`reviewer` only; Kimi for no role, because it has no way to set the knowledge base for
-one run, so a managed Kimi run could read whichever knowledge base the person's own
-settings name. The launcher's `HAND_ROLES` (`core/sky/launcher.py`) is the one table;
-`sky host` and this page follow it, and a test fails if they differ. Not because
-the other roles matter less, but because **a role a host cannot keep inside its
-limits is a label**, and each generated package says so in its first paragraph.
+Codex native `$sky:code` and `$sky:review` call the local `sky_dispatch` server.
+It invokes the existing launcher; the parent does not perform the work. A
+person admits the plan before implementation. The controller denies unknown
+requests, wider permissions, ungranted commands, governance-file edits and
+paths outside the target repository. Only observed completed MCP calls enter
+the ledger. Host completion is distinct from passing task acceptance checks.
 
-## Install and verify each supported host
+The parent retains its normal host permissions. This is not an adversarial
+sandbox or unattended publication system. Current live evidence is Windows
+with Codex 0.160.0; other versions refuse. Linux/macOS live validation,
+Codex architect/security roles and remote/code context in this controller
+remain unverified. Legacy remote reviewer launches remain read-only.
 
-Use Git and Python 3.11+ for the shared runtime. Install and authenticate the chosen
-host CLI separately. Commands below run from the target Git repository; replace
-`<harness-checkout>` with your checkout path. These are CLI integrations, not a claim
-that every desktop session automatically uses Sky.
-
-### Claude Code
+## Claude Code
 
 ```sh
 claude plugin marketplace add i-skynetai/skynet-harness
 claude plugin install sky@sky --scope project
 claude plugin list
-python <harness-checkout>/sky build --hand claude --role reviewer --dry-run
 ```
 
-Follow the host's plugin activation message. Each collaborator installs the plugin.
-Before the dry-run, configure the target repository, its context and test runner using
-the [user guide](../docs/user-guide.md). A successful dry-run checks readiness; it does
-not prove an authenticated model run. Claude also supports developer, architect and
-security roles on managed launches whose definitions match policy.
+Follow the [user guide](../docs/user-guide.md) for a managed repository,
+local context and the first task. Publication stays with a person.
 
-### Codex native plugin
+## Codex
 
 ```sh
 codex plugin marketplace add i-skynetai/skynet-harness
-codex plugin add sky@sky
+codex plugin add sky@sky --json
 codex plugin list --marketplace sky --json
 ```
 
-For a local checkout, use `codex plugin marketplace add <harness-checkout>` instead
-of the GitHub source. The list should report `sky@sky` installed and enabled. Start a
-new Codex chat and invoke `$sky:code` to implement a bounded change or `$sky:review`
-to review one. The skills locate the shared procedures and bundled runtime inside
-the installed package; they require no global `sky` installation.
+The add command reports `installedPath`: that is `<plugin-root>` below.
+The list must report installed and enabled. Start a new chat after installation
+or upgrade. Installing the plugin does not configure a repository or approve
+an implementation plan.
 
-These are workflow instructions under your Codex session's existing permissions.
-They do not install Claude hooks or enforce a developer tool allowlist. A read-only
-session must return a patch rather than bypass its permissions. Publication and
-decision approval remain human steps.
-
-The current managed launcher supports only reviewer on Codex. After configuring a
-KB profile/default and target readiness as described in the user guide:
+From the target Git repository, run:
 
 ```sh
-python <harness-checkout>/sky build --hand codex --role reviewer --dry-run
+python <plugin-root>/bin/sky setup init --local
+python <plugin-root>/bin/sky policy render
+python <plugin-root>/bin/sky kb serve --write-adapter
+python <plugin-root>/bin/sky kb init
+python <plugin-root>/bin/sky doctor --hand codex
 ```
 
-After readiness passes, replace `--dry-run` with `--task "Review this change"` for
-an authenticated review. The launcher requests `--sandbox read-only`. Its local
-stdio context adapter has not been demonstrated end to end on Codex.
+Store an analysis and a plan through `sky kb analyze put` and `sky kb plan put`
+([context loop](../docs/features/SH-083-context-loop.md)). Only a person runs:
 
-**Required parity (SH-096):** both Claude and Codex must support governed implementation
-and review, local context and run evidence. Codex native installation is the first
-step; managed developer support remains unfinished. Current Codex exposes hooks,
-MCP tool filters and sandbox controls, which must be probed before changing the
-launcher. See [official packaging](https://developers.openai.com/plugins/build/plugins)
-and [configuration](https://learn.chatgpt.com/docs/config-file/config-reference).
+```sh
+python <plugin-root>/bin/sky plan admit <plan-id>
+```
 
-Upgrade the source with `codex plugin marketplace upgrade sky`, then run
-`codex plugin add sky@sky` and start a new chat. Check the listed version and readiness.
-Do not replace your personal config or copy a shared token.
+In Codex, ask `$sky:code` to implement that bounded task or `$sky:review` to
+review it. The dispatcher takes the session's canonical managed repository
+root and task. No arbitrary command, environment or role override is exposed.
+A missing, used, expired or stale admission refuses implementation.
 
-### What has been checked
+### Tool approval
 
-Host-package and launcher tests verify generated content, refusal of unsupported
-roles, agreement between role tables and the Codex read-only command. These offline
-tests do not prove login, a live context connection or completion of a real review.
-Report those separately with host version and result. Use `sky doctor` and dry-run
-refusal messages to resolve prerequisites before a live run.
+The implementation tool edits code, so Codex may ask to approve its call.
+A noninteractive session with approval policy `never` refuses it. To explicitly
+trust this one tool, a person can add this to their Codex configuration:
 
-Run `python scripts/check-codex-plugin.py` from the harness checkout to repeat the
-installer/discovery check in a temporary Codex home. It makes no model call.
+```toml
+[plugins."sky@sky".mcp_servers.sky_dispatch.tools.implement]
+approval_mode = "approve"
+```
 
-**Observed installation, 2026-10-07:** Codex CLI 0.160.0, isolated temporary Codex
-home: local marketplace add succeeded; plugin add reported version 2.1.2; list reported
-`installed: true` and `enabled: true`; the prompt diagnostic exposed `sky:code` and
-`sky:review`. Temporary-home helper-alias warnings did not
-prevent installation. This is installer evidence, not an authenticated model run.
+This does not grant the child wider permissions or issue plan admission.
+The per-tool setting follows the [official plugin approval configuration](https://developers.openai.com/plugins/build/plugins).
+Keep other tools on their existing approval policy. If the tool is unavailable,
+check `codex mcp list --json`, Python on PATH and the enabled plugin, then
+restart the chat. Do not bypass a refusal through the parent's shell.
+
+### Upgrade and verification
+
+```sh
+codex plugin marketplace upgrade sky
+codex plugin add sky@sky
+```
+
+Start a new chat and verify the reported version and readiness again. The
+older `sky host codex --into <directory>` command exports read-only rules and
+configuration; it is not the native installer or developer boundary.
+
+`python scripts/check-codex-plugin.py` exercises installer and skill discovery
+in an isolated home without a model call. Offline protocol tests cover malformed
+requests, disconnects, timeouts, permission widening and denied paths. Live
+install → dispatch → implementation/test and review evidence is in the
+[SH-096 probe record](../docs/features/SH-096-probe-2026-10-07.md). Report live and
+offline results separately; neither local success nor a badge substitutes for CI.

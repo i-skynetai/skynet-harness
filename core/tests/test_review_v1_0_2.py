@@ -89,9 +89,9 @@ class H2_ModelTextNeverCrossesAShell(unittest.TestCase):
 
 
 class H3_ARoleAHostCannotTellApartIsNotOffered(unittest.TestCase):
-    def test_codex_gets_one_read_role_not_three(self):
-        """The sandbox makes architect, reviewer and security identical."""
-        self.assertEqual(launcher.HAND_ROLES["codex"], frozenset({"reviewer"}))
+    def test_codex_only_offers_probed_native_roles(self):
+        """Native approval control adds developer, not unprobed read-role labels."""
+        self.assertEqual(launcher.HAND_ROLES["codex"], frozenset({"developer", "reviewer"}))
         self.assertEqual(hosts.CAN_ENFORCE["codex"][1], ("reviewer",))
 
     def test_the_others_are_refused_with_a_reason(self):

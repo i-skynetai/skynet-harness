@@ -55,11 +55,23 @@ def main() -> int:
                     raise RuntimeError(f"installed skill reference missing: {path.name}")
         if not (cache / "bin" / "sky").is_file():
             raise RuntimeError("installed bundled runtime entry point is missing")
+        manifest = json.loads((cache / ".codex-plugin" / "plugin.json").read_text())
+        mapping = json.loads((cache / manifest["mcpServers"]).read_text())
+        dispatch = mapping["mcpServers"]["sky_dispatch"]
+        if dispatch["cwd"] != "." or dispatch["args"] != ["bin/sky-codex-dispatch.py"]:
+            raise RuntimeError("dispatch must use installed-package-relative paths")
+        if dispatch.get("tool_timeout_sec") != 1800:
+            raise RuntimeError("dispatch timeout differs from the runtime hard cap")
+        for path in (cache / dispatch["args"][0],
+                     cache / "runtime" / "sky" / "codexdispatch.py",
+                     cache / "runtime" / "sky" / "codexcontroller.py"):
+            if not path.is_file():
+                raise RuntimeError(f"installed dispatch file missing: {path.name}")
         prompt = run("debug", "prompt-input", "Use $sky:code and $sky:review")
         for name in ("sky:code:", "sky:review:"):
             if name not in prompt:
                 raise RuntimeError(f"installed skill absent from model catalog: {name}")
-        print("PASS: marketplace, install, enabled state, cached references and skill discovery")
+        print("PASS: marketplace, install, enabled state, cached references, local dispatch and skill discovery")
         print("No authenticated model run or governed developer launch was tested.")
     return 0
 

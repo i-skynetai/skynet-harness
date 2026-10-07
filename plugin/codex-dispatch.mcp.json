@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "sky_dispatch": {
+      "command": "python",
+      "args": [
+        "bin/sky-codex-dispatch.py"
+      ],
+      "cwd": ".",
+      "env_vars": [
+        "CODEX_HOME"
+      ],
+      "tool_timeout_sec": 1800
+    }
+  }
+}

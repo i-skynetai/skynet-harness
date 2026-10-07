@@ -63,7 +63,7 @@ class Habits(unittest.TestCase):
 
     def test_a_hand_with_no_host_package_is_not_applicable_not_broken(self):
         """Codex and Kimi load no skills yet. That is H6, not a fault."""
-        for hand in ("codex", "kimi"):
+        for hand in ("kimi",):
             with self.subTest(hand=hand):
                 brain = Brain()
                 probes.probe_habits(brain, hand)

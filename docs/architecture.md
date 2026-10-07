@@ -40,8 +40,18 @@ decides](images/who-runs-whom.png)
 | **The hand** | Claude Code, Codex or Kimi. Supplies the model, the working memory and the coding tools that do the work. The harness never supplies a model. |
 | **The plugin** | Skills, role agents, policy and knowledge connections. |
 | **`sky` core** | Resolves the KB, checks readiness, applies policy, launches a managed hand, records the run. |
+
 | **Task knowledge base** | Project, team, client or personal knowledge for the current task. One per run. |
 | **Skill catalogue** | A separate read-only catalogue for discovering approved skills. Finding a skill does not install or execute it. |
+
+For native Codex, the parent calls the local `sky_dispatch` transport. It exposes
+only bounded implementation/review requests and delegates to the same launcher.
+Implementation needs a person-issued plan admission. The child controller uses
+isolated configuration and checks individual command/file approvals against
+managed policy; unknown requests refuse. The parent retains its normal host
+permissions. This local transport was approved on 2026-10-07; it does not expose
+publication, decision approval or permission-management tools. See the
+[recorded boundary and installed workflow](features/SH-096-probe-2026-10-07.md).
 
 A **brain** is the temporary combination assembled for one task: the selected knowledge
 base, the hand's model and working memory, the harness's skills and policy, and your
