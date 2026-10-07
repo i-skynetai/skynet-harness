@@ -1,0 +1,21 @@
+%% The README's first picture: what an organisation gets. Kept deliberately small;
+%% org-loop.mmd is the fuller current-versus-planned view used by the design notes.
+%% Rendered to org-value.png by scripts/render-mermaid.py.
+flowchart LR
+    classDef you fill:#f4f6fa,stroke:#9aa5b8,color:#222
+    classDef sky fill:#eef7f0,stroke:#4f8a5b,color:#222
+    classDef store fill:#fff9e8,stroke:#b58900,color:#222
+    classDef out fill:#fff6f5,stroke:#b3261e,color:#222
+
+    team["Your team<br/>Claude Code · Codex · one session per topic"]:::you
+    policy["One policy<br/>roles · skills · tools · what needs a person"]:::sky
+    agents["Governed specialists<br/>architect · developer · reviewer · security"]:::sky
+    store[("Your knowledge<br/>docs · ADRs · code index · decisions")]:::store
+    record["A record of every run<br/>who · what · which tools · which context"]:::sky
+    person["A person runs anything outward<br/>push · PR · ticket · remote KB"]:::out
+
+    team -->|"goal or ticket"| policy
+    policy -->|"analyze → plan → build → review"| agents
+    agents <-->|"retrieve · write back"| store
+    agents --> record
+    agents -->|"prepared, never performed"| person

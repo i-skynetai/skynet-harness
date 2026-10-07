@@ -122,7 +122,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-064 | [Roles own skills, skills own tools, agents are rendered](#sh-064) | policy | P1 | M | In review | @arupmmi07, 2026-10-05 |
 | SH-065 | [Three policy layers under one ceiling](#sh-065) | policy | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-066 | [`/sky:author`: a proposal, then `sky policy apply`](#sh-066) | skills | P1 | M | Ready | |
-| SH-067 | [Every tool a skill names exists on the host](#sh-067) | policy | P1 | S | Ready | |
+| SH-067 | [Every tool a skill names exists on the host](#sh-067) | policy | P1 | S | In review | @arupmmi07, 2026-10-06 |
 | SH-068 | [A context manifest built from recorded calls](#sh-068) | context | P2 | M | Ready | |
 | SH-070 | [Session cards](#sh-070) | sessions | P1 | S | Ready | |
 | SH-071 | [`sky bridge`: the Claude transport](#sh-071) | bridge | P1 | L | Ready | |
@@ -137,7 +137,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-080 | [The context budget is enforced](#sh-080) | context | P2 | M | Ready | |
 | SH-081 | [A handover reaches the knowledge base as an intent](#sh-081) | broker | P2 | S | Ready | |
 | SH-082 | [Every skill's procedure uses only tools its roles hold](#sh-082) | skills | P1 | M | Needs decision | |
-| SH-083 | [A local context store behind the protocol](#sh-083) | context | P1 | L | Ready | |
+| SH-083 | [A local context store behind the protocol](#sh-083) | context | P1 | L | In progress | @arupmmi07, 2026-10-06 |
 | SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | Ready | |
 | SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | Ready | |
 | SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | Ready | |
@@ -146,6 +146,8 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | Ready | |
 | SH-090 | [`sky eval`: right context, smallest context](#sh-090) | evals | P1 | L | Ready | |
 | SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | Ready | |
+| SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
+| SH-093 | [The README shows an organisation what it gets](#sh-093) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 
 ## Details
 
@@ -549,6 +551,11 @@ bindings too, knows each hand's built-in tool names, and fails on a name no serv
 hand provides. Failure cases: a server that is configured but unreachable now is
 reported as such, not as a missing tool; an offline run uses the recorded inventory and
 says so.
+*Progress, 2026-10-06:* `scripts/check-allowlists.py` checks bindings, every skill and each
+role's effective tools against each hand's built-ins (`core/sky/hosts.py`) and a recorded
+inventory of live servers (`.sky/tool-inventory.json`, `core/sky/inventory.py`); an
+unreachable server falls back to its dated inventory, `--offline` never contacts one,
+and MCP annotations drive the read-only and destructive rules. Sixteen tests.
 
 <a id="sh-068"></a>**SH-068 — A context manifest built from recorded calls.** The
 retrieval order is advice in prompts; nothing says what a pack used. *Done when:* the
@@ -695,6 +702,12 @@ without a stamp, with a traversal path or a symlink escape is refused; an interr
 write leaves the previous document and manifest intact and reports failure; two writers
 serialise on a lock; search on an empty store returns zero hits, not an error. *Depends on:* SH-024.
 SH-020's demo becomes `sky kb init` over `examples/demo-docs/`.
+*Progress, 2026-10-06:* design note [docs/features/SH-083-context-loop.md](docs/features/SH-083-context-loop.md)
+(nine slices, decisions recorded). Slice 1 in the tree: `core/sky/kbstore.py` (immutable
+revisions, one atomic manifest commit, stable ids, locks, validated put) and
+`core/sky/kbserve.py` (stdio MCP: search, neighbours, decisions_find, decisions_record,
+ingest), `schemas/decision.schema.json`, `schemas/knowledge.schema.json`, the analysis,
+plan and knowledge templates; 31 tests. CLI, adapter and doctor wiring are slice 2.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never
@@ -833,6 +846,30 @@ from another session or worktree, a resumed session with stale state, a revoked 
 or an analysis or decision changed since the plan (digest mismatch) — each refused with
 the reason; outside a managed project nothing changes. *Depends on:*
 SH-062, SH-075, SH-079, SH-086, SH-088.
+
+<a id="sh-092"></a>**SH-092 — The user guide: install from the repository, upgrade, first
+task.** A team that wants this has to read the roadmap to learn how to install it.
+*Done when:* `docs/user-guide.md` walks a team from nothing to a governed first task:
+install the plugin into Claude Code straight from this repository's marketplace
+(`/plugin marketplace add`, `/plugin install`, and the project settings that do it for
+everyone who opens the repository), install for Codex (`sky host codex`), upgrade to a
+newer version and what changes for them, `sky setup` and `.sky/project.yaml`,
+`sky kb init`, the first `/sky:analyze` → `/sky:plan` → `/sky:dispatch`, what a person
+runs by hand (`sky ship`, remote ingestion), and how to add their own skills through a
+proposal. Each step shows the command and the real output; every picture is PNG with
+its Mermaid or SVG source under *Diagram sources*; `check-docs.py` passes. Failure
+cases: a step that depends on a row not yet shipped is marked so, not described as
+working.
+
+<a id="sh-093"></a>**SH-093 — The README shows an organisation what it gets.** The
+README describes a policy for one run; it does not show the loop a team lives in.
+*Done when:* the README's first screen says, in one picture and five lines, what an
+organisation gets — one policy across its coding agents, specialists that follow it,
+context from the team's own knowledge, decisions remembered, every outward action
+through a person, a record of every run — and the sixty-second demo still works on a
+fresh clone; the pictures are rendered PNG from Mermaid sources kept in a *Diagram
+sources* appendix; the word limit (900) and every other `check-docs.py` rule hold.
+Failure cases: no claim without a row or a test behind it; no private name.
 
 ## Release review — 2026-10-01
 

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **SH-067** — every tool a skill names must exist on the host. `scripts/check-allowlists.py`
+  checks bindings, skills and each role's effective tools against each hand's built-in
+  tools and a recorded inventory of the configured servers; an unreachable server falls
+  back to its dated inventory, `--offline` contacts nothing, and MCP tool annotations
+  drive the read-only and destructive rules.
+- **SH-083, first slice** — the local context store's modules: immutable Markdown
+  revisions with one atomic manifest commit, stable ids, locks and a validated put; a
+  standard-library MCP server over it; decision and knowledge schemas; analysis, plan
+  and knowledge templates. Not yet wired to the CLI.
+- **Documentation** — the Sky Context Protocol, a user guide (install from this
+  repository, upgrade, first task), a README that shows a team what it gets, Mermaid
+  sources for the figures and `scripts/render-mermaid.py` to render them.
 - **SH-065** — three policy layers under one ceiling. A repository with `.sky/project.yaml`
   (`managed: true`) is governed by the shipped policy, an optional org plugin's policy and
   its own `.sky/policy.yaml`, merged in that order as patches: a lower layer may add

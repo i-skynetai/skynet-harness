@@ -1,0 +1,28 @@
+%% SH-093 proposal. Maintainer renders this Mermaid source to org-loop.png.
+%% Solid = current runtime paths; dashed = planned context/workflow slices.
+flowchart LR
+    classDef you fill:#f4f6fa,stroke:#9aa5b8,color:#222
+    classDef sky fill:#eef7f0,stroke:#4f8a5b,color:#222
+    classDef store fill:#fff9e8,stroke:#b58900,color:#222
+    classDef out fill:#fff6f5,stroke:#b3261e,color:#222
+
+    team["Your team and coding agent<br/>goal · repository · selected KB"]:::you
+    policy["One policy and launch checks<br/>roles · skills · tool boundaries"]:::sky
+    agents["Claude specialists<br/>architect · developer · reviewer · security"]:::sky
+    runtime["Runtime<br/>validate returned documents<br/>record outcomes and reported usage"]:::sky
+    store[("Planned project context<br/>documents · code evidence<br/>approved decisions · plans")]:::store
+    loop["Planned context loop<br/>retrieve → analyze → decide → plan<br/>governed workflow → refresh"]:::sky
+    person["Person reviews prepared actions<br/>push · PR · ticket<br/>remote KB publication planned"]:::out
+    limits["Claude: role tool boundary<br/>Codex: managed reviewer sandbox<br/>Full MCP accounting and evals planned"]:::you
+
+    team -->|"checked launch"| policy
+    policy -->|"enforced role"| agents
+    agents -->|"result and requests"| runtime
+    runtime -->|"supported intents; runs none"| person
+    policy --- limits
+    team -.->|"SH-085 to SH-091"| loop
+    store -.->|"bounded retrieval"| loop
+    loop -.->|"documents returned"| runtime
+    runtime -.->|"local validated write-back"| store
+    person -.->|"confirmed decision"| runtime
+    loop -.->|"SH-075/079 workflow"| policy
