@@ -1,8 +1,11 @@
 # SH-093 — An organisation can see what it gets
 
-**Status:** PROPOSAL · **Owner:** @arupmmi07 · **Date:** 2026-10-06
+**Status:** historical proposal · **Owner:** @arupmmi07 · **Date:** 2026-10-06
 
-README.md is unchanged. This proposal keeps its badges, sixty-second offline demo,
+This records the original proposal, not the current installation or capability guide.
+The README was subsequently updated; the 2026-10-07 consistency pass is SH-094.
+Use [the current README](../../README.md) and [documentation index](../README.md)
+for working commands and status. This proposal keeps its badges, sixty-second offline demo,
 numbered usage, limits and licence. Replace the opening and feature section within
 the existing 900-word budget; remove equivalent old prose rather than append this.
 Do not announce the complete loop as shipped until its roadmap rows are validated.

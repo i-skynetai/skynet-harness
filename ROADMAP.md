@@ -148,6 +148,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | Ready | |
 | SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-093 | [The README shows an organisation what it gets](#sh-093) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
+| SH-094 | [Contributor onboarding and documentation consistency](#sh-094) | docs | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
 
 ## Details
 
@@ -899,6 +900,18 @@ through a person, a record of every run — and the sixty-second demo still work
 fresh clone; the pictures are rendered PNG from Mermaid sources kept in a *Diagram
 sources* appendix; the word limit (900) and every other `check-docs.py` rule hold.
 Failure cases: no claim without a row or a test behind it; no private name.
+
+<a id="sh-094"></a>**SH-094 — Contributor onboarding and documentation consistency.**
+The first page must explain team benefits, installation, actual capabilities and
+remaining work; external contributors need a bug-report and pull-request path.
+*Done when:* README distinguishes manifest version, unreleased main and in-review
+work; installation states prerequisites and command working directories; docs link
+to a tutorial, task guide, reference and adoption explanation; CONTRIBUTING explains
+fork/branch/issue/claim/PR/review and required checks; bug and PR templates exist;
+the roadmap remains the only backlog. Check the offline README commands, relative
+links, docs checker and existing documentation contract tests. Failure cases:
+no speed/adoption claim without evidence; no ordinary-session enforcement claim;
+no future eval or workflow described as available; no private output in templates.
 
 ## Release review — 2026-10-01
 
