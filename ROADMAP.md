@@ -149,6 +149,8 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-093 | [The README shows an organisation what it gets](#sh-093) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-094 | [Contributor onboarding and documentation consistency](#sh-094) | docs | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-095 | [Native Codex plugin installation](#sh-095) | hosts | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-096 | [Claude and Codex governed implementation parity](#sh-096) | hosts | P1 | L | In progress | codex-skynet-harness, 2026-10-07 |
 
 ## Details
 
@@ -912,6 +914,26 @@ the roadmap remains the only backlog. Check the offline README commands, relativ
 links, docs checker and existing documentation contract tests. Failure cases:
 no speed/adoption claim without evidence; no ordinary-session enforcement claim;
 no future eval or workflow described as available; no private output in templates.
+
+<a id="sh-095"></a>**SH-095 — Native Codex plugin installation.** Ship a native
+manifest, repository marketplace and Codex implementation/review workflow entry points
+that resolve shared procedures and the bundled runtime. *Done when:* an isolated Codex
+home adds the local marketplace, installs sky and lists it installed/enabled; skill
+references resolve without personal paths; Claude's manifest/hooks remain unchanged.
+Failure cases: no model-run claim from an installer check; no Claude agent frontmatter
+claimed as Codex enforcement; no personal config overwritten. Record host version and
+local versus remote installation evidence.
+
+<a id="sh-096"></a>**SH-096 — Claude and Codex governed implementation parity.**
+Arup requires implementation and review on both hosts (2026-10-07). Native workflow
+skills do not satisfy managed-launch parity. *Done when:* Codex developer and reviewer
+runs demonstrate host-enforced write/read separation, policy-filtered tools and context,
+publication refusal, run evidence and local-store retrieval on supported versions;
+installation/upgrade instructions and CI fixtures cover both hosts. Failure cases:
+unknown tools denied; user config cannot re-enable prohibited tools; writes outside the
+workspace refused; no direct publication; no permission widening via skills or agents;
+stale/missing policy refuses launch. Probe current Codex hooks, sandbox and tool controls
+before offering the developer role. Preserve Claude's tested boundaries.
 
 ## Release review — 2026-10-01
 

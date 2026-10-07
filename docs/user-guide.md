@@ -239,22 +239,34 @@ KB publication is **Planned: SH-081**. Remote reads and calls to the model can o
 in a run: “outward actions” here means state-changing publication, not all networking.
 The command-text guard and shared OS user are not an adversarial sandbox.
 
-## 7. Package for Codex after configuring context
+## 7. Install the native Codex plugin
 
 ```sh
-python <harness-checkout>/sky host codex --into <chosen-directory>
+codex plugin marketplace add i-skynetai/skynet-harness
+codex plugin add sky@sky
+codex plugin list --marketplace sky --json
 ```
 
-Expected output excerpt:
+For a local checkout, replace the GitHub source with `<harness-checkout>`. Expect
+`sky@sky` to be installed and enabled. Start a new Codex chat and use `$sky:code`
+for implementation or `$sky:review` for review. Python 3.11+ is needed for the
+bundled runtime; the skills do not require a separate global runtime installation.
 
-```text
-  wrote <chosen-directory>/sky.config.toml
-Roles it may be asked to run: reviewer.
+These native workflows use the session's existing permissions. They are not governed
+developer launches. The current managed Codex launcher supports read-only reviewer
+only; full implementation/review parity is required by SH-096 and still unfinished.
+
+After configuring a KB profile/default and target readiness, check that managed path:
+
+```sh
+python <harness-checkout>/sky build --hand codex --role reviewer --dry-run
 ```
 
-A KB profile/default is required. Missing context or an existing unowned destination
-is refused before files are overwritten. This packages rules/skills; it does not
-create Claude-style tool boundaries on Codex.
+After readiness passes, replace `--dry-run` with `--task "Review this change"` for
+an authenticated review. Local stdio-store connectivity has not been verified end to
+end on that launcher. The older `sky host codex --into <chosen-directory>` exports
+rules/configuration and refuses unowned files; it is not the native installer.
+See [host support and verification](../hosts/README.md).
 
 ## 8. Upgrade and recheck
 
@@ -317,7 +329,8 @@ A retrieved candidate alone does not settle a question.
   quality of reasoning or enforce a context budget. Evals are SH-090; enforced budgets
   are SH-080.
 - The local store is a development reference, not a hosted team knowledge service.
-  Remote ingestion remains SH-081. Codex supports managed reviews only; Kimi has no
+  Remote ingestion remains SH-081. Codex has native implementation/review workflow skills, but its managed launcher
+  supports reviews only; Kimi has no
   managed role.
 
 ## 10. The rest of the context loop — work still ahead

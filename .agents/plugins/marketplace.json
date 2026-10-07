@@ -1,0 +1,20 @@
+{
+  "name": "sky",
+  "interface": {
+    "displayName": "Skynet Harness"
+  },
+  "plugins": [
+    {
+      "name": "sky",
+      "source": {
+        "source": "local",
+        "path": "./plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

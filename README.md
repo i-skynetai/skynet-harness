@@ -26,7 +26,7 @@ and context alongside the agent's report.
 Aim for less repeated explanation, fewer corrections and more confident delegation.
 Measure results; speed and adoption gains are not yet proven ([adoption guide](docs/adoption.md)).
 
-It ships as a Claude Code plugin and a Python command-line tool. Claude specialist
+It installs as a Claude Code or Codex plugin, with a shared Python runtime. Claude specialist
 launches have checked tool lists; Codex supports managed reviews only. People approve
 decisions and perform publication. **The full automated workflow is still being built**;
 installation does not enforce every action in an ordinary session. See the current status below.
@@ -115,6 +115,26 @@ Dashed paths are planned. See [architecture](docs/architecture.md).
 - MCP-call ledger and context manifests showing observed calls and returned size.
 - The **twenty-one SDLC skills** in the committed baseline; **twenty-three SDLC skills**
   in the in-review development checkout. Procedure alignment remains SH-082.
+
+## Claude Code and Codex
+
+| Host | Supported today | Setup |
+|---|---|---|
+| Claude Code | Managed implementation and specialist reviews | Install the `sky` plugin; follow the team setup above |
+| Codex | Implementation/review workflow skills; managed read-only reviews | Install `sky@sky` with the native plugin installer |
+
+Install on Codex:
+
+```sh
+codex plugin marketplace add i-skynetai/skynet-harness
+codex plugin add sky@sky
+codex plugin list --marketplace sky
+```
+
+Start a new Codex chat and use `$sky:code` or `$sky:review`. Native workflows use your
+session permissions; the managed launcher still restricts Codex to read-only review.
+Both hosts must support governed implementation and review; this parity requirement
+is SH-096. See [host setup and verification](hosts/README.md).
 
 ## Current status
 
