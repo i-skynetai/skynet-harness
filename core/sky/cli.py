@@ -97,7 +97,7 @@ def cmd_doctor(args) -> int:
 
 def cmd_kb(args) -> int:
     """Inspect mapped KBs, or operate the project's validated local store."""
-    if args.kb_action in ("serve", "put", "show", "search"):
+    if args.kb_action in ("serve", "put", "show", "search", "init"):
         from .kbcommands import execute
         return execute(args)
     try:
@@ -481,6 +481,13 @@ def _read_token(prompt: str, token_env: str | None) -> str:
 def cmd_setup(args) -> int:
     action = args.setup_action
     try:
+        if getattr(args, "local", False):
+            if action != "init":
+                raise setup.SetupError("--local is only supported by setup init")
+            print(setup.init_local(Path.cwd(), force=getattr(args, "force", False)))
+            return EXIT_OK
+        if getattr(args, "force", False):
+            raise setup.SetupError("--force is only supported by setup init --local")
         if action == "init":
             if not args.profile:
                 print("`sky setup init` needs --profile <file>, the JSON your "
@@ -807,12 +814,14 @@ def build_parser() -> argparse.ArgumentParser:
     d.set_defaults(func=cmd_doctor)
 
     k = sub.add_parser("kb", help="which knowledge bases exist, and which one applies here")
-    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search"])
+    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search", "init"])
     k.add_argument("kb_value", nargs="?", help="file, document id or quoted search query")
     k.add_argument("--root", help="explicit repository root for local KB commands")
     k.add_argument("--type", dest="document_type", help="validated document type for put")
     k.add_argument("-k", type=int, default=10, help="maximum search hits (1–100)")
     k.add_argument("--write-adapter", action="store_true", help="write the local adapter and exit")
+    k.add_argument("--add", action="append", default=[], help="additional repository-relative source for init")
+    k.add_argument("--discover", action="store_true", help="codebase discovery (SH-088)")
     k.set_defaults(func=cmd_kb)
 
     pol = sub.add_parser("policy", help="what each role may do, and why")
@@ -831,6 +840,8 @@ def build_parser() -> argparse.ArgumentParser:
     st.set_defaults(func=cmd_selftest)
 
     s = sub.add_parser("setup", help="make an installed plugin into a working one")
+    s.add_argument("--local", action="store_true", help="init a managed local project without services")
+    s.add_argument("--force", action="store_true", help="replace local project configuration")
     s.add_argument("setup_action",
                    choices=["init", "use", "rotate", "doctor", "uninstall"])
     s.add_argument("instance", nargs="?",

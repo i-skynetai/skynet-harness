@@ -68,7 +68,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 
 | ID | Feature | Area | P | Size | Status | Owner |
 |---|---|---|---|---|---|---|
-| SH-020 | [A demo knowledge base in the repository](#sh-020) | demo | P1 | L | Ready | |
+| SH-020 | [A demo knowledge base in the repository](#sh-020) | demo | P1 | L | In review | @arupmmi07, 2026-10-06 |
 | SH-021 | [Setup with no administrator](#sh-021) | setup | P1 | S | Ready | |
 | SH-022 | [`doctor` names the port tools it found](#sh-022) | probes | P1 | M | Ready | |
 | SH-023 | [`doctor` with no KB map still shows the table](#sh-023) — *good first issue* | probes | P1 | S | Done — 2.1.2 | @arupmmi07 |
@@ -131,14 +131,14 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-074 | [`/sky:dispatch`: local, then remote](#sh-074) | routing | P1 | M | Ready | |
 | SH-075 | [Declared workflows: validation](#sh-075) | policy | P1 | S | Ready | |
 | SH-076 | [One memory folder per topic](#sh-076) | sessions | P2 | S | Ready | |
-| SH-077 | [The demo knowledge base is the reference adapter](#sh-077) | demo | P2 | M | Ready | |
+| SH-077 | [The demo knowledge base is the reference adapter](#sh-077) | demo | P2 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-078 | [`sky bridge`: Codex delivery](#sh-078) | bridge | P2 | M | Ready | |
 | SH-079 | [Declared workflows: execution](#sh-079) | policy | P1 | M | Ready | |
 | SH-080 | [The context budget is enforced](#sh-080) | context | P2 | M | Ready | |
 | SH-081 | [A handover reaches the knowledge base as an intent](#sh-081) | broker | P2 | S | Ready | |
 | SH-082 | [Every skill's procedure uses only tools its roles hold](#sh-082) | skills | P1 | M | Needs decision | |
 | SH-083 | [A local context store behind the protocol](#sh-083) | context | P1 | L | In progress | @arupmmi07, 2026-10-06 |
-| SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | Ready | |
+| SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | Ready | |
 | SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | Ready | |
 | SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | Ready | |
@@ -722,6 +722,14 @@ ledger records every MCP call in a managed session (`plugin/bin/sky-ledger-mcp`,
 `PostToolUse` and `PostToolUseFailure` for `mcp__.*`); `sky context manifest <run>` builds
 the context manifest from those events. Checked against the real skygraph server: the
 `code` row reads `ok`. Forty-six tests.
+*Slice 4, 2026-10-06 (SH-084, SH-020, SH-077):* `sky kb init` indexes README.md, docs/** and
+`.sky/handovers/**` (or `context.sources` from `.sky/project.yaml`) through the runtime's
+validated put path; idempotent by digest, removed sources marked stale, secret-shaped,
+binary and over-cap files skipped and listed; code-index coverage recorded, never
+claimed complete. `sky setup init --local` bootstraps a managed project with no token or
+service. The doctor's focus row searches a real title and names it. The offline example
+under `examples/` runs the six commands against five public sample documents and the
+reviewer dry run passes. Forty-seven tests.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never

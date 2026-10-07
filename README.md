@@ -97,8 +97,8 @@ The [user guide](docs/user-guide.md) walks through each step with its output.
 
 ## Limits
 
-- No knowledge base ships yet, so a full run needs one of your own
-  ([SH-020](ROADMAP.md#sh-020), [SH-083](ROADMAP.md#sh-083)).
+- The local store is for development and the offline [example](examples/README.md);
+  a team knowledge base is yours to connect (see the [knowledge port](docs/knowledge-port.md)).
 - Only Claude Code takes a fixed tool list per run. Codex runs the reviewer role only;
   Kimi runs no managed role ([hosts/README.md](hosts/README.md)).
 - A narrowed or added role refuses `sky build` until the routing row lands
@@ -107,7 +107,7 @@ The [user guide](docs/user-guide.md) walks through each step with its output.
 
 ## Status
 
-**v2.1.2.** The 3.0 rows are in progress; see the [changelog](CHANGELOG.md). **795
+**v2.1.2.** The 3.0 rows are in progress; see the [changelog](CHANGELOG.md). **842
 tests**, standard library only, on Python 3.11, 3.12 and 3.13 in CI with `sky selftest`.
 
 ## Documentation

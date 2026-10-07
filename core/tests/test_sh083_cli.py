@@ -430,7 +430,7 @@ class LocalCLI(unittest.TestCase):
         self.assertRegex(out, r"search\s+ok")
         self.assertRegex(out, r"code\s+absent")
         self.assertRegex(out, r"tickets\s+absent")
-        self.assertIn("no matching project evidence", out)
+        self.assertIn("no documents yet", out)
 
     def test_reviewer_dry_run_passes_offline_with_local_adapter(self):
         self.adapter()

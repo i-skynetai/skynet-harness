@@ -22,13 +22,17 @@ PROJECT_SCHEMA = {
     "type": "object", "additionalProperties": False, "required": ["managed"],
     "properties": {
         "managed": {"type": "boolean"},
+        "project": {"type": "string", "minLength": 1},
         "org_plugin": {"type": ["string", "null"], "minLength": 1,
                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*(/[A-Za-z0-9][A-Za-z0-9_.-]*)?$"},
         "kb": {"type": ["string", "null"], "minLength": 1},
         "sessions_dir": {"type": "string", "minLength": 1, "default": ".sky/sessions"},
         "context": {"type": "object", "additionalProperties": False,
                     "properties": {"max_chars": {"type": "integer", "minimum": 1,
-                                                 "default": 40000}}},
+                                                 "default": 40000},
+                                   "sources": {"type": "array", "items": {"type": "string", "minLength": 1,
+                                               "pattern": r"^(?![/\\]|[A-Za-z]:)(?!.*(?:^|[/\\])\.\.(?:[/\\]|$)).+$"},
+                                               "default": ["README.md", "docs", ".sky/handovers"]}}},
     },
 }
 
@@ -59,20 +63,31 @@ def validate_config(body, root: Path) -> dict:
     if type(body.get("managed")) is not bool:
         raise PolicyError("project.yaml: managed must be a boolean")
     result = copy.deepcopy(body)
-    for key in ("org_plugin", "kb"):
+    for key in ("org_plugin", "kb", "project"):
         value = result.get(key)
+        if key == "project" and key in result and value is None:
+            raise PolicyError("project.yaml: project must be nonempty text")
         if value is not None and (not isinstance(value, str) or not value.strip()):
             raise PolicyError(f"project.yaml: {key} must be a nonempty string or null")
     if result.get("org_plugin") and not re.fullmatch(
             r"[A-Za-z0-9][A-Za-z0-9_.-]*(?:/[A-Za-z0-9][A-Za-z0-9_.-]*)?", result["org_plugin"]):
         raise PolicyError("project.yaml: org_plugin must name marketplace/plugin or plugin")
     context = result.get("context", {})
-    if not isinstance(context, dict) or set(context) - {"max_chars"}:
-        raise PolicyError("project.yaml: context accepts only max_chars")
+    if not isinstance(context, dict) or set(context) - {"max_chars", "sources"}:
+        raise PolicyError("project.yaml: context accepts only max_chars and sources")
     maximum = context.get("max_chars", 40000)
     if type(maximum) is not int or maximum < 1:
         raise PolicyError("project.yaml: context.max_chars must be a positive integer")
     result["context"] = {"max_chars": maximum}
+    if "sources" in context:
+        sources = context["sources"]
+        if not isinstance(sources, list) or any(not isinstance(s, str) or not s.strip() for s in sources):
+            raise PolicyError("project.yaml: context.sources must be a list of paths")
+        for source in sources:
+            if ".." in Path(source.replace("\\", "/")).parts:
+                raise PolicyError("project.yaml: context.sources paths cannot contain ..")
+            contained(root, source)
+        result["context"]["sources"] = list(sources)
     result.setdefault("sessions_dir", ".sky/sessions")
     contained(root, result["sessions_dir"])
     return result

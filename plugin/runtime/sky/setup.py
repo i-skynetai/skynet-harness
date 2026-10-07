@@ -84,6 +84,32 @@ CLAUDE_JSON = Path(os.path.expanduser("~/.claude.json"))
 _KEY_OK = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 
+def init_local(cwd: Path, *, force=False) -> Path:
+    """Create only a managed project config; no profiles, tokens or services."""
+    from . import project, yamlish
+    from .kbstore import Store, StoreError
+    cwd = Path(cwd).resolve()
+    root = project.git_root(cwd) or cwd
+    store = Store(root)
+    try:
+        path = store.safe_path(".sky/project.yaml")
+        if path.exists() and not force:
+            raise SetupError("project configuration exists; use --force to replace it")
+        text = "managed: true\nproject: " + json.dumps(root.name) + "\ncontext: {}\n"
+        project.validate_config(yamlish.parse(text), root)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if force:
+            store._atomic(path, text)
+        else:
+            with path.open("x", encoding="utf-8", newline="\n") as stream:
+                stream.write(text)
+                stream.flush()
+                os.fsync(stream.fileno())
+        return path
+    except (OSError, ValueError, StoreError, project.PolicyError, yamlish.YamlishError) as exc:
+        raise SetupError(str(exc)) from exc
+
+
 class SetupError(Exception):
     """Something the person running this can fix, said in those terms."""
 

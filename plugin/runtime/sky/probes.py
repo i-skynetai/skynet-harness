@@ -817,6 +817,7 @@ def probe_context(brain: Brain, context, rows=None):
 def probe_local(brain: Brain, context, rows):
     """Observe both protocol availability and a read, without a remote account."""
     from .context_sources import ContextError, stdio_call
+    from .kbstore import Store, StoreError
     states = {cap: state for cap, state, _ in rows}
     if states["search"] != "ok":
         brain.add(Part.KNOWLEDGE, State.MISSING, "local search adapter is unavailable")
@@ -829,20 +830,30 @@ def probe_local(brain: Brain, context, rows):
         brain.add(Part.FOCUS, State.MISSING, "not probed: local keyword search unavailable")
         return
     try:
+        store = Store(context.root)
+        documents = store.manifest()["documents"]
+        if documents:
+            most_recent = max(documents.values(), key=lambda entry: (entry.get("updated_at", ""), entry["id"]))
+            query = store.get(most_recent["id"])["metadata"]["title"]
+        else:
+            query = context.root.name
         hits = stdio_call(context.servers[source["server"]], mapping["tool"],
-                          {"query": "project", "k": 1})
+                          {"query": query, "k": 1})
         if not isinstance(hits, list) or any(not isinstance(h, dict) or not h.get("id") for h in hits):
             raise ContextError("search returned malformed hits")
-    except (OSError, ValueError, KeyError, TypeError, queue.Empty, subprocess.TimeoutExpired) as exc:
+    except (OSError, ValueError, StoreError, KeyError, TypeError, queue.Empty, subprocess.TimeoutExpired) as exc:
         brain.add(Part.KNOWLEDGE, State.DOWN, f"local search failed: {exc}")
         brain.add(Part.FOCUS, State.DOWN, "local read did not answer correctly")
         return
     brain.add(Part.KNOWLEDGE, State.OK, "local MCP tools/list and search answered")
+    if documents and not hits:
+        brain.add(Part.FOCUS, State.MISSING, f"local search for {query!r} returned no evidence despite stored documents")
+        return
     # Empty is an observed valid local read, not evidence that documents exist.
     # Remote retrieval retains its stronger non-empty evidence contract.
     brain.add(Part.FOCUS, State.OK if hits else State.DEGRADED,
-              f"local search answered: {len(hits)} hit(s)" +
-              ("; no matching project evidence" if not hits else ""))
+              f"local search for {query!r} answered: {len(hits)} hit(s)" +
+              ("; no documents yet" if not documents else ""))
 
 
 def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,

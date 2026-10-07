@@ -10,7 +10,7 @@ matters more here than almost anywhere else, because the file this reads is the
 security policy, and an editor, a linter or a future PyYAML-based tool reading
 the same file must reach the same answer.
 
-So the rule is: *refuse what is not understood.* Anchors, aliases, flow
+So the rule is: *refuse what is not understood.* Anchors, aliases, non-empty flow
 mappings, block scalars, multiple documents, tabs, merge keys — every one is an
 error, not a guess. A construct this cannot handle correctly stops the load
 instead of being misread.
@@ -31,6 +31,7 @@ What it supports, and nothing else:
     - item                      block sequences, under a key or at the root
     - key: value                a mapping as a sequence item
     key: [a, b, "c d"]          single-line flow sequences
+    key: {}                    an empty mapping (no general flow mappings)
     "quoted"  'quoted'          both quote styles
     # comment                   to end of line, when outside quotes
 
@@ -146,6 +147,8 @@ def _scalar(raw: str, number: int) -> Any:
     text = raw.strip()
     if not text:
         return None
+    if text == "{}":
+        return {}
     if text[0] in _REFUSED_STARTS:
         raise YamlishError(number, f"{_REFUSED_STARTS[text[0]]} are not supported")
     if text.startswith("<<"):

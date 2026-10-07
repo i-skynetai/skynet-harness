@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **SH-084, SH-020, SH-077** — `sky kb init`, the initial discovery of a project's
+  documents: README.md, docs/** and `.sky/handovers/**` (or `context.sources` from
+  `.sky/project.yaml`) go through the runtime's validated put path; a second run is
+  idempotent by digest, a removed source is marked stale and never deleted, and
+  secret-shaped, binary and over-cap files are skipped and listed. Code-index coverage
+  is recorded as observed and never claimed complete; `--discover` says it lands with
+  SH-088. `sky setup init --local` writes a managed project configuration with no token
+  or service. The doctor's focus row searches the latest stored title and names it. The
+  offline example under `examples/` runs end to end on five public sample documents.
 - **SH-040, SH-031, SH-068** — the code port, the ledger over MCP calls, the context
   manifest. `sky context adapter code --from-mcp-json <path> --server <name>` binds a
   code index behind the protocol's `code` capability, skygraph first; its four read

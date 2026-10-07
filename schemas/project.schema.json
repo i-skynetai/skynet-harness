@@ -4,22 +4,60 @@
   "title": "Managed project",
   "type": "object",
   "additionalProperties": false,
-  "required": ["managed"],
+  "required": [
+    "managed"
+  ],
   "properties": {
-    "managed": {"type": "boolean"},
+    "managed": {
+      "type": "boolean"
+    },
     "org_plugin": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 1,
       "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*(/[A-Za-z0-9][A-Za-z0-9_.-]*)?$"
     },
-    "kb": {"type": ["string", "null"], "minLength": 1},
-    "sessions_dir": {"type": "string", "minLength": 1, "default": ".sky/sessions"},
+    "kb": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "sessions_dir": {
+      "type": "string",
+      "minLength": 1,
+      "default": ".sky/sessions"
+    },
     "context": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "max_chars": {"type": "integer", "minimum": 1, "default": 40000}
+        "max_chars": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 40000
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?![/\\\\]|[A-Za-z]:)(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$"
+          },
+          "default": [
+            "README.md",
+            "docs",
+            ".sky/handovers"
+          ]
+        }
       }
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

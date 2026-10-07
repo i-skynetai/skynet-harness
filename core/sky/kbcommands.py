@@ -13,6 +13,7 @@ from pathlib import Path
 
 from . import context_sources, kbserve, recorder, yamlish
 from .kbstore import MAX_DOCUMENT_CHARS, Store, StoreError, TYPES, parse_document
+from .policy import PolicyError
 
 
 def current_run():
@@ -103,6 +104,8 @@ def put(store, file, document_type=None):
 def execute(args):
     try:
         action, value = args.kb_action, args.kb_value
+        if (getattr(args, "add", []) or getattr(args, "discover", False)) and action != "init":
+            raise StoreError("--add and --discover are only supported by init")
         if action in ("put", "show", "search") and not value:
             raise StoreError(f"{action} requires a file, id or query")
         if action == "serve" and value:
@@ -111,9 +114,34 @@ def execute(args):
             raise StoreError("--write-adapter is only supported by serve")
         if args.document_type and action != "put":
             raise StoreError("--type is only supported by put")
+        if action == "init" and value:
+            raise StoreError("init uses --add <path>, not a positional file")
+        if action == "init" and getattr(args, "discover", False):
+            from .kbinit import DISCOVER_NOTICE
+            print(DISCOVER_NOTICE)
+            return 0
         root = context_sources.repository(explicit=args.root)
         store = Store(root)
-        if action == "serve":
+        if action == "init":
+            if value:
+                raise StoreError("init uses --add <path>, not a positional file")
+            from .kbinit import initialize
+            result = initialize(root, add=getattr(args, "add", []), discover=getattr(args, "discover", False))
+            if "notice" in result:
+                print(result["notice"])
+                return 0
+            print(f"stored: {len(result['stored'])}; unchanged: {len(result['unchanged'])}; skipped: {len(result['skipped'])}")
+            for item in result["skipped"]:
+                print(f"skipped {item['source']}: {item['reason']}")
+            coverage = result["coverage"]
+            if coverage["status"] == "no code index":
+                print("no code index")
+            elif coverage["status"] == "observed":
+                print(f"{coverage['repo']}: {len(coverage['covered'])} covered, {len(coverage['uncovered'])} uncovered modules")
+            else:
+                print("code index unavailable: " + coverage.get("finding", coverage["status"]))
+            print(f"run record: {result['run_directory']}")
+        elif action == "serve":
             if args.write_adapter:
                 print(f"local adapter: {context_sources.write_adapter(root)}")
             else:
@@ -139,6 +167,6 @@ def execute(args):
                 print(hit["excerpt"])
             print(f"{len(hits)} hit(s)")
         return 0
-    except (StoreError, context_sources.ContextError, OSError, ValueError, yamlish.YamlishError) as exc:
+    except (StoreError, context_sources.ContextError, PolicyError, OSError, ValueError, yamlish.YamlishError) as exc:
         print(f"sky kb: {exc}", file=sys.stderr)
         return 1
