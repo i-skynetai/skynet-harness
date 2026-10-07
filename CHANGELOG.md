@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **SH-090, SH-091** — `sky eval` and the enforced path. `sky eval` runs a golden set
+  against the local store offline and reports recall, precision, characters returned and
+  a token figure labelled as an estimate, compared with a baseline; a regression exits 1
+  and names the item, and only a person may update the baseline. A public golden set on
+  the demo corpus ships in `evals/`. `sky plan admit <plan-id>`, run by a person, issues a
+  single-use admission for a current plan. A developer launch, dry run included, needs
+  one; it is consumed under the store lock just before the hand would start, so a
+  readiness or definition refusal leaves it unused and records the reason. A used,
+  expired, stale or mismatched admission is refused. Review, architecture and security
+  launches are not gated, and `--policy` does not bypass the gate.
 - **SH-088, SH-089** — codebase discovery and freshness. `sky kb init --discover` builds a
   discovery worklist from the code index (modules by size, files, symbols, a character
   budget each; partial and unoutlined modules named) as a run artefact, never as

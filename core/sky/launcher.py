@@ -291,6 +291,47 @@ def _remote_reachable_check(env: HandEnv, cwd: Path | None) -> bool | None:
         return None
 
 
+def check_admission(role, *, run, cwd=None, step_role=None, explicit_policy=False,
+                    consume=True, token=None):
+    """Managed implementation only; policy overrides do not bypass admission."""
+    from . import admission, context_sources
+    from .kbstore import Store, StoreError
+    if not admission.implementation(role, step_role=step_role):
+        return None
+    try:
+        root = context_sources.repository(cwd)
+    except context_sources.NotManaged:
+        return None
+    try:
+        operation = admission.consume if consume else admission.check
+        return operation(Store(root), admission_run=admission.CURRENT_RUN,
+                                 launch_run=run.run_id, role=role, step_role=step_role,
+                                 run=run, explicit_policy=explicit_policy, token=token)
+    except (StoreError, context_sources.ContextError, OSError, ValueError) as exc:
+        raise Refused(str(exc)) from exc
+
+
+def admission_refused(role, *, run, reason, cwd=None, step_role=None):
+    """Record pre-launch refusal for governed implementation without using a token."""
+    from . import admission, context_sources
+    if not admission.implementation(role, step_role=step_role):
+        return
+    try:
+        context_sources.repository(cwd)
+    except context_sources.NotManaged:
+        return
+    admission.event(run, "refuse", reason=reason, launch_run=run.run_id,
+                    admission_run=admission.CURRENT_RUN)
+
+
+def start_hand(host, command, **kwargs):
+    """Single host execution dispatch point; governed Codex delegation lands later."""
+    from . import hand
+    if host not in HAND_COMMANDS:
+        raise Refused(f"unknown hand {host!r}")
+    return hand.run(command, **kwargs)
+
+
 def check_readiness(brain: Brain, kind: Kind) -> None:
     """Refuse, naming the part to fix — never just 'not ready'."""
     blockers = brain.blockers(kind)

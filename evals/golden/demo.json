@@ -1,0 +1,8 @@
+[
+  {"id":"local-adr","question":"Keep project context local","expect_ids":["demo-adr-local-context"],"must_contain":"local Markdown store","capability":"search","k":1},
+  {"id":"cedar-trail","question":"cedar context trail","expect_ids":["demo-adr-local-context","demo-handover-review"],"must_contain":"cedar context trail","capability":"search","k":2},
+  {"id":"relationships","question":"keyword document relationships","expect_ids":["demo-design-context"],"must_contain":"document relationships","capability":"search","k":1},
+  {"id":"dry-run","question":"offline dry run","expect_ids":["demo-handover-review"],"must_contain":"without starting a model","capability":"search","k":1},
+  {"id":"validated-writes","question":"Runtime writes validate","expect_ids":["demo-adr-local-context"],"must_contain":"preserve revisions","capability":"search","k":1},
+  {"id":"adapter-policy","question":"policy separately grants","expect_ids":["demo-design-context"],"must_contain":"separately grants tools","capability":"search","k":1}
+]

@@ -152,13 +152,65 @@ def _emit(args, **summary) -> None:
         print(json.dumps({"sky": "build", **summary}, default=str), flush=True)
 
 
+def cmd_eval(args) -> int:
+    from . import evals
+    from .kbstore import Store, StoreError
+    run = None
+    try:
+        root = context_sources.repository(Path.cwd())
+        run = recorder.Run.start(role="runtime", task="sky eval", kb="local", agent_id="runtime", root=root / ".sky/runs")
+        report = evals.run(Store(root), golden=args.golden, baseline=args.baseline, run=run,
+                           update=args.update_baseline, recall_tolerance=args.tolerance_quality,
+                           precision_tolerance=args.tolerance_quality, characters_tolerance=args.tolerance_characters)
+        print((run.directory / "eval-report.txt").read_text(encoding="utf-8"), end="")
+        print(f"JSON report: {run.directory / 'eval-report.json'}")
+        run.finish("passed" if report["passed"] else "failed")
+        return EXIT_OK if report["passed"] else EXIT_PROBLEM
+    except (StoreError, context_sources.ContextError, OSError, ValueError) as exc:
+        if run:
+            run.refused(str(exc), operation="eval")
+            run.finish("refused")
+        print(f"sky eval: {exc}", file=sys.stderr)
+        return EXIT_PROBLEM
+
+
+def cmd_plan(args) -> int:
+    import math
+    from . import admission
+    from .kbstore import Store, StoreError
+    run = None
+    try:
+        root = context_sources.repository(Path.cwd())
+        store = Store(root)
+        if args.plan_action == "admit":
+            if not args.plan_id:
+                raise StoreError("admit requires a plan id")
+            if not math.isfinite(args.ttl) or args.ttl <= 0 or args.ttl * 3600 < 1:
+                raise StoreError("TTL must be finite and at least one second")
+            run = recorder.Run.start(role="runtime", task="sky plan admit", kb="local", agent_id="runtime", root=root / ".sky/runs")
+            admission.issue(store, args.plan_id, run_id=admission.CURRENT_RUN, run=run, ttl=int(args.ttl * 3600))
+            run.finish("admitted")
+            print(f"admission: {admission.path(store, admission.CURRENT_RUN)}")
+        elif args.plan_id:
+            raise StoreError("admission takes no plan id")
+        state = admission.status(store)
+        print(json.dumps(state, sort_keys=True))
+        return EXIT_OK
+    except (StoreError, context_sources.ContextError, OSError, ValueError, KeyError, TypeError) as exc:
+        if run:
+            run.refused(str(exc), operation="plan.admit")
+            run.finish("refused")
+        print(f"sky plan: {exc}", file=sys.stderr)
+        return EXIT_PROBLEM
+
+
 def cmd_build(args) -> int:
     """Start a hand — or refuse, and say which part is the problem.
 
     The order is the design: resolve, check, build the environment, prove it.
     Nothing starts until the proof passes.
     """
-    kind = Kind.BUILD if args.role == "developer" else Kind.REVIEW
+    kind = Kind.BUILD if args.role == "developer" or getattr(args, "step_role", None) == "developer" else Kind.REVIEW
     try:
         kbmap, kb, context = _resolve_kb(args)
     except (KBMapError, NoKBForPath, context_sources.ContextError) as exc:
@@ -185,6 +237,8 @@ def cmd_build(args) -> int:
                 raise DefinitionError("effective identity selection lands with SH-062")
             definition = check_definition(policy, args.role)
         except DefinitionError as exc:
+            launcher.admission_refused(args.role, run=run, reason=str(exc), cwd=Path.cwd(),
+                                       step_role=getattr(args, "step_role", None))
             print(f"  agent definitions  MISSING  {exc}")
             run.event("launch_refused", hand=args.hand, role=args.role, reason=str(exc))
             run.refused("agent definition failed", detail=str(exc))
@@ -197,11 +251,28 @@ def cmd_build(args) -> int:
         print(f"  agent definitions  ok       {args.role}: {definition}")
         run.event("agent.definition.checked", role=args.role, file=str(definition))
 
+    try:
+        admitted = launcher.check_admission(args.role, run=run, cwd=Path.cwd(),
+                                           consume=False,
+                                           step_role=getattr(args, "step_role", None),
+                                           explicit_policy=bool(getattr(args, "policy", None) or os.environ.get("SKY_POLICY")))
+    except (launcher.Refused, context_sources.ContextError) as exc:
+        run.refused(str(exc), stage="admission")
+        run.finish("refused")
+        print(f"sky build refused — {exc}", file=sys.stderr)
+        _emit(args, outcome="refused", ok=False, stage="admission", reason=str(exc),
+              run_id=run.run_id, directory=run.directory)
+        return EXIT_PROBLEM
+    if admitted:
+        print(f"  admission  checked  {admitted['plan_id']} (unused)")
+
     # 2. readiness — before anything is built, and before anything is started
     brain = probes.run_all(kb, hand=args.hand, policy=policy, cwd=Path.cwd())
     try:
         launcher.check_readiness(brain, kind)
     except launcher.Refused as exc:
+        launcher.admission_refused(args.role, run=run, reason=str(exc), cwd=Path.cwd(),
+                                   step_role=getattr(args, "step_role", None))
         run.refused("not ready", kind=kind.value)
         run.finish("refused")
         print(f"\nsky build refused — {exc}", file=sys.stderr)
@@ -262,6 +333,21 @@ def cmd_build(args) -> int:
                       run_id=run.run_id, directory=run.directory)
                 return EXIT_PROBLEM
 
+        try:
+            consumed = launcher.check_admission(args.role, run=run, cwd=Path.cwd(),
+                                                step_role=getattr(args, "step_role", None),
+                                                token=admitted["token"] if admitted else None,
+                                                explicit_policy=bool(getattr(args, "policy", None) or os.environ.get("SKY_POLICY")))
+        except (launcher.Refused, context_sources.ContextError) as exc:
+            run.refused(str(exc), stage="admission")
+            run.finish("refused")
+            print(f"sky build refused — {exc}", file=sys.stderr)
+            _emit(args, outcome="refused", ok=False, stage="admission", reason=str(exc),
+                  run_id=run.run_id, directory=run.directory)
+            return EXIT_PROBLEM
+        if consumed:
+            print(f"  admission  ok  {consumed['plan_id']} (consumed)")
+
         if args.dry_run:
             print("\n--dry-run: everything above passed; the hand was not started.")
             print("  command      "
@@ -286,7 +372,7 @@ def cmd_build(args) -> int:
 
         print(f"\nstarting {args.hand} as {args.role}…  (log: {run.directory}/hand.log)")
         run.event("hand.start", command=launcher.without_prompt(cmd, args.task or ""))
-        result = hand.run(cmd, env=env.variables, cwd=Path.cwd(),
+        result = launcher.start_hand(args.hand, cmd, env=env.variables, cwd=Path.cwd(),
                           log_path=run.directory / "hand.log")
         run.event("hand.end", reason=result.reason, exit_code=result.exit_code,
                   seconds=round(result.seconds, 1))
@@ -931,7 +1017,20 @@ def build_parser() -> argparse.ArgumentParser:
     cx.add_argument("--json", action="store_true")
     cx.set_defaults(func=cmd_context)
 
-    b = sub.add_parser("build", help="launch a hand for a task")
+    ev = sub.add_parser("eval", help="offline retrieval evaluation")
+    ev.add_argument("--golden", default="evals/golden")
+    ev.add_argument("--baseline", default="evals/baseline.json")
+    ev.add_argument("--update-baseline", action="store_true")
+    ev.add_argument("--tolerance-quality", type=float, default=0)
+    ev.add_argument("--tolerance-characters", type=int, default=0)
+    ev.set_defaults(func=cmd_eval)
+    pl = sub.add_parser("plan", help="human admission of a current implementation plan")
+    pl.add_argument("plan_action", choices=["admit", "admission"])
+    pl.add_argument("plan_id", nargs="?")
+    pl.add_argument("--ttl", type=float, default=24, help="admission lifetime in hours")
+    pl.set_defaults(func=cmd_plan)
+
+    b = sub.add_parser("build", aliases=["route"], help="launch a hand for a task")
     b.add_argument("--role", default="developer")
     b.add_argument("--task", default="")
     b.add_argument("--hand", default="claude", choices=sorted(launcher.HAND_COMMANDS))

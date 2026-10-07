@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "basis": "Initial authored acceptance thresholds for the public demo, not measured run results. Human baseline update replaces these with observed metrics.",
+  "items": [
+    {"id":"local-adr","recall":1,"precision":1,"characters":4096},
+    {"id":"cedar-trail","recall":1,"precision":1,"characters":4096},
+    {"id":"relationships","recall":1,"precision":1,"characters":4096},
+    {"id":"dry-run","recall":1,"precision":1,"characters":4096},
+    {"id":"validated-writes","recall":1,"precision":1,"characters":4096},
+    {"id":"adapter-policy","recall":1,"precision":1,"characters":4096}
+  ],
+  "overall": {"recall":1,"precision":1,"characters":24576}
+}

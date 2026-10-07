@@ -335,6 +335,7 @@ EVENT_KINDS = (
     "agent.definition.checked", "launch_refused",
     "kb.put",
     "decision.proposed", "decision.accepted", "decision.rejected", "decision.superseded",
+    "plan.admitted", "plan.admission_consumed", "plan.admission_refused",
 )
 
 RUN_EVENT = Schema(

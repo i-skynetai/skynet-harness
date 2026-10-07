@@ -144,8 +144,8 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | In review | @arupmmi07, 2026-10-06 |
 | SH-088 | [Codebase discovery: what the code already decided](#sh-088) | context | P1 | L | In review | @arupmmi07, 2026-10-07 |
 | SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | In review | @arupmmi07, 2026-10-07 |
-| SH-090 | [`sky eval`: right context, smallest context](#sh-090) | evals | P1 | L | Ready | |
-| SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | Ready | |
+| SH-090 | [`sky eval`: right context, smallest context](#sh-090) | evals | P1 | L | In review | @arupmmi07, 2026-10-07 |
+| SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | In review | @arupmmi07, 2026-10-07 |
 | SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-093 | [The README shows an organisation what it gets](#sh-093) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-094 | [Contributor onboarding and documentation consistency](#sh-094) | docs | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
@@ -760,6 +760,16 @@ through the runtime-only `index.refresh` capability, and short-circuits on an un
 digest; an edit hook enqueues paths and a Stop hook runs the refresh. Plans report stale
 knowledge pins. Checked against the live skygraph index: eight modules, worklist written.
 Forty tests.
+*Slice 8, 2026-10-07 (SH-090, SH-091):* `sky eval` scores a golden set against the local
+store: recall and precision per question, the characters returned, and a token figure
+labelled as an estimate (characters/4), compared with `evals/baseline.json`; a regression
+exits 1 and names the item. On the public demo corpus all six questions score 1.0 at
+497 to 1109 characters each. Only a person updates the baseline. `sky plan admit <id>` (a
+person) issues a single-use admission for a current plan; a developer launch, dry run
+included, is refused without one, consumes it under the store lock just before the hand
+would start, and is refused when it is used, expired, stale or for another plan. A
+readiness or definition refusal leaves it unused and records why. Reviewer, architect
+and security launches are not gated, and `--policy` does not bypass it. Forty-one tests.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never
