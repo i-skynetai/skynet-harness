@@ -41,6 +41,15 @@ from .launcher import HAND_ROLES
 #: a mismatch later is visible rather than mysterious.
 SUPPORTED = {"codex": "codex-cli 0.149.0", "kimi": "0.20.0"}
 
+# SH-067: known tool names, independent of role enforcement. No Codex/Kimi
+# built-in names have been measured by this module; do not invent equivalents.
+BUILTIN_TOOLS = {
+    "claude": frozenset({"Read", "Edit", "Write", "NotebookEdit", "Grep", "Glob",
+                         "Bash", "Agent", "WebFetch", "WebSearch", "Skill", "ToolSearch"}),
+    "codex": frozenset(),
+    "kimi": frozenset(),
+}
+
 #: What each host can enforce. `roles` is what it may therefore be asked to do,
 #: and it is the launcher's table, not a second copy: three places once gave
 #: three answers (SH-008), and the generous ones were labels, not limits.

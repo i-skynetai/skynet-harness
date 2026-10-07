@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
-"""Check every tool a role agent is allowed to call actually exists.
+"""SH-067: every binding, declared skill and effective role tool must exist.
 
-A role agent's authority is its `tools:` line: a tool that is not listed is
-not visible to it. That makes the line load-bearing, and it makes a typo
-silent — the agent simply cannot do something, and nobody finds out until a
-task fails halfway. So this runs against the live servers, not a fixture.
+Live mode reads MCP servers from .sky/context.yaml and the KB map, queries
+HTTP or stdio tools/list, and records metadata in .sky/tool-inventory.json.
+--offline reads that inventory without contacting servers. An unreachable
+server uses its dated recorded inventory; no record is a failure.
 
-It also enforces the rule the design rests on: no write-capable tool may
-appear in a read-only role's allowlist. The boundary is what the role can
-see, not what it is asked not to do.
+Managed projects use their effective layered policy; otherwise the shipped
+policy is checked. --policy is an explicit development override. An optional
+positional agent directory retains checks of helper-agent allowlists.
 
-Reads the same three variables the plugin itself reads:
-
-    SKY_KB_URL    the knowledge endpoint  (.../mcp/)
-    SKY_CODE_URL  the code endpoint       (.../mcp-internal/)
-    SKY_KB_PAT    your own token
-
-Exit 0 = every allowlist is sound. Exit 1 = a problem worth blocking on.
-Part of `sky-setup selftest`; safe to run on its own.
+Provider annotation findings use Policy.annotation_problems(inventory) through
+an instance-local implementation of the existing hook. No provider annotation
+claims are inferred when annotations are absent. The existing read-role tool
+name heuristic remains as defence in depth. Exit 0 means no findings; 1 fails.
 """
 from __future__ import annotations
 
@@ -108,60 +104,73 @@ def allowlists(directory: str = "agents") -> dict[str, set[str]]:
     return out
 
 
-def main() -> int:
-    directory = sys.argv[1] if len(sys.argv) > 1 else "agents"
-    read_only = read_only_roles()
-    print(f"read-only agents (from the policy): {', '.join(sorted(read_only))}\n")
+def main(argv=None) -> int:
+    """Check policy, declared skills, effective roles and optional agent files."""
+    import argparse
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
+    from sky import inventory, project
+    from sky.policy import Policy, _installed_policy, _repo_policy
 
-    token = os.environ.get("SKY_KB_PAT", "")
-    kb_url = os.environ.get("SKY_KB_URL", "")
-    code_url = os.environ.get("SKY_CODE_URL", "")
-    if not (token and kb_url):
-        print("SKY_KB_PAT and SKY_KB_URL must be set — run `sky-setup init` first.")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("directory", nargs="?", help="optional agent directory")
+    parser.add_argument("--hand", default="claude")
+    parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--policy", type=Path, help="explicit development policy override")
+    parser.add_argument("--kb-map", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        effective = None if args.policy else project.resolve(Path.cwd(), ignore_overrides=True)
+        if effective is not None:
+            policy = effective
+            root = effective.root
+        else:
+            plugin = os.environ.get("SKY_PLUGIN_ROOT")
+            source = args.policy or (Path(plugin) / "policy.yaml" if plugin else
+                                     _installed_policy() or _repo_policy())
+            if source is None:
+                raise ValueError("no shipped policy found")
+            # Explicit path bypasses project and configured single-file discovery.
+            policy = Policy.load(source)
+            root = project.git_root(Path.cwd()) or Path.cwd()
+        if args.offline and not (root / ".sky/tool-inventory.json").exists():
+            print("no inventory at .sky/tool-inventory.json — run once without --offline to record it")
+            print("FAIL: 1 problem(s).")
+            return 1
+        if effective is not None:
+            print(effective.layers_notice())
+        servers = inventory.configured_servers(root, kb_map=args.kb_map)
+        roster, notices, problems = inventory.collect(
+            servers, root / ".sky/tool-inventory.json", offline=args.offline)
+        extra = {f"agent {role}": tools for role, tools in allowlists(args.directory).items()} if args.directory else {}
+        if args.directory and not extra:
+            problems.append(f"no agent files found under {args.directory}")
+        notes, findings = inventory.check(policy, roster, hand=args.hand, extra=extra)
+        notices.extend(notes)
+        problems.extend(findings)
+        # Keep the pre-existing read-role name heuristic as defence in depth,
+        # alongside the policy bindings and provider annotation checks.
+        read_only = HELPER_ROLES_READ_ONLY | {
+            role for role in policy.roles_named() if not policy.decide(role, "repo.edit").allowed}
+        rosters = {role: policy.tools_for(role) for role in policy.roles_named()}
+        if args.directory:
+            rosters.update(allowlists(args.directory))
+        for role, tools in sorted(rosters.items()):
+            if role in read_only:
+                for tool in sorted(tools):
+                    short = tool.split("__", 2)[-1]
+                    if tool.startswith("mcp__") and any(marker in short for marker in WRITE_MARKERS):
+                        problems.append(f"role {role}: WRITE TOOL in a read-only role: {tool}")
+        for notice in notices:
+            print(notice)
+        for problem in problems:
+            print(problem)
+        print(f"FAIL: {len(problems)} problem(s)." if problems else
+              "PASS: every binding, skill and role tool exists; annotation checks passed.")
+        return 1 if problems else 0
+    except Exception as exc:
+        print(f"FAIL: inventory check refused ({type(exc).__name__}); check policy, context and inventory configuration.")
         return 1
-
-    rosters = {"mcp__kb__": server_tools(kb_url, token)}
-    if code_url:
-        rosters["mcp__code__"] = server_tools(code_url, token)
-    else:
-        print("note: SKY_CODE_URL is unset, so code-tool references are not checked.")
-
-    for prefix, names in rosters.items():
-        print(f"live roster {prefix}* : {len(names)} tools")
-
-    problems = 0
-    found = allowlists(directory)
-    if not found:
-        print(f"no agent files found under {directory}/ — nothing checked.")
-        return 1
-    for role, tools in found.items():
-        mcp = {t for t in tools if t.startswith("mcp__")}
-        unknown, writes = [], []
-        for tool in sorted(mcp):
-            prefix = next((p for p in rosters if tool.startswith(p)), None)
-            if prefix is None:
-                unknown.append((tool, "no server with that prefix"))
-                continue
-            short = tool[len(prefix):]
-            if short not in rosters[prefix]:
-                unknown.append((tool, "not published by that server"))
-            if role in read_only and any(m in short for m in WRITE_MARKERS):
-                writes.append(tool)
-
-        status = "ok" if not (unknown or writes) else "PROBLEM"
-        print(f"\n{role}: {len(mcp)} MCP tools — {status}")
-        for tool, why in unknown:
-            print(f"   missing  {tool}  ({why})")
-        for tool in writes:
-            print(f"   WRITE TOOL in a read-only role: {tool}")
-        problems += len(unknown) + len(writes)
-
-    print()
-    if problems:
-        print(f"FAIL — {problems} problem(s).")
-        return 1
-    print("PASS — every allowed tool exists, and no read-only role can write.")
-    return 0
 
 
 if __name__ == "__main__":
