@@ -792,12 +792,15 @@ def probe_agent_definitions(brain: Brain, policy=None, hand: str = "claude") -> 
         report(State.MISSING, "no policy to compare")
         return
     try:
-        for role in sorted(HAND_ROLES["claude"]):
+        roles = policy.roles_named() if hasattr(policy, "definition_for") else sorted(HAND_ROLES["claude"])
+        for role in roles:
             check_definition(policy, role)
     except DefinitionError as exc:
         report(State.MISSING, str(exc))
         return
-    report(State.OK, "all four role definitions match the expanded policy tools")
+    detail = f"all {len(roles)} effective role definitions match" if hasattr(policy, "definition_for") else \
+        "all four role definitions match the expanded policy tools"
+    report(State.OK, detail)
 
 
 def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,

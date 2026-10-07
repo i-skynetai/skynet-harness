@@ -88,6 +88,21 @@ or missing templates before writing. `sync-agents` is an alias, `check-agents`
 reports drift, and `sky policy lint` checks the registry as well as agent files.
 `sky policy show` names declared skills granted to no role (SH-082).
 
+## Managed project configuration
+
+Each Git worktree may declare `managed: true` in `.sky/project.yaml`. Optional
+fields are `org_plugin` (`marketplace/plugin`, or an unambiguous bare name), `kb`,
+repository-relative `sessions_dir`, and `context.max_chars` (default 40000).
+Absent configuration or `managed: false` leaves existing discovery unchanged.
+Explicit policy overrides bypass layers and the command says so.
+
+Shipped, org and project patches merge under the shipped action/guard ceiling.
+Use `sky policy show --layers`, then `sky policy lint` and `sky policy render`.
+Managed render owns only recorded project agents/skills and `.sky/registry.json`;
+it never writes an installed plugin. Unknown removals, collisions and unowned or
+edited generated files refuse. Narrowed/added roles remain unavailable to
+`sky build` until SH-062 supplies effective identity selection.
+
 ## If any of this is missing
 
 `sky setup doctor` answers the configuration questions — is there a map, does

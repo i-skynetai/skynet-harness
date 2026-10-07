@@ -72,7 +72,7 @@ something new, open an issue with the *Propose a feature*; it gets an ID when ac
 | SH-021 | [Setup with no administrator](#sh-021) | setup | P1 | S | Ready | |
 | SH-022 | [`doctor` names the port tools it found](#sh-022) | probes | P1 | M | Ready | |
 | SH-023 | [`doctor` with no KB map still shows the table](#sh-023) — *good first issue* | probes | P1 | S | Done — 2.1.2 | @arupmmi07 |
-| SH-024 | [The Sky Context Protocol, written down](#sh-024) | protocol | P1 | M | Needs decision | |
+| SH-024 | [The Sky Context Protocol, written down](#sh-024) | protocol | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-025 | [A 60-second demo in the README](#sh-025) | docs | P2 | S | Proposed | |
 
 ### 2.3.0 — the run is the record
@@ -120,7 +120,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-062 | [Specialist work goes to a governed agent](#sh-062) | routing | P1 | M | Ready | |
 | SH-063 | [The guard covers managed projects](#sh-063) | guard | P1 | S | Ready | |
 | SH-064 | [Roles own skills, skills own tools, agents are rendered](#sh-064) | policy | P1 | M | In review | @arupmmi07, 2026-10-05 |
-| SH-065 | [Three policy layers under one ceiling](#sh-065) | policy | P1 | M | Ready | |
+| SH-065 | [Three policy layers under one ceiling](#sh-065) | policy | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-066 | [`/sky:author`: a proposal, then `sky policy apply`](#sh-066) | skills | P1 | M | Ready | |
 | SH-067 | [Every tool a skill names exists on the host](#sh-067) | policy | P1 | S | Ready | |
 | SH-068 | [A context manifest built from recorded calls](#sh-068) | context | P2 | M | Ready | |
@@ -130,13 +130,22 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-073 | [`/sky:handover`: one local format between sessions](#sh-073) | sessions | P1 | S | Ready | |
 | SH-074 | [`/sky:dispatch`: local, then remote](#sh-074) | routing | P1 | M | Ready | |
 | SH-075 | [Declared workflows: validation](#sh-075) | policy | P1 | S | Ready | |
-| SH-076 | [One memory folder per topic](#sh-076) | sessions | P2 | S | Needs decision | |
+| SH-076 | [One memory folder per topic](#sh-076) | sessions | P2 | S | Ready | |
 | SH-077 | [The demo knowledge base is the reference adapter](#sh-077) | demo | P2 | M | Ready | |
 | SH-078 | [`sky bridge`: Codex delivery](#sh-078) | bridge | P2 | M | Ready | |
 | SH-079 | [Declared workflows: execution](#sh-079) | policy | P1 | M | Ready | |
 | SH-080 | [The context budget is enforced](#sh-080) | context | P2 | M | Ready | |
 | SH-081 | [A handover reaches the knowledge base as an intent](#sh-081) | broker | P2 | S | Ready | |
 | SH-082 | [Every skill's procedure uses only tools its roles hold](#sh-082) | skills | P1 | M | Needs decision | |
+| SH-083 | [A local context store behind the protocol](#sh-083) | context | P1 | L | Ready | |
+| SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | Ready | |
+| SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | Ready | |
+| SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | Ready | |
+| SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | Ready | |
+| SH-088 | [Codebase discovery: what the code already decided](#sh-088) | context | P1 | L | Ready | |
+| SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | Ready | |
+| SH-090 | [`sky eval`: right context, smallest context](#sh-090) | evals | P1 | L | Ready | |
+| SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | Ready | |
 
 ## Details
 
@@ -284,6 +293,11 @@ already disagree (SH-001). *Decision needed:* keep the `kb_` prefix or use bare 
 (`similarity_search`); which tools are required; that every hit carries its tenant when
 a server holds more than one. *Done when:* `docs/protocol.md` states it, and a test
 checks the policy's tool lists, the probes and the demo server against it.
+*Progress, 2026-10-06:* [docs/context-protocol.md](docs/context-protocol.md) states the
+protocol: capabilities (search, graph, code, tickets, decisions, ingest), their operations
+and what every hit carries, the adapter format in `.sky/context.yaml`, and the decision —
+bare names in the protocol, product names in the adapter, the `kb_` prefix kept. The test
+against the policy, the probes and the local store comes with SH-083.
 
 <a id="sh-025"></a>**SH-025 — A 60-second demo in the README.** A recorded terminal
 session of the SH-020 sequence and the four policy questions in
@@ -506,6 +520,14 @@ that plainly allows an outward action; binds a tool to an unknown action; change
 action's classification or `never`; changes the guard's scope or failure mode; re-grants
 through an alias, a new skill or a new agent what an upper layer removed; a named org
 plugin that is not installed.
+*Progress, 2026-10-06:* `core/sky/project.py` resolves a managed project (`.sky/project.yaml`,
+per worktree) and `core/sky/policy_layers.py` merges shipped → org → project as patches
+under the ceiling, with per-role revocations (the removed skill and the tools actually
+lost) that no lower layer can undo; `sky policy render` in a managed project writes
+`.sky/registry.json` and a project agent only when a role's tool set really differs from
+the plugin's, deleting one it owns when the difference goes away;
+`show --layers` attributes every grant; explicit `--policy`/`SKY_POLICY` bypasses layering
+with a notice. A narrowed or added role refuses `sky build` until SH-062. Forty-eight tests.
 
 <a id="sh-066"></a>**SH-066 — `/sky:author`: a proposal, then `sky policy apply`.** No
 way to add a skill, bind tools or change a rule except by hand; and the policy says an
@@ -590,9 +612,16 @@ a cycle, an unknown agent or session, a step naming an outward action as if it r
 
 <a id="sh-076"></a>**SH-076 — One memory folder per topic.** The host keeps memory per
 working folder, so every session opened from one folder loads every topic's notes.
-*Done when:* `sky session new --folder` creates the topic folder with the card, `sky
-doctor` warns when cards share a folder, and the guide shows the layout. Failure cases:
-a card whose folder does not exist; two cards in one folder.
+The host keeps auto-memory per repository, shared across worktrees, and offers
+`autoMemoryDirectory` in any settings scope, including a per-launch `--settings <file>`
+(checked 2026-10-06). *Done when:* `sky session new` writes
+`.sky/sessions/<name>.settings.json` with `autoMemoryDirectory` set to an absolute
+`.sky/memory/<name>/`, records that path on the card, and `sky session open <name>`
+prints the launch command; `sky doctor` warns when two cards resolve to one memory
+location or a card's location does not exist; the guide shows the layout. Failure cases:
+a card whose settings file is missing or names another path; two cards sharing a memory
+directory; a session opened without `--settings` (the brief says so, from the host's
+memory location against the card's).
 
 <a id="sh-077"></a>**SH-077 — The demo knowledge base is the reference adapter.** The
 demo KB (SH-020) answers the knowledge port; it does not show how a team's own source
@@ -620,9 +649,10 @@ task. Failure cases: exactly at the cap delivers; cap plus one does not; a missi
 budget uses the shipped default and says so.
 
 <a id="sh-081"></a>**SH-081 — A handover reaches the knowledge base as an intent.**
-Writing to the KB is outward and a person runs it, and today the broker refuses
+Publishing to a remote knowledge base is outward and a person runs it (persisting into
+the local store is the runtime's local edit, SH-083), and today the broker refuses
 `kb.ingest` as unsupported (`core/sky/broker.py:217`). *Done when:* `/sky:handover` with
-a KB configured drops a `kb.ingest` intent in `.sky/outbox/`; the runtime validates it
+a remote engine configured drops a `kb.ingest` intent in `.sky/outbox/`; the runtime validates it
 against the schema and seals it; the broker renders it as a human-executable step — the
 exact command or the manual instruction, with the stamp and the source file shown —
 and `sky ship` prints it in order with its provenance. Failure cases: no KB — the local
@@ -647,6 +677,162 @@ when:* no skill in the plugin names a tool outside its roles' rendered lists, ch
 a test over `plugin/skills/*/SKILL.md`, and the "granted to no role" list is empty or
 every entry is a parent-only skill marked as such in its frontmatter. *Depends on:*
 SH-064, SH-038, SH-066.
+
+<a id="sh-083"></a>**SH-083 — A local context store behind the protocol.** No engine ships, so no
+run can retrieve or write back anything. *Done when:* `sky kb serve` starts a
+standard-library MCP server over `.sky/kb/` (Markdown with frontmatter: `id`, `type`,
+`title`, `relates_to`, stamp fields) answering the protocol's **search** (keyword
+ranking over chunks, top-k with scores and citations), **graph** (`relates_to` edges,
+neighbours by type), **ingest** (write a stamped document; refuse an unstamped one) and
+**decisions** (search by question; record); `.sky/context.yaml` maps the protocol names
+to it; `sky kb put <file>` is the runtime's validated write path (schema, stamp,
+citations, path containment, no symlink escape; atomic document-plus-manifest update;
+stable document and chunk ids; schema version); `sky doctor` shows it `ok`; `sky build
+--dry-run --role reviewer` passes against it offline, with the capabilities the local
+store lacks shown `absent`. Failure cases: a document without frontmatter is indexed by
+title only and reported; a malformed `relates_to` is a finding, not a crash; a write
+without a stamp, with a traversal path or a symlink escape is refused; an interrupted
+write leaves the previous document and manifest intact and reports failure; two writers
+serialise on a lock; search on an empty store returns zero hits, not an error. *Depends on:* SH-024.
+SH-020's demo becomes `sky kb init` over `examples/demo-docs/`.
+
+<a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
+empty and nothing fills it; a brownfield project's documents and code index are never
+connected in one step. *Done when:* `sky kb init` walks `README.md`,
+`docs/`, `docs/adr/` (or the folders `project.yaml` names), `.sky/handovers/` and any
+`--add <path>`, writes each into `.sky/kb/` with a stamp (`sky_agent` = `runtime`), a
+`type` (readme, doc, adr, design, handover, analysis, plan, decision) and a source path,
+and writes `.sky/kb/manifest.json` (what, from where, when, digest); connects the code
+index named in `.sky/context.yaml` (SH-040) and records its coverage in the manifest;
+overlapping sources (`docs/` and `docs/adr/`) are indexed once by canonical path; the
+store's own files, `.sky/runs/`, secrets and `.env`-style files are excluded; a second
+run changes nothing unless a source changed; with `--discover` it runs SH-088. Failure cases: a source outside the repository is
+refused; a binary or a file over the size cap is skipped and listed; a removed source is
+marked stale in the manifest, not deleted.
+
+<a id="sh-085"></a>**SH-085 — `/sky:analyze`: intent and discovery from retrieved
+evidence.** Today `/sky:analyze` writes a module card; nothing analyses a *goal*. *Done
+when:* the module card moves to `/sky:module` (its triggers follow); `/sky:analyze
+<goal>` runs in the `context-retriever` agent and produces `analysis-<id>.md` from
+`plugin/templates/analysis.md` with: the intent restated, what exists (store hits, cited
+by id), what is affected (code tools against the checkout), risks, and OPEN questions;
+each OPEN question is first searched in **decisions**; a candidate closes it only when
+it is an accepted, current decision whose scope applies, and the record id is the
+evidence; the agent returns the document and the runtime writes it with `sky kb put`.
+The skill retrieves by query and never reads the corpus wholesale; the manifest (SH-068)
+records what it used. Tests are deterministic over a fixture corpus (protocol calls,
+citations, decision applicability, template, persistence) plus a scripted fake-hand
+end-to-end trace; real analysis quality is measured by `sky eval --live` (SH-090), not
+claimed here. Failure cases: no store → the skill says `sky kb init` and stops; zero hits → the
+analysis says so and lists what it looked for; a question with two conflicting records,
+a paraphrase sharing no words with a record, a superseded record, or a record from
+another scope → stays OPEN, with the candidates listed. Tested with the local store over a fixture corpus.
+
+<a id="sh-086"></a>**SH-086 — `/sky:plan`: a plan document from an analysis.** Nothing
+turns an analysis into steps an agent can take. *Done when:* `/sky:plan <analysis-id>`
+produces `plan-<id>.md` from `plugin/templates/plan.md`: ordered steps, the agent (or
+session, or hand) for each, acceptance per step, the decisions it rests on (by id), and
+the OPEN questions that block it, and the digests of the analysis and decisions it
+rests on; the runtime writes it to the store and `/sky:dispatch` can run it as a
+`feature` workflow instance (SH-075/079); a plan whose inputs changed since (digest
+mismatch) is refused until re-planned. Failure cases: an analysis with
+OPEN questions produces a plan whose first step is "decide: …" and nothing else runs;
+a step naming an agent no role renders is a finding; an analysis id not in the store
+is refused.
+
+<a id="sh-087"></a>**SH-087 — `/sky:decide`: decisions recorded and found again.** A
+person's answer dies with the conversation, so the same question is asked next time.
+*Done when:* `schemas/decision.schema.json` exists (id, version, project, scope,
+question and aliases, answer, rationale, status accepted|superseded, supersedes, source
+analysis, evidence revision; runtime-written `recorded_at`, run identity, `decided_by`,
+`approval`); `/sky:decide <question> <answer>` asks the person to confirm in the session,
+and the runtime writes the record with that approval evidence; the protocol's
+**decisions** capability returns ranked candidates by deterministic lexical score and
+curated aliases; `/sky:analyze` closes an OPEN question only with an accepted, current,
+in-scope record. A record without approval evidence is an observation and never closes
+a question. Failure cases:
+a decision without an answer or without approval is refused; two accepted records for
+one question are both returned and neither closes it until one supersedes the other;
+recency alone never wins; a decision recorded in one project is not returned in another
+(scope).
+
+<a id="sh-088"></a>**SH-088 — Codebase discovery: what the code already decided.** An
+analysis today knows the documents but not the conventions the code encodes. *Done
+when:* `sky kb init --discover` (or `/sky:discover`) walks the modules the code index
+names and, for each, runs a bounded retrieval through the code port (symbols,
+dependencies, call sites, never whole folders) in the `context-retriever` agent and a
+judgement in the `architect` agent, and writes **knowledge records** (`type: knowledge`)
+to the store from `plugin/templates/knowledge.md`: implemented decisions (libraries and
+clients in use, communication style between services, interface style, validation
+framework), patterns and practices, business rules, non-functional requirements — each
+with `file:line` citations, the module it belongs to, the checkout and index digests it
+was derived from, and a stated confidence (a citation shows where a rule lives, not
+that the intent was inferred correctly) against `schemas/knowledge.schema.json`; a
+record with no citation is refused; knowledge records are observations and never close
+an OPEN question; the run's manifest shows characters retrieved per module. Failure cases: a
+module with no index coverage is listed as uncovered, not invented; a module over the
+retrieval budget is split or marked partial; a second run updates only modules whose
+index digest changed. *Depends on:* SH-040, SH-083, SH-084. Write a design note first.
+
+<a id="sh-089"></a>**SH-089 — The code index and its knowledge stay current.** After a
+change, the index and the knowledge records that cite the changed files are wrong until
+someone notices. *Done when:* a `PostToolUse` hook on `Edit`, `Write` and `NotebookEdit`
+in a managed session (its own matcher entries beside the existing `Bash` guard and
+ledger hooks, sharing one managed-project resolver, and no longer requiring
+`SKY_LAUNCHED`) appends changed paths atomically and de-duplicated to
+`.sky/pending-reindex`; a `Stop` hook (or
+`sky kb refresh`) asks the code port to re-index exactly those paths — the action `code.index.refresh`, automatic for a local
+index and an intent for a remote one — and marks knowledge records citing them `stale:
+true`; `/sky:refresh` re-derives stale records only, the
+SH-088 way; before any retrieval or refresh the resolver compares source and index
+digests and marks records stale on any observed change, so `Stop` is a convenience,
+not the guarantee (it does not run on an interruption); `sky doctor` shows the count of
+stale records. Failure cases: a code port
+with no re-index capability is reported, and the paths stay pending; a path outside the
+repository is ignored and logged; a path still being edited is not consumed; a
+re-index that fails or times out keeps the paths pending and records the attempt; edits
+made through `Bash`, by a child agent, or by another session are caught by the digest
+comparison; duplicate hook deliveries change nothing; the hook stands aside outside a
+managed project.
+
+<a id="sh-090"></a>**SH-090 — `sky eval`: right context, smallest context.** Nothing
+measures whether retrieval returns what a task needs, or how much it costs. *Done when:*
+`evals/golden/<task>.yaml` holds a task, the record ids and code locations its context
+must include, an upper bound on characters, and a rubric for the analysis and plan;
+`sky eval` runs retrieval for every task against the store (top-k with k stated per
+task; unique record ids, chunks of one record counted once) and prints per task: recall
+and precision over those ids (zero hits → recall 0, precision undefined and shown as
+such), characters and estimated tokens delivered, pass/fail against the bound; with
+`--live` and a configured hand it runs `/sky:analyze` and `/sky:plan`, scores them
+against the rubric, and records the hand's reported tokens; `sky eval --baseline` writes
+`evals/baseline.json` (a reviewed change, like any file), and CI fails on a drop in
+recall or a rise in characters beyond a stated tolerance; the offline part is
+deterministic, the `--live` rubric score is labelled as a live evaluation. Failure cases: a golden task naming a record that no longer exists is a
+failure, not a skip; a store that is empty fails every task with the reason; `--live`
+without a hand is refused. Ships with a fixture corpus and at least five golden tasks
+drawn from this repository's own documents.
+
+<a id="sh-091"></a>**SH-091 — The path is the policy's, not the person's.** A person can
+start implementation without an analysis or a plan, and skip review. The claim is scoped to **governed launches**: a governed agent started through the
+`Agent` hook, a `sky build` run, or work received over the bridge. The parent session's
+own `Edit`/`Write` are not gated (D1), and the docs say so. *Done when:* the dispatcher
+writes run-scoped **admission state** (`.sky/runs/<id>/current.json`: canonical
+project and worktree, plan and analysis digests, workflow and step, the one permitted
+agent identity, policy digest, and a single-use expiring dispatch token); `sky route`,
+the launcher and the bridge receiver each admit an implementation agent (developer, or
+any role granted a skill that edits repository code) only when that state is present,
+valid, unexpired and matches the call, and atomically reserve the token; the step
+advances only on a validated completion, not on the next call; a plan whose analysis has
+OPEN questions, or a step out of the declared `feature` order, is refused; producing an
+analysis, a decision or a plan, and the runtime's write-back, are never gated; the brief shows the
+current task's position in the workflow; `/sky:dispatch` is the only entry point and
+records each step in the run; reviewer and security agents are given the project's
+knowledge records for the touched modules as context. Failure cases: a plan id not in
+the store, a forged or replayed token, a second concurrent call for the same step, a call
+from another session or worktree, a resumed session with stale state, a revoked grant,
+or an analysis or decision changed since the plan (digest mismatch) — each refused with
+the reason; outside a managed project nothing changes. *Depends on:*
+SH-062, SH-075, SH-079, SH-086, SH-088.
 
 ## Release review — 2026-10-01
 

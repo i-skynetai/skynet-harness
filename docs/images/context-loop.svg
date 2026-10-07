@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>
+  </defs>
+  <rect width="900" height="420" fill="#ffffff"/>
+  <text x="20" y="30" font-size="18" font-weight="600" fill="#222">The context loop: read through retrieval, written back by the runtime</text>
+
+  <!-- store -->
+  <rect x="330" y="150" width="240" height="120" rx="10" fill="#fff9e8" stroke="#b58900" stroke-width="1.5"/>
+  <text x="450" y="178" text-anchor="middle" font-weight="600" fill="#222">Context store</text>
+  <text x="450" y="200" text-anchor="middle" fill="#444" font-size="13">local reference store today</text>
+  <text x="450" y="218" text-anchor="middle" fill="#444" font-size="13">or any engine behind the protocol</text>
+  <text x="450" y="246" text-anchor="middle" fill="#444" font-size="12">search · graph · code · tickets · decisions · ingest</text>
+
+  <!-- init -->
+  <rect x="20" y="60" width="250" height="90" rx="8" fill="#f4f6fa" stroke="#9aa5b8"/>
+  <text x="36" y="84" font-weight="600" fill="#222">sky kb init — initial discovery</text>
+  <text x="36" y="106" fill="#444" font-size="13">documents, ADRs, designs, handovers</text>
+  <text x="36" y="124" fill="#444" font-size="13">the code index → knowledge records</text>
+  <text x="36" y="142" fill="#444" font-size="12">(what the code already decided, cited)</text>
+  <line x1="270" y1="105" x2="328" y2="170" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- skills -->
+  <rect x="20" y="230" width="250" height="150" rx="8" fill="#eef7f0" stroke="#4f8a5b"/>
+  <text x="36" y="254" font-weight="600" fill="#222">Read-only agents</text>
+  <text x="36" y="276" fill="#444" font-size="13">/sky:analyze  intent · what exists · OPEN</text>
+  <text x="36" y="296" fill="#444" font-size="13">/sky:decide   a person's answer, approved</text>
+  <text x="36" y="316" fill="#444" font-size="13">/sky:plan     steps · agents · acceptance</text>
+  <text x="36" y="344" fill="#444" font-size="12">retrieve by query, cite every hit,</text>
+  <text x="36" y="362" fill="#444" font-size="12">close questions only from accepted decisions</text>
+  <line x1="270" y1="270" x2="328" y2="230" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="262" y="243" font-size="11" fill="#444" text-anchor="end">retrieval</text>
+
+  <!-- runtime write-back -->
+  <rect x="330" y="300" width="240" height="90" rx="8" fill="#fff" stroke="#9aa5b8"/>
+  <text x="346" y="324" font-weight="600" fill="#222">Runtime write-back</text>
+  <text x="346" y="344" fill="#444" font-size="13"><tspan font-family="Consolas, monospace">sky kb put</tspan>: validate, stamp, write</text>
+  <text x="346" y="362" fill="#444" font-size="12">local store = local edit</text>
+  <text x="346" y="380" fill="#444" font-size="12">remote engine = kb.ingest intent, a person runs it</text>
+  <line x1="270" y1="330" x2="328" y2="340" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="300" y="325" font-size="11" fill="#444" text-anchor="middle">document</text>
+  <line x1="450" y1="298" x2="450" y2="272" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- workflow -->
+  <rect x="630" y="60" width="250" height="330" rx="8" fill="#f4f6fa" stroke="#9aa5b8"/>
+  <text x="646" y="84" font-weight="600" fill="#222">feature workflow (/sky:dispatch)</text>
+  <text x="646" y="110" fill="#444" font-size="13">1  analyze → decide → plan</text>
+  <text x="646" y="132" fill="#444" font-size="13">2  architect gate</text>
+  <text x="646" y="154" fill="#444" font-size="13">3  developer  (needs a plan id)</text>
+  <text x="646" y="176" fill="#444" font-size="13">4  reviewer · security</text>
+  <text x="646" y="198" fill="#444" font-size="12">     with the knowledge records</text>
+  <text x="646" y="220" fill="#444" font-size="13">5  ship — a person runs it</text>
+  <text x="646" y="256" font-weight="600" fill="#222">Kept current</text>
+  <text x="646" y="278" fill="#444" font-size="12">edits → hook → re-index changed files</text>
+  <text x="646" y="296" fill="#444" font-size="12">→ citing records marked stale → /sky:refresh</text>
+  <text x="646" y="328" font-weight="600" fill="#222">Measured</text>
+  <text x="646" y="350" fill="#444" font-size="12">sky eval: golden tasks, recall, precision,</text>
+  <text x="646" y="368" fill="#444" font-size="12">characters and tokens delivered, CI baseline</text>
+  <line x1="572" y1="210" x2="628" y2="210" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="600" y="203" font-size="11" fill="#444" text-anchor="middle">context</text>
+</svg>

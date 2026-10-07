@@ -114,7 +114,7 @@ is a separate and optional repository.
 
 ## Status
 
-**v2.1.2.** See the [changelog](CHANGELOG.md). Not yet tagged as a release. **612 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
+**v2.1.2.** See the [changelog](CHANGELOG.md). Not yet tagged as a release. **661 tests**, standard library only, run on Python 3.11, 3.12 and 3.13 in
 CI with `sky selftest`.
 
 ## Documentation

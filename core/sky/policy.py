@@ -210,6 +210,14 @@ class Policy:
     # ── loading ──────────────────────────────────────────────────────────
     @classmethod
     def load(cls, path: str | Path | None = None) -> "Policy":
+        # Preserve find()->Path and the single-file development override API.
+        # Partial org/project patches are composed before from_dict sees them.
+        from . import project
+        explicit = path or project.explicit_override()
+        if explicit is None:
+            effective = project.resolve(Path.cwd())
+            if effective is not None:
+                return effective
         found = Path(path).expanduser() if path else cls.find()
         if found is None:
             raise PolicyError(
@@ -223,7 +231,9 @@ class Policy:
             raise PolicyError(f"cannot read {found}: {exc}") from exc
         except yamlish.YamlishError as exc:
             raise PolicyError(f"{found}: {exc}") from exc
-        return cls.from_dict(body, path=found)
+        loaded = cls.from_dict(body, path=found)
+        loaded.notice = "explicit policy: layers ignored" if explicit is not None else ""
+        return loaded
 
     @classmethod
     def find(cls) -> Path | None:

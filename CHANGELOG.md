@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **SH-065** — three policy layers under one ceiling. A repository with `.sky/project.yaml`
+  (`managed: true`) is governed by the shipped policy, an optional org plugin's policy and
+  its own `.sky/policy.yaml`, merged in that order as patches: a lower layer may add
+  bindings, skills and roles or narrow a role, never widen one, touch an action or the
+  guard, or re-grant what an upper layer removed (the skill, and the tools the role
+  actually lost). `sky policy show --layers` says where
+  each grant came from; `sky policy render` writes `.sky/registry.json` and the project
+  agents it owns; an explicit `--policy` bypasses layering and says so.
 - **SH-051, in part** — the test-runner probe reads Python 3.11's answer to an empty
   selection (exit 0, "Ran 0 tests") as healthy, as it already did 3.12's (exit 5, "NO
   TESTS RAN"). CI's 3.11 job had failed on this since the Windows port.

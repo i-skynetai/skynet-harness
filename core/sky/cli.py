@@ -41,7 +41,10 @@ def _load_policy(args) -> Policy | None:
     whole job. It IS fatal for `build`, because the tool allowlist lives here.
     """
     try:
-        return Policy.load(getattr(args, "policy", None))
+        policy = Policy.load(getattr(args, "policy", None))
+        if getattr(policy, "notice", ""):
+            print(policy.notice)
+        return policy
     except PolicyError as exc:
         print(f"policy: {exc}", file=sys.stderr)
         return None
@@ -167,6 +170,8 @@ def cmd_build(args) -> int:
 
     if args.hand == "claude":
         try:
+            if hasattr(policy, "requires_identity_selection") and policy.requires_identity_selection(args.role):
+                raise DefinitionError("effective identity selection lands with SH-062")
             definition = check_definition(policy, args.role)
         except DefinitionError as exc:
             print(f"  agent definitions  MISSING  {exc}")
@@ -298,6 +303,10 @@ def cmd_policy(args) -> int:
     if policy is None:
         return EXIT_PROBLEM
 
+    if hasattr(policy, "layers_notice") and (args.policy_action == "lint" or
+            args.policy_action == "show" and getattr(args, "layers", False)):
+        print(policy.layers_notice())
+
     directory = Path(args.what) if args.what else \
         (policy.path.parent / "agents" if policy.path else Path("agents"))
     if args.policy_action == "lint":
@@ -324,7 +333,13 @@ def cmd_policy(args) -> int:
             (policy.path.parent / "agents" if policy.path else Path("agents"))
         write = args.policy_action != "check-agents"
         try:
-            changed = policy.render(directory) if write else policy.sync_agents(directory, write=False)
+            if hasattr(policy, "layer_lines"):
+                if args.what:
+                    raise PolicyError("managed render uses the project .claude directory")
+                directory = policy.root / ".claude" / "agents"
+                changed = policy.render() if write else policy.artifact_problems()
+            else:
+                changed = policy.render(directory) if write else policy.sync_agents(directory, write=False)
         except (PolicyError, OSError, UnicodeError) as exc:
             print(f"policy render refused: {exc}", file=sys.stderr)
             return EXIT_PROBLEM
@@ -339,6 +354,13 @@ def cmd_policy(args) -> int:
 
     if args.policy_action == "show":
         print(f"policy {policy.path}   version {policy.version}\n")
+        if getattr(args, "layers", False):
+            print("  layers:")
+            if hasattr(policy, "layer_lines"):
+                for line in policy.layer_lines():
+                    print("      " + line)
+            else:
+                print("      single explicit or discovered policy")
         for role in policy.roles_named():
             spec = policy.roles[role]
             print(f"  {role}")
@@ -745,6 +767,7 @@ def build_parser() -> argparse.ArgumentParser:
                      help="the action when checking a role, or the agents "
                           "directory when syncing")
     pol.set_defaults(func=cmd_policy)
+    pol.add_argument("--layers", action="store_true", help="show each grant's source layer")
 
     st = sub.add_parser("selftest", help="is this repository still sound")
     st.add_argument("--root", metavar="PATH",

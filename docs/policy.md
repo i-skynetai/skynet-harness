@@ -96,6 +96,47 @@ granted to no role; procedure alignment is tracked in SH-082.
 The effective project `.sky/registry.json` and replacement identities belong to
 SH-065/SH-062; this row renders only the plugin source registry.
 
+## Managed project layers
+
+In a managed Git worktree, `.sky/project.yaml` declares `managed: true`, optional
+`org_plugin` and `kb`, a repository-relative `sessions_dir` (default `.sky/sessions`),
+and `context.max_chars` (positive integer, default 40000). Unknown fields and paths
+that escape the resolved repository root are refused. Each worktree reads its own
+configuration; absent configuration or `managed: false` leaves single-policy
+discovery unchanged. `--policy`, `SKY_POLICY` and the configured policy bypass
+layers; the command reports `explicit policy: layers ignored`.
+
+Layers merge shipped, org, then `.sky/policy.yaml` (optional). Name an org as
+`marketplace/plugin`; a bare name must match exactly one installed plugin.
+Lower layers cannot define actions, guard rules, ingestion rules or ticket settings,
+or replace existing bindings/groups. New roles require `base_tools`, `skills`,
+`may` and `needs_human`. Existing roles accept only `skills_add`, `skills_remove`,
+`tools_remove`, `may_remove`, `needs_human_remove`; existing skills accept only
+`tools_add` and `tools_remove`. Additions preserve order; unknown removals fail.
+`routing`, `workflows` and `sessions_dir` are stored, without executing anything.
+
+Revocations track lost tools and removed skills per role, with the removing
+layer. Removing a skill removes its grant and revokes only tools no longer reachable
+through base tools or remaining skills. `tools_remove` revokes a tool outright,
+even when another grant supplies it. Another role keeps its own grants, and a
+new role is fresh. A lower layer cannot restore a revoked tool through a renamed
+skill or a group. This checks exact tool-name aliases, not semantic aliases between
+differently named MCP tools. The effective digest covers policy and revocations.
+`sky policy show --layers` displays grant and removal provenance.
+
+Managed render leaves installed plugins untouched. Org replacements require a
+matching org agent. Project replacements become `.claude/agents/sky-<role>.md`,
+seeded from the replaced agent; a new project role needs `.sky/agents/<role>.md`.
+An unchanged effective tool list keeps the plugin identity active and writes no
+replacement agent; the registry still records skill revocations.
+New project skills copy `.sky/skills/<name>/SKILL.md` to `.claude/skills/`.
+`.sky/registry.json` records active/superseded identities and hashes of owned files.
+Collisions, missing templates and edited/unowned destinations refuse before writing.
+Render removes stale files only when their recorded ownership hash still matches.
+Effective definition checks require the registry and never fall back to a superseded
+agent. Building a narrowed or added role remains refused: effective identity selection
+lands with SH-062. Registry routing enforcement also belongs to SH-062.
+
 ## The two tiers
 
 **Tier A — the tool allowlist.** Fixed before the model exists. A reviewer never

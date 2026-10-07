@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 
 from . import yamlish
-from .policy import CONFIG_POLICY, Policy, _installed_policy, _repo_policy
+from .policy import CONFIG_POLICY, Policy, PolicyError, _installed_policy, _repo_policy
 
 
 class DefinitionError(Exception):
@@ -46,6 +46,12 @@ def check_definition(policy: Policy, role: str) -> Path:
     flow lists are also understood by the core's strict reader. Unsupported
     syntax, duplicate fields and empty tool names are refused, never guessed.
     """
+    if hasattr(policy, "definition_for"):
+        try:
+            path, _ = policy.definition_for(role)
+            return path
+        except PolicyError as exc:
+            raise DefinitionError(f"{role}: effective agent definition: {exc}") from exc
     if role not in policy.roles or not re.fullmatch(r"[A-Za-z0-9_-]+", role):
         raise DefinitionError(f"unknown role {role!r}")
     try:

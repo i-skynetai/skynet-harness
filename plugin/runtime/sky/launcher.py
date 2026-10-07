@@ -336,6 +336,8 @@ def hand_command(hand: str, role: str, mcp_config: Path, prompt: str,
     if role not in policy.roles:
         raise Refused(f"unknown role {role!r}; policy has "
                       f"{', '.join(policy.roles_named())}")
+    if hasattr(policy, "requires_identity_selection") and policy.requires_identity_selection(role):
+        raise Refused("effective identity selection lands with SH-062")
     if role not in HAND_ROLES[hand]:
         allowed = ", ".join(sorted(HAND_ROLES[hand])) or "no roles at all"
         raise Refused(

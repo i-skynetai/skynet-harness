@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:project",
+  "title": "Managed project",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["managed"],
+  "properties": {
+    "managed": {"type": "boolean"},
+    "org_plugin": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*(/[A-Za-z0-9][A-Za-z0-9_.-]*)?$"
+    },
+    "kb": {"type": ["string", "null"], "minLength": 1},
+    "sessions_dir": {"type": "string", "minLength": 1, "default": ".sky/sessions"},
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_chars": {"type": "integer", "minimum": 1, "default": 40000}
+      }
+    }
+  }
+}
