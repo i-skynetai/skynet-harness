@@ -1,35 +1,35 @@
 ---
-type: analysis
-schema_version: 1
-title: "<goal>"
-project: "<project>"
-relates_to: []
-citations: []
+{
+  "type": "analysis",
+  "schema_version": 1,
+  "title": "Replace with the goal title",
+  "goal": "Replace with the requested goal",
+  "scope": ["."],
+  "evidence_revision": "replace-with-verified-checkout-revision",
+  "intent": {"in_scope": ["Replace with bounded scope"], "out_of_scope": []},
+  "findings": [{"statement": "Replace with a verified fact", "citations": ["replace-with-file:1"]}],
+  "open_questions": [{"question": "Replace with an unresolved question", "candidates": [], "reason": "Explain the inspected candidates and why none closes it"}],
+  "risks": [],
+  "retrieval": {"operations": []},
+  "citations": [],
+  "relates_to": []
+}
 ---
-# Analysis — <goal>
+# Analysis
 
-Return this document to the runtime; do not write the store. The runtime supplies
-the id and five stamp fields after validating citations and identity.
+Replace every placeholder. Return structured frontmatter and explanatory Markdown
+for `sky kb analyze put --from - --goal <goal>`. Do not supply stamps or retrieval.run.
+The runtime records ledger operations/characters; unavailable counts remain null.
 
-## Intent
-
-Restate the goal, acceptance, scope and exclusions.
-
-## What exists
-
-Cite store record ids (`id:<record>`) for retrieved facts. List queries and zero hits.
-Every claim has evidence or is marked OPEN.
-
-## What is affected
-
-Cite verified `file:line` locations, modules and checkout/index digests.
+## Intent and discovery
+Explain in/out of scope. Every finding names resolving file:line or id:<record>
+citations. Unsupported claims remain OPEN.
 
 ## Decisions and OPEN questions
+Each question lists candidates {id, status, closes}, an evidence-backed reason,
+and optional closed_by. Include closed_by only for an accepted, current, in-scope
+candidate with a verified evidence revision and no conflicting applicable answer.
 
-For each question list candidates, applicability and conflicts. Close it only with
-an accepted, current, in-scope approved decision; cite its id and digest. Knowledge
-observations never close a question. Send unresolved questions to a person.
-
-## Risks and context
-
-List risks, stale/partial coverage, manifest id and advisory character-budget findings.
+## Risks and retrieval
+Describe incomplete coverage and risks. Runtime measurements do not prove prompt
+delivery. An observation is not a decision and a saved analysis is not admission.

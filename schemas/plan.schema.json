@@ -1,0 +1,207 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+    },
+    "type": {
+      "const": "plan"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "analysis_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "enum": [
+              "architect",
+              "developer",
+              "reviewer",
+              "security"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "description",
+          "acceptance",
+          "inputs"
+        ]
+      }
+    },
+    "pins": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "analysis": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "[a-f0-9]{64}"
+            }
+          },
+          "required": [
+            "id",
+            "digest"
+          ]
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "digest": {
+                "type": "string",
+                "pattern": "[a-f0-9]{64}"
+              }
+            },
+            "required": [
+              "id",
+              "digest"
+            ]
+          }
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "digest": {
+                "type": "string",
+                "pattern": "[a-f0-9]{64}"
+              }
+            },
+            "required": [
+              "id",
+              "digest"
+            ]
+          }
+        },
+        "checkout": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "analysis",
+        "decisions",
+        "knowledge",
+        "checkout"
+      ],
+      "x-written-by": "runtime"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "relates_to": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "sky_agent": {
+      "type": "string",
+      "x-written-by": "runtime"
+    },
+    "sky_run": {
+      "type": "string",
+      "x-written-by": "runtime"
+    },
+    "sky_role": {
+      "type": "string",
+      "x-written-by": "runtime"
+    },
+    "sky_task": {
+      "type": "string",
+      "x-written-by": "runtime"
+    },
+    "sky_kb": {
+      "type": "string",
+      "x-written-by": "runtime"
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "schema_version",
+    "title",
+    "project",
+    "analysis_id",
+    "steps",
+    "pins",
+    "citations",
+    "relates_to",
+    "sky_agent",
+    "sky_run",
+    "sky_role",
+    "sky_task",
+    "sky_kb"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sky:schema:plan",
+  "title": "plan"
+}

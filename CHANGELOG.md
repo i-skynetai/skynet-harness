@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **SH-085, SH-086** — `/sky:analyze` and `/sky:plan`. An analysis is stored through the
+  runtime (`sky kb analyze put --from <file>|- --goal <goal>`) only if every finding cites
+  a file:line or record that resolves and every "closed by" claim survives a re-check
+  against the store: the decision must be accepted, current, in scope and on the same
+  evidence revision. Retrieval measurements are taken from the ledger, never from the
+  agent. A plan (`sky kb plan put --from <file>|- --analysis <id>`) is refused while a
+  question is OPEN, pins the analysis, decision and knowledge revisions and the checkout,
+  and `show`/`list` report `stale` with reasons. The former analyze skill is now
+  `/sky:module`; `analyze` and `plan` are read-only skills granted to architect (and
+  analyze to developer). Twenty-three skills.
 - **SH-087** — `/sky:decide`: decisions recorded and found again. A decision has a
   lifecycle: proposed by an agent (`sky kb decide propose --from <file>|-`, or the
   `decide` skill returning the proposal text), then accepted, rejected or superseded by

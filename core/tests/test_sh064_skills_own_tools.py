@@ -197,10 +197,10 @@ class SkillsOwnTools(unittest.TestCase):
             self.assertEqual(policy.agent_tools_line(role), next(l for l in lines if l.startswith("tools:")))
         self.assertEqual(policy.sync_agents(PLUGIN / "agents", write=False), [])
 
-    def test_all_twenty_one_skill_directories_have_policy_entries(self):
+    def test_all_twenty_three_skill_directories_have_policy_entries(self):
         policy = Policy.load(PLUGIN / "policy.yaml")
         names = {p.name for p in (PLUGIN / "skills").iterdir() if (p / "SKILL.md").is_file()}
-        self.assertEqual(len(names), 21)
+        self.assertEqual(len(names), 23)
         self.assertEqual(set(policy.skills), names)
         _, output = self.command(self.policy(copy.deepcopy(policy.body)), "show")
         self.assertIn("declared, granted to no role", output)

@@ -228,7 +228,7 @@ Explicit metadata (including approval requirements) is never weakened.
         super().__init__(root)
         self.relative = relative
 
-    def put(self, metadata, body, *, stamp, approval=None):
+    def put(self, metadata, body, *, stamp, approval=None, run=None):
         # The runtime caller uses this same metadata for its kb.put event.
         # Fill defaults in place; Store.put copies before adding runtime stamps.
         if metadata.get("source", self.relative) != self.relative:
@@ -238,7 +238,7 @@ Explicit metadata (including approval requirements) is never weakened.
         metadata.setdefault("type", infer_type(self.relative))
         heading = re.search(r"^ {0,3}#[ \t]+([^\r\n]+?)[ \t]*(?:[ \t]+#+[ \t]*)?\r?$", body, re.MULTILINE)
         metadata.setdefault("title", heading.group(1) if heading else Path(self.relative).name)
-        return super().put(metadata, body, stamp=stamp, approval=approval)
+        return super().put(metadata, body, stamp=stamp, approval=approval, run=run)
 
 
 def initialize(root, *, add=(), sources=None, discover=False, call=None):

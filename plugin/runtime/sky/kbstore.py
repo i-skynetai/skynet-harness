@@ -260,7 +260,7 @@ class Store:
             if number < 1 or not path.is_file() or number > len(path.read_text(encoding="utf-8").splitlines()):
                 raise StoreError(f"citation does not resolve: {citation}")
 
-    def put(self, metadata, body, *, stamp, approval=None):
+    def put(self, metadata, body, *, stamp, approval=None, run=None):
         if isinstance(metadata, dict) and metadata.get("type") == "decision":
             from .decisions import put_decision
             return put_decision(self, metadata, body, stamp=stamp, approval=approval)
@@ -272,6 +272,12 @@ class Store:
             raise StoreError("runtime stamp required (all five fields; agent and run nonempty)")
         if _RUNTIME & set(metadata):
             raise StoreError(f"model supplied runtime-owned field: {sorted(_RUNTIME & set(metadata))[0]}")
+        if metadata.get("type") in ("analysis", "plan"):
+            from .analysis import RUNTIME_FIELDS
+            if RUNTIME_FIELDS & metadata.keys():
+                raise StoreError("model supplied runtime-owned analysis/plan field")
+        if run is not None and stamp != run.stamp():
+            raise StoreError("runtime run differs from stamp")
         record = copy.deepcopy(metadata)
         for key in STAMP_FIELDS:
             if key in record and record[key] != stamp[key]:
@@ -304,12 +310,20 @@ class Store:
             if any(c.startswith("id:") for c in record["citations"]):
                 raise StoreError("knowledge requires code file:line citations")
         self._citations(record)
-        text = document_text(record, body)
-        if redaction.find(text):
-            raise StoreError("redaction gate refused document")
-        revision = digest(text)
         with self.locked():
             manifest = self.manifest()
+            if record["type"] in ("analysis", "plan"):
+                from . import analysis, plans
+                module = analysis if record["type"] == "analysis" else plans
+                module.prepare(self, record, run=run)
+                if record["id"] in manifest["documents"]:
+                    previous = self.get(record["id"], manifest=manifest)["metadata"]
+                    if previous["type"] != record["type"]:
+                        raise StoreError(record["type"] + " id belongs to another record type")
+            text = document_text(record, body)
+            if redaction.find(text):
+                raise StoreError("redaction gate refused document")
+            revision = digest(text)
             old = manifest["documents"].get(record["id"])
             if old and old["digest"] == revision:
                 return copy.deepcopy(old)

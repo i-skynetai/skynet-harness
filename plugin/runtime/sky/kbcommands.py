@@ -88,7 +88,7 @@ def put(store, file, document_type=None):
             if metadata.get("type") not in (None, document_type):
                 raise StoreError("--type conflicts with the document's frontmatter type")
             metadata["type"] = document_type
-        entry = store.put(metadata, body, stamp=run.stamp())
+        entry = store.put(metadata, body, stamp=run.stamp(), run=run)
     except (StoreError, OSError, ValueError, yamlish.YamlishError) as exc:
         run.refused(str(exc), operation="kb.put")
         if interactive:
@@ -124,6 +124,8 @@ def execute(args):
         store = Store(root)
         if action == "decide":
             return decide(store, args)
+        if action in ("analyze", "plan"):
+            return workflow_document(store, args)
         if action == "init":
             if value:
                 raise StoreError("init uses --add <path>, not a positional file")
@@ -223,5 +225,61 @@ def decide(store, args):
     if own_run:
         run.finish("stored")
     print(f"{entry['id']}  {entry['digest']}")
+    print(f"run record: {run.directory}")
+    return 0
+
+
+def workflow_document(store, args):
+    from . import analysis, plans
+    module = analysis if args.kb_action == "analyze" else plans
+    action = args.kb_value
+    if action == "list":
+        records = analysis.list_analyses(store) if module is analysis else plans.list_plans(store)
+        print(json.dumps(records, ensure_ascii=False, sort_keys=True, indent=2))
+        return 0
+    if action == "show":
+        print(json.dumps(module.show(store, args.decision_id), ensure_ascii=False, sort_keys=True, indent=2))
+        return 0
+    if action != "put":
+        raise StoreError(args.kb_action + " requires put, list or show")
+    run = current_run()
+    own_run = run is None
+    if own_run:
+        run = recorder.Run.start(role="runtime", task="sky kb " + args.kb_action + " put",
+                                 kb="local", agent_id="runtime")
+    try:
+        if not args.proposal_from:
+            raise StoreError("put requires --from <file>|-")
+        if module is plans and not args.analysis_id:
+            raise StoreError("plan put requires --analysis <id>")
+        if args.proposal_from == "-":
+            text = sys.stdin.read(MAX_DOCUMENT_CHARS + 1)
+        else:
+            path = Path(args.proposal_from)
+            try:
+                relative = (Path.cwd() / path).absolute().relative_to(store.root).as_posix()
+            except ValueError as exc:
+                raise StoreError("input file is outside repository") from exc
+            with store.safe_path(relative).open("rb") as stream:
+                raw = stream.read(MAX_DOCUMENT_CHARS * 4 + 1)
+            if len(raw) > MAX_DOCUMENT_CHARS * 4:
+                raise StoreError("document exceeds size cap")
+            text = raw.decode("utf-8")
+        if len(text) > MAX_DOCUMENT_CHARS:
+            raise StoreError("document exceeds size cap")
+        if any((ord(char) < 32 and char not in "\r\n\t") or ord(char) == 127 for char in text):
+            raise StoreError("binary or control characters in document")
+        kwargs = {"goal": args.goal} if module is analysis else {"analysis_id": args.analysis_id}
+        entry = module.put_text(store, text, run=run, **kwargs)
+    except (StoreError, OSError, ValueError) as exc:
+        run.refused(str(exc), operation=args.kb_action + ".put")
+        if own_run:
+            run.finish("refused")
+        raise
+    run.event("kb.put", document_id=entry["id"], digest=entry["digest"],
+              type=entry["type"], run_id=run.run_id, agent_id=run.agent_id)
+    if own_run:
+        run.finish("stored")
+    print(f"stored {entry['id']}  {entry['digest']}")
     print(f"run record: {run.directory}")
     return 0

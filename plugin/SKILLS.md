@@ -30,7 +30,7 @@ any other code — `/sky:sync` shows it in full before it lands.
 ## 2. A skill nobody can find is a skill nobody has.
 
 The host reads only each skill's `name` and `description` until one matches;
-the body and the scripts stay on disk. That is what keeps twenty-one skills from
+the body and the scripts stay on disk. That is what keeps twenty-three skills from
 filling the context — and it means the description is the whole of how a skill
 gets chosen.
 

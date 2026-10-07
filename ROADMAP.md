@@ -139,8 +139,8 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-082 | [Every skill's procedure uses only tools its roles hold](#sh-082) | skills | P1 | M | Needs decision | |
 | SH-083 | [A local context store behind the protocol](#sh-083) | context | P1 | L | In progress | @arupmmi07, 2026-10-06 |
 | SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | In review | @arupmmi07, 2026-10-06 |
-| SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | Ready | |
-| SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | Ready | |
+| SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | In review | @arupmmi07, 2026-10-06 |
+| SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | In review | @arupmmi07, 2026-10-06 |
 | SH-088 | [Codebase discovery: what the code already decided](#sh-088) | context | P1 | L | Ready | |
 | SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | Ready | |
@@ -740,6 +740,15 @@ session, event, digest, method) as a new revision — refused under SKY_LAUNCHED
 at `sky kb put` when an agent supplies approval fields. `decisions.find` ranks candidates
 and flags `closes` only for accepted + current + in-scope decisions with a verified
 evidence revision. Four event kinds. Twenty-nine tests.
+*Slice 6, 2026-10-06 (SH-085, SH-086):* `/sky:analyze` returns an analysis the runtime
+validates and stores (`sky kb analyze put`): every finding cites a file:line or record that
+resolves; a question is "closed by" a decision only after the store re-checks that the
+decision is accepted, current, in scope and on the same evidence revision; retrieval
+measurements come from the ledger, never from the agent. `/sky:plan` (`sky kb plan put
+--analysis <id>`) refuses while any question is OPEN, pins the analysis, decision and
+knowledge revisions and the checkout, and reports `stale` with reasons when any moved.
+Today's module-card skill is `/sky:module`; analyze and plan are read-only skills.
+Forty-three tests.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never

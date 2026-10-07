@@ -297,11 +297,15 @@ tools:
 
 # Skills declare tools; roles grant skills. Procedure alignment is SH-082.
 skills:
+  analyze:
+    tools: ["Read", "Grep", "Glob", "+kb_read", "+code_read"]
+  plan:
+    tools: ["Read", "Grep", "Glob", "+kb_read"]
   decide:
     tools: ["Read", "Grep", "Glob", "+kb_read"]
   adr:
     tools: ["Read", "Edit", "Write", "Grep", "Glob", "+kb_read", "+code_read"]
-  analyze:
+  module:
     tools: ["Read", "Edit", "Write", "Grep", "Glob", "+kb_read", "+code_read"]
   ask:
     tools: ["Read", "Grep", "Glob", "+kb_read"]
@@ -344,7 +348,7 @@ roles:
   developer:
     purpose: "implement a bounded change, with tests, and stop"
     base_tools: ["Read", "Edit", "Write", "Grep", "Glob"]
-    skills: ["code", "test", "context", "skills", "ask", "bugfix", "review", "secure", "ship", "decide"]
+    skills: ["code", "test", "context", "skills", "ask", "bugfix", "review", "secure", "ship", "decide", "analyze"]
     may: ["repo.read", "repo.edit", "test.run", "commit.local", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
     needs_human: ["push", "pr.open", "ticket.comment", "ticket.transition", "kb.ingest"]
   reviewer:
@@ -356,7 +360,7 @@ roles:
   architect:
     purpose: "design, the spec gate, impact walk; produce documents, not code"
     base_tools: ["Read", "Grep", "Glob"]
-    skills: ["context", "skills", "ask", "impact", "decide"]
+    skills: ["context", "skills", "ask", "impact", "decide", "analyze", "plan"]
     may: ["repo.read", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
     needs_human: ["ticket.comment", "kb.ingest"]
   security:

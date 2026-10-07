@@ -284,5 +284,5 @@ class G9_TheDocumentationMatches(unittest.TestCase):
     def test_the_readme_no_longer_says_ten_skills(self):
         body = (REPO / "README.md").read_text()
         self.assertNotIn("ten SDLC skills", body)
-        self.assertIn("twenty-one SDLC skills", body)
+        self.assertIn("twenty-three SDLC skills", body)
 
