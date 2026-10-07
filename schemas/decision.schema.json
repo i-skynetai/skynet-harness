@@ -1,0 +1,192 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "urn:sky:schema:decision",
+    "title":  "decision",
+    "type":  "object",
+    "additionalProperties":  false,
+    "required":  [
+                     "id",
+                     "type",
+                     "schema_version",
+                     "version",
+                     "title",
+                     "project",
+                     "scope",
+                     "question",
+                     "aliases",
+                     "answer",
+                     "rationale",
+                     "status",
+                     "supersedes",
+                     "source_analysis",
+                     "evidence_revision",
+                     "relates_to",
+                     "citations",
+                     "sky_agent",
+                     "sky_run",
+                     "sky_role",
+                     "sky_task",
+                     "sky_kb",
+                     "recorded_at",
+                     "run_identity",
+                     "decided_by",
+                     "approval"
+                 ],
+    "properties":  {
+                       "id":  {
+                                  "type":  "string",
+                                  "pattern":  "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                              },
+                       "type":  {
+                                    "const":  "decision"
+                                },
+                       "schema_version":  {
+                                              "const":  1
+                                          },
+                       "version":  {
+                                       "type":  "integer",
+                                       "minimum":  1
+                                   },
+                       "title":  {
+                                     "type":  "string",
+                                     "minLength":  1
+                                 },
+                       "project":  {
+                                       "type":  "string",
+                                       "minLength":  1
+                                   },
+                       "scope":  {
+                                     "type":  "array",
+                                     "minItems":  1,
+                                     "items":  {
+                                                   "type":  "string",
+                                                   "minLength":  1
+                                               }
+                                 },
+                       "question":  {
+                                        "type":  "string",
+                                        "minLength":  1
+                                    },
+                       "aliases":  {
+                                       "type":  "array",
+                                       "items":  {
+                                                     "type":  "string",
+                                                     "minLength":  1
+                                                 }
+                                   },
+                       "answer":  {
+                                      "type":  "string",
+                                      "minLength":  1
+                                  },
+                       "rationale":  {
+                                         "type":  "string",
+                                         "minLength":  1
+                                     },
+                       "status":  {
+                                      "enum":  [
+                                                   "accepted",
+                                                   "superseded"
+                                               ]
+                                  },
+                       "supersedes":  {
+                                          "type":  "array",
+                                          "items":  {
+                                                        "type":  "string",
+                                                        "minLength":  1
+                                                    }
+                                      },
+                       "source_analysis":  {
+                                               "type":  "string",
+                                               "minLength":  1
+                                           },
+                       "evidence_revision":  {
+                                                 "type":  "string",
+                                                 "minLength":  1
+                                             },
+                       "relates_to":  {
+                                          "type":  "array",
+                                          "items":  {
+                                                        "type":  "string",
+                                                        "minLength":  1
+                                                    }
+                                      },
+                       "citations":  {
+                                         "type":  "array",
+                                         "minItems":  1,
+                                         "items":  {
+                                                       "type":  "string",
+                                                       "minLength":  1
+                                                   }
+                                     },
+                       "source":  {
+                                      "type":  "string",
+                                      "minLength":  1
+                                  },
+                       "sky_agent":  {
+                                         "type":  "string",
+                                         "minLength":  1,
+                                         "x-written-by":  "runtime"
+                                     },
+                       "sky_run":  {
+                                       "type":  "string",
+                                       "minLength":  1,
+                                       "x-written-by":  "runtime"
+                                   },
+                       "sky_role":  {
+                                        "type":  "string",
+                                        "x-written-by":  "runtime"
+                                    },
+                       "sky_task":  {
+                                        "type":  "string",
+                                        "x-written-by":  "runtime"
+                                    },
+                       "sky_kb":  {
+                                      "type":  "string",
+                                      "x-written-by":  "runtime"
+                                  },
+                       "recorded_at":  {
+                                           "type":  "string",
+                                           "format":  "date-time",
+                                           "x-written-by":  "runtime"
+                                       },
+                       "run_identity":  {
+                                            "type":  "string",
+                                            "minLength":  1,
+                                            "x-written-by":  "runtime"
+                                        },
+                       "decided_by":  {
+                                          "type":  "string",
+                                          "minLength":  1,
+                                          "x-written-by":  "runtime"
+                                      },
+                       "approval":  {
+                                        "type":  "object",
+                                        "x-written-by":  "runtime",
+                                        "additionalProperties":  false,
+                                        "required":  [
+                                                         "actor",
+                                                         "session",
+                                                         "event_id",
+                                                         "confirmed_at"
+                                                     ],
+                                        "properties":  {
+                                                           "actor":  {
+                                                                         "type":  "string",
+                                                                         "minLength":  1
+                                                                     },
+                                                           "session":  {
+                                                                           "type":  "string",
+                                                                           "minLength":  1
+                                                                       },
+                                                           "event_id":  {
+                                                                            "type":  "string",
+                                                                            "minLength":  1
+                                                                        },
+                                                           "confirmed_at":  {
+                                                                                "type":  "string",
+                                                                                "format":  "date-time"
+                                                                            }
+                                                       }
+                                    }
+                   }
+}

@@ -1,0 +1,126 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "urn:sky:schema:knowledge",
+    "title":  "knowledge",
+    "type":  "object",
+    "additionalProperties":  false,
+    "required":  [
+                     "id",
+                     "type",
+                     "schema_version",
+                     "title",
+                     "project",
+                     "scope",
+                     "module",
+                     "category",
+                     "confidence",
+                     "checkout_digest",
+                     "index_digest",
+                     "stale",
+                     "relates_to",
+                     "citations",
+                     "sky_agent",
+                     "sky_run",
+                     "sky_role",
+                     "sky_task",
+                     "sky_kb"
+                 ],
+    "properties":  {
+                       "id":  {
+                                  "type":  "string",
+                                  "pattern":  "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                              },
+                       "type":  {
+                                    "const":  "knowledge"
+                                },
+                       "schema_version":  {
+                                              "const":  1
+                                          },
+                       "title":  {
+                                     "type":  "string",
+                                     "minLength":  1
+                                 },
+                       "project":  {
+                                       "type":  "string",
+                                       "minLength":  1
+                                   },
+                       "scope":  {
+                                     "type":  "array",
+                                     "minItems":  1,
+                                     "items":  {
+                                                   "type":  "string",
+                                                   "minLength":  1
+                                               }
+                                 },
+                       "module":  {
+                                      "type":  "string",
+                                      "minLength":  1
+                                  },
+                       "category":  {
+                                        "enum":  [
+                                                     "implemented_decision",
+                                                     "pattern",
+                                                     "practice",
+                                                     "business_rule",
+                                                     "nfr"
+                                                 ]
+                                    },
+                       "confidence":  {
+                                          "type":  "number",
+                                          "minimum":  0,
+                                          "maximum":  1
+                                      },
+                       "checkout_digest":  {
+                                               "type":  "string",
+                                               "pattern":  "^[a-f0-9]{64}$"
+                                           },
+                       "index_digest":  {
+                                            "type":  "string",
+                                            "pattern":  "^[a-f0-9]{64}$"
+                                        },
+                       "stale":  {
+                                     "type":  "boolean"
+                                 },
+                       "relates_to":  {
+                                          "type":  "array",
+                                          "items":  {
+                                                        "type":  "string",
+                                                        "minLength":  1
+                                                    }
+                                      },
+                       "citations":  {
+                                         "type":  "array",
+                                         "minItems":  1,
+                                         "items":  {
+                                                       "type":  "string",
+                                                       "minLength":  1
+                                                   }
+                                     },
+                       "source":  {
+                                      "type":  "string",
+                                      "minLength":  1
+                                  },
+                       "sky_agent":  {
+                                         "type":  "string",
+                                         "minLength":  1,
+                                         "x-written-by":  "runtime"
+                                     },
+                       "sky_run":  {
+                                       "type":  "string",
+                                       "minLength":  1,
+                                       "x-written-by":  "runtime"
+                                   },
+                       "sky_role":  {
+                                        "type":  "string",
+                                        "x-written-by":  "runtime"
+                                    },
+                       "sky_task":  {
+                                        "type":  "string",
+                                        "x-written-by":  "runtime"
+                                    },
+                       "sky_kb":  {
+                                      "type":  "string",
+                                      "x-written-by":  "runtime"
+                                  }
+                   }
+}

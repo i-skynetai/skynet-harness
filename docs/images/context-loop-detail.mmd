@@ -1,0 +1,30 @@
+%% Context-loop design, SH-083 to SH-091. Maintainer renders to context-loop-detail.png.
+%% CLI, workflows, discovery and admission are planned until their rows land.
+flowchart LR
+    classDef planned fill:#eef4fc,stroke:#6687aa,color:#222
+    classDef runtime fill:#eef7f0,stroke:#4f8a5b,color:#222
+    classDef human fill:#fff6f5,stroke:#b3261e,color:#222
+
+    init["Init project context<br/>documents · ADRs · handovers<br/>code-port module discovery"]:::planned
+    store[("Project context store<br/>local reference or remote engine<br/>documents · observations · decisions")]:::planned
+    analysis["Read-only analysis<br/>retrieve by query · verify code<br/>cited claims and OPEN questions"]:::planned
+    person["Person confirms decisions<br/>current revision and applicable scope"]:::human
+    plan["Read-only planning<br/>steps · owners · acceptance<br/>pinned analysis and decision digests"]:::planned
+    persist["Runtime write-back<br/>schema · stamp · citations · redaction<br/>local commit or remote intent"]:::runtime
+    dispatch["Governed workflow<br/>architect → developer → reviewer → security<br/>validated admission for implementation"]:::planned
+    refresh["Reconcile changed paths and digests<br/>refresh index · mark knowledge stale<br/>re-derive affected modules only"]:::planned
+    eval["Recorded context and evaluation<br/>character manifests · offline golden metrics<br/>live rubric scores reviewed separately"]:::planned
+
+    init --> persist
+    persist -->|"local validated transaction"| store
+    store -->|"bounded search and evidence"| analysis
+    analysis -->|"unresolved question"| person
+    person -->|"runtime approval evidence"| persist
+    analysis --> plan
+    store -->|"approved applicable decisions"| plan
+    plan -->|"returned document"| persist
+    plan -->|"validated plan and admission"| dispatch
+    dispatch --> refresh
+    refresh --> init
+    analysis --> eval
+    dispatch --> eval
