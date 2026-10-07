@@ -90,6 +90,53 @@ team   (it is the default)
 Privacy-aware repository ownership takes precedence over the default. No configured
 KB means a stated refusal, not an invented connection.
 
+### 3a. No knowledge base yet? Start with the local store
+
+A team without a knowledge base service can start today. The local store is a
+Markdown store under `.sky/kb/`, served over MCP by the runtime, and your own
+documents go into it with one command. Six commands, in any Git repository you want
+to manage; the output below is the real transcript from a fresh repository on
+2026-10-06 (paths shortened):
+
+```sh
+sky setup init --local          # makes the repository managed: writes .sky/project.yaml, nothing else
+sky policy render               # writes the effective identities to .sky/registry.json
+sky kb serve --write-adapter    # binds the local store's operations to the context protocol
+sky kb init                     # indexes README.md, docs/** and .sky/handovers/**
+sky doctor
+sky build --dry-run --role reviewer
+```
+
+```text
+$ sky kb init
+stored: 5; unchanged: 0; skipped: 0
+no code index
+run record: ~/.local/state/sky/runs/run-20261007-035223-001
+
+$ sky doctor
+ready for: question, review      NOT: build, learn
+  focus              ok        local search for 'Role definitions' answered: 1 hit(s)
+  knowledge          ok        local MCP tools/list and search answered
+    search             ok        1 mapped operation(s) answered tools/list
+    graph              ok        1 mapped operation(s) answered tools/list
+    code               absent    nothing mapped
+    decisions          ok        2 mapped operation(s) answered tools/list
+    ingest             ok        1 mapped operation(s) answered tools/list
+```
+
+What you get from it: every document goes through the runtime's validated write path
+with its source and digest recorded, so a session can cite where a fact came from; a
+second `sky kb init` changes nothing unless a source changed; a removed source is
+marked stale, never deleted; files that look like secrets, binaries and oversized
+files are skipped and listed. Point `context.sources` in `.sky/project.yaml` at other
+folders if your documents live elsewhere. The [offline example](../examples/README.md)
+walks the same sequence over five sample documents, and
+`sky kb search "<phrase>"` shows what a session would retrieve.
+
+To add a code index, write its adapter from the MCP configuration you already have:
+`sky context adapter code --from-mcp-json <path> --server <name>`; `sky doctor` then
+shows the `code` capability as `ok` and lists the mapped operations.
+
 ## 4. Inspect layered policy in a managed repository
 
 SH-065 resolves a git worktree's `.sky/project.yaml`. Create this file only when it
@@ -214,12 +261,13 @@ Counts and skips depend on the checkout; an unrun integration is not a pass.
 
 ## 9. The context loop — planned, not commands to try yet
 
-The following output is illustrative, not observed behavior. Importable local-store
-modules are the first SH-083 slice; the public CLI and adapter wiring are still pending.
+The following output is illustrative, not observed behavior. The local store, its CLI
+(`sky kb serve|put|show|search|init`), the code-index adapter and the MCP-call ledger
+have landed (SH-083, SH-084, SH-040, SH-031, SH-068; see section 3a). The rows below
+are still to come.
 
 | Planned command | Illustrative result | Rows |
 |---|---|---|
-| `sky kb init` | source manifest; exclusions, skips and coverage | SH-083/084/040 |
 | `sky kb init --discover` | cited knowledge observations, uncovered/partial modules | SH-088 |
 | `/sky:analyze <goal>` | cited analysis and OPEN questions; today's analyze is a module-card skill | SH-082/085 |
 | `/sky:decide <question> <answer>` | runtime-confirmed decision with approval evidence | SH-087 |
@@ -232,8 +280,9 @@ modules are the first SH-083 slice; the public CLI and adapter wiring are still 
 
 An approved decision is reused only while current and applicable; a conflict or stale
 revision leaves the question OPEN. Future admission gates governed implementation
-launches, not the parent's own edits. Complete MCP-call accounting and measured context
-manifests require SH-031/068; today's record does not prove every tool call was observed.
+launches, not the parent's own edits. In a managed session every MCP call is already
+recorded on the ledger, and `sky context manifest <run>` measures what a run retrieved
+and how large it was.
 
 ## Diagram sources
 

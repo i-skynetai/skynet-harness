@@ -18,8 +18,8 @@ of each run. It supplies no model and replaces no coding agent.
 Unmanaged coding agents fail in three ways. They invent context instead of looking it
 up. They act outside their job: the agent asked to review a patch pushes it. And they
 report success that never happened. Each agent product has its own settings for this,
-so a team using two of them keeps two sets of rules, and they drift apart. The rules
-also live nowhere a new session can find them, so each one starts from zero.
+so a team using two keeps two sets of rules that drift apart, and no new session can
+find them, so each one starts from zero.
 
 ## Words you need
 
@@ -57,10 +57,11 @@ than assumed harmless. `./sky selftest` checks the repository against itself.
 
 1. **Install the plugin** from this repository: `/plugin marketplace add
    i-skynetai/skynet-harness`, then `/plugin install sky@sky`. Codex: `./sky host codex`.
-2. **Make a repository managed** with `.sky/project.yaml`; narrow the policy in
-   `.sky/policy.yaml` if you need to. `./sky policy show --layers` says where every
-   grant comes from.
-3. **Connect context.** A knowledge base over MCP, a code index, or both; `./sky doctor`
+2. **Make a repository managed**: `./sky setup init --local` writes `.sky/project.yaml`
+   and nothing else; narrow the policy in `.sky/policy.yaml` if you need to.
+   `./sky policy show --layers` says where every grant comes from.
+3. **Connect context.** `./sky kb init` indexes the repository's own documents into the
+   local store; add a knowledge base over MCP, a code index, or both. `./sky doctor`
    shows each capability as `ok`, `MISSING` with the fix, or `absent`.
 4. **Work.** `./sky build --task PROJ-123 --role developer --hand claude` starts a
    governed run today. The context loop — `/sky:analyze`, `/sky:decide`, `/sky:plan`,
@@ -82,10 +83,10 @@ The [user guide](docs/user-guide.md) walks through each step with its output.
   usage the agent reported.
 - **The twenty SDLC skills** cover context, design, review, testing, bug fixing and
   more, so a workflow is a repeatable step and not one long prompt.
-- **Planned, as rows:** a local context store and the protocol any engine plugs into,
-  codebase discovery that records what your code already decided, decisions kept and
-  found again, evals that measure whether retrieval was right and small, per-topic
-  sessions with a built-in bridge ([design note](docs/features/3.0-governed-sessions.md)).
+- **Planned, as rows:** codebase discovery that records what your code already
+  decided, decisions kept and found again, evals that measure whether retrieval was
+  right and small, per-topic sessions with a built-in bridge
+  ([design note](docs/features/3.0-governed-sessions.md)).
 
 ## What it is not
 
