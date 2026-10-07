@@ -305,6 +305,21 @@ governed-run markers or accept on behalf of a person. The CLI also supports reje
 and supersede; `python <harness-checkout>/sky kb --help` lists their arguments.
 A retrieved candidate alone does not settle a question.
 
+<a id="operating-limits"></a>
+### Operating limits
+
+- Installing the plugin does not restrict ordinary parent-session Edit, Write or MCP
+  tools. Automatic briefing, governed routing and narrowed-role launches remain
+  SH-060–063. Checked specialist launches have the host boundaries described above.
+- Tool lists and command guards are not an adversarial sandbox. People own decision
+  approval and publication; the harness is not an unattended release system.
+- Context manifests record observed calls and returned size. They do not prove the
+  quality of reasoning or enforce a context budget. Evals are SH-090; enforced budgets
+  are SH-080.
+- The local store is a development reference, not a hosted team knowledge service.
+  Remote ingestion remains SH-081. Codex supports managed reviews only; Kimi has no
+  managed role.
+
 ## 10. The rest of the context loop — work still ahead
 
 The following output is illustrative, not observed behavior. The local store, its CLI

@@ -29,7 +29,7 @@ Measure results; speed and adoption gains are not yet proven ([adoption guide](d
 It ships as a Claude Code plugin and a Python command-line tool. Claude specialist
 launches have checked tool lists; Codex supports managed reviews only. People approve
 decisions and perform publication. **The full automated workflow is still being built**;
-installation does not enforce every action in an ordinary session. See the limits below.
+installation does not enforce every action in an ordinary session. See the current status below.
 
 ## Words you need
 
@@ -116,35 +116,19 @@ Dashed paths are planned. See [architecture](docs/architecture.md).
 - The **twenty-one SDLC skills** in the committed baseline; **twenty-three SDLC skills**
   in the in-review development checkout. Procedure alignment remains SH-082.
 
-## What it is not
+## Current status
 
-It is not a model, an adversarial sandbox or an unattended release system. It checks
-supported launches; people still own decisions and publication. A manifest records
-observed context, not a guarantee that a task's reasoning was correct.
+Skynet Harness is under active development. You can use managed specialist runs,
+local document search, approved decision records and run tracking today.
 
-## Limits and work still ahead
+The complete analyze → plan → implement workflow, evals and automatic team setup
+are still being built. People remain responsible for approving decisions and
+publishing changes.
 
-- Ordinary parent Edit/Write/MCP tools remain unrestricted. Automatic briefing,
-  governed routing and narrowed-role launches await SH-060–063.
-- Analysis/planning are in review (SH-085/086); ordered workflow admission is pending
-  (SH-074/075/079/091). The full loop is not available yet.
-- Codebase discovery/refresh, `sky eval`, bridges, topic memory and team extensions
-  remain roadmap work (SH-066/070–078/088–090).
-- Manifests measure size; they do not prove quality or enforce a budget.
-  Evals are SH-090; budget enforcement is SH-080.
-- The local store is a development reference, not a hosted team knowledge service.
-  Remote ingestion remains SH-081. Kimi has no managed role.
-- Tool lists and command guards are not an adversarial sandbox.
-
-## Status and history
-
-**v2.1.2.** This is the manifest version; it is not yet tagged. Main contains unreleased
-3.0 work. On 2026-10-07, the committed baseline `8486918` has **871 tests**;
-the in-review development checkout has **914**. Counts and skips vary by revision.
-CI targets Python 3.11, 3.12 and 3.13 on Linux.
-The badge links to actual results; local success does not prove hosted CI.
-[CHANGELOG.md](CHANGELOG.md) separates history from unreleased work;
-[ROADMAP.md](ROADMAP.md) lists known bugs, features, priorities and owners.
+**v2.1.2.** This is the manifest version, not yet tagged. Main includes unreleased
+3.0 work. See the [roadmap](ROADMAP.md) for planned features and the
+[changelog](CHANGELOG.md) for development history. The [user guide](docs/user-guide.md#operating-limits)
+explains permission boundaries and current limitations.
 
 ## Documentation
 
