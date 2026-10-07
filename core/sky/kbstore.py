@@ -227,7 +227,11 @@ class Store:
         relative = path.relative_to(self.root).as_posix()
         self.safe_path(relative)
         path.parent.mkdir(parents=True, exist_ok=True)
-        temp = path.with_name(path.name + ".tmp-" + uuid.uuid4().hex)
+        # A digest revision already has a long basename. Appending another UUID
+        # makes only the temporary path longer and can break Windows writes even
+        # when the final revision path is usable. Keep the temp beside its target
+        # for atomic replacement, with a short independent unique basename.
+        temp = path.with_name(".tmp-" + uuid.uuid4().hex)
         try:
             with temp.open("x", encoding="utf-8", newline="\n") as stream:
                 stream.write(text)
@@ -315,6 +319,9 @@ class Store:
             if old and self.get(record["id"])["metadata"]["project"] != project:
                 raise StoreError("document id belongs to another project")
             path = self.safe_path(f".sky/kb/documents/{record['id']}/{revision}.md")
+            # First writes have no store/documents/<id> tree. Create every
+            # parent under the writer lock before opening a temporary revision.
+            path.parent.mkdir(parents=True, exist_ok=True)
             self._atomic(path, text)
             entry = {"id": record["id"], "type": record["type"], "title": record["title"],
                      "source": record.get("source", ""), "digest": revision,

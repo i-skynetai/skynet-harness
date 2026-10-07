@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import re
 import shutil
 import subprocess
@@ -803,6 +804,47 @@ def probe_agent_definitions(brain: Brain, policy=None, hand: str = "claude") -> 
     report(State.OK, detail)
 
 
+def probe_context(brain: Brain, context, rows=None):
+    """List all mapped tools once per server; availability is not authority."""
+    from .context_sources import capabilities
+    rows = capabilities(context) if rows is None else rows
+    for capability, state, detail in rows:
+        brain.add(Part.KNOWLEDGE, {"ok": State.OK, "MISSING": State.MISSING,
+                                  "absent": State.ABSENT}[state], detail, name=capability)
+    return rows
+
+
+def probe_local(brain: Brain, context, rows):
+    """Observe both protocol availability and a read, without a remote account."""
+    from .context_sources import ContextError, stdio_call
+    states = {cap: state for cap, state, _ in rows}
+    if states["search"] != "ok":
+        brain.add(Part.KNOWLEDGE, State.MISSING, "local search adapter is unavailable")
+        brain.add(Part.FOCUS, State.MISSING, "not probed: local search unavailable")
+        return
+    source = context.sources["local"]
+    mapping = source.get("search.keyword")
+    if mapping is None:
+        brain.add(Part.KNOWLEDGE, State.MISSING, "local source has no search.keyword")
+        brain.add(Part.FOCUS, State.MISSING, "not probed: local keyword search unavailable")
+        return
+    try:
+        hits = stdio_call(context.servers[source["server"]], mapping["tool"],
+                          {"query": "project", "k": 1})
+        if not isinstance(hits, list) or any(not isinstance(h, dict) or not h.get("id") for h in hits):
+            raise ContextError("search returned malformed hits")
+    except (OSError, ValueError, KeyError, TypeError, queue.Empty, subprocess.TimeoutExpired) as exc:
+        brain.add(Part.KNOWLEDGE, State.DOWN, f"local search failed: {exc}")
+        brain.add(Part.FOCUS, State.DOWN, "local read did not answer correctly")
+        return
+    brain.add(Part.KNOWLEDGE, State.OK, "local MCP tools/list and search answered")
+    # Empty is an observed valid local read, not evidence that documents exist.
+    # Remote retrieval retains its stronger non-empty evidence contract.
+    brain.add(Part.FOCUS, State.OK if hits else State.DEGRADED,
+              f"local search answered: {len(hits)} hit(s)" +
+              ("; no matching project evidence" if not hits else ""))
+
+
 def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,
             deep: bool = False, no_kb: str = "") -> Brain:
     """Probe every part. With no knowledge base, still probe the rest.
@@ -812,7 +854,23 @@ def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,
     account — so the first thing a newcomer saw was a dead end.
     """
     brain = Brain()
-    if kb is None:
+    from .context_sources import ContextError, load, LocalKB, capabilities
+    context_error = None
+    try:
+        context = load(cwd)
+    except (ContextError, OSError, ValueError) as exc:
+        context, context_error = None, str(exc)
+    rows = capabilities(context)
+    local = isinstance(kb, LocalKB)
+    if context_error:
+        brain.add(Part.KNOWLEDGE, State.MISSING, context_error)
+        brain.add(Part.FOCUS, State.MISSING, "invalid project context configuration")
+    elif local and context and context.local:
+        probe_local(brain, context, rows)
+    elif local:
+        brain.add(Part.KNOWLEDGE, State.MISSING, "local source disappeared from .sky/context.yaml")
+        brain.add(Part.FOCUS, State.MISSING, "not probed: no local source")
+    elif kb is None:
         why = no_kb or "no knowledge base is configured"
         brain.add(Part.KNOWLEDGE, State.MISSING, why)
         brain.add(Part.FOCUS, State.MISSING, "not probed: no knowledge base")
@@ -820,13 +878,17 @@ def run_all(kb: KB | None, hand: str = "claude", policy=None, cwd=None,
         probe_knowledge(brain, kb)
         # The search always runs. It is the thing Focus means.
         probe_focus(brain, kb, code_note=probe_code_index(kb))
+    probe_context(brain, context, rows)
     probe_hand(brain, hand)
     probe_actions(brain)
     probe_safety(brain, policy)
     probe_agent_definitions(brain, policy, hand)
     probe_quality(brain, cwd)
     probe_habits(brain, hand)
-    if kb is None:
+    if local:
+        brain.add(Part.REMEMBERING, State.MISSING,
+                  "local writes require a runtime stamp; doctor performs no write")
+    elif kb is None:
         brain.add(Part.REMEMBERING, State.MISSING, "not probed: no knowledge base")
     else:
         probe_remembering(brain, kb, deep=deep)

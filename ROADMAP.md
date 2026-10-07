@@ -708,6 +708,14 @@ revisions, one atomic manifest commit, stable ids, locks, validated put) and
 `core/sky/kbserve.py` (stdio MCP: search, neighbours, decisions_find, decisions_record,
 ingest), `schemas/decision.schema.json`, `schemas/knowledge.schema.json`, the analysis,
 plan and knowledge templates; 31 tests. CLI, adapter and doctor wiring are slice 2.
+*Slice 2, 2026-10-06:* `sky kb serve|put|show|search` over the managed project's store
+(`--root` for an explicit one); `sky kb serve --write-adapter` writes the `local` source into
+`.sky/context.yaml`; `sky doctor` shows one row per protocol capability (`ok` / `MISSING` with
+the first missing tool / `absent`), and a reviewer dry-run passes offline against the local
+store with no KB map; `kb.put` is a recorded event; the local server's three read tools are
+bound to `kb.read` and granted through `kb_read`, its write tools to no role. A plain Markdown
+file is accepted with `--type`, its metadata synthesised. Forty-one tests. Next: the code
+port (SH-040) and the ledger over MCP calls (SH-031/068).
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never

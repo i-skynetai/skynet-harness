@@ -107,7 +107,7 @@ The [user guide](docs/user-guide.md) walks through each step with its output.
 
 ## Status
 
-**v2.1.2.** The 3.0 rows are in progress; see the [changelog](CHANGELOG.md). **708
+**v2.1.2.** The 3.0 rows are in progress; see the [changelog](CHANGELOG.md). **749
 tests**, standard library only, on Python 3.11, 3.12 and 3.13 in CI with `sky selftest`.
 
 ## Documentation

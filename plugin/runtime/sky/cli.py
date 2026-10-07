@@ -26,12 +26,22 @@ from .kbmap import CONFIG_DIR, KBMap, KBMapError, NoKBForPath
 from .policy import Policy, PolicyError
 from .readiness import Kind
 from .agent_definitions import DefinitionError, check_definition
+from . import context_sources
 
 EXIT_OK, EXIT_PROBLEM, EXIT_MISUSE = 0, 1, 2
 
 
 def _load_map(args) -> KBMap:
     return KBMap.load(Path(args.kb_map) if args.kb_map else None)
+
+
+def _resolve_kb(args):
+    """A configured local source needs no remote KB map or credential."""
+    context = context_sources.load(Path.cwd())
+    if context and context.local and not args.kb:
+        return context_sources.LocalMap(), context_sources.local_kb(context), context
+    kbmap = _load_map(args)
+    return kbmap, kbmap.resolve(Path.cwd(), override=args.kb), None
 
 
 def _load_policy(args) -> Policy | None:
@@ -53,9 +63,8 @@ def _load_policy(args) -> Policy | None:
 def cmd_doctor(args) -> int:
     """What is alive, and what that permits."""
     try:
-        kbmap = _load_map(args)
-        kb = kbmap.resolve(Path.cwd(), override=args.kb)
-    except (KBMapError, NoKBForPath) as exc:
+        kbmap, kb, context = _resolve_kb(args)
+    except (KBMapError, NoKBForPath, context_sources.ContextError) as exc:
         # Not a crash — an unconfigured machine is a normal state. Say what to
         # do about it, then still probe and show everything else.
         print(f"sky doctor: {exc}", file=sys.stderr)
@@ -87,7 +96,10 @@ def cmd_doctor(args) -> int:
 
 
 def cmd_kb(args) -> int:
-    """List the KBs, or say which one this directory resolves to."""
+    """Inspect mapped KBs, or operate the project's validated local store."""
+    if args.kb_action in ("serve", "put", "show", "search"):
+        from .kbcommands import execute
+        return execute(args)
     try:
         kbmap = _load_map(args)
     except KBMapError as exc:
@@ -148,9 +160,8 @@ def cmd_build(args) -> int:
     """
     kind = Kind.BUILD if args.role == "developer" else Kind.REVIEW
     try:
-        kbmap = _load_map(args)
-        kb = kbmap.resolve(Path.cwd(), override=args.kb)
-    except (KBMapError, NoKBForPath) as exc:
+        kbmap, kb, context = _resolve_kb(args)
+    except (KBMapError, NoKBForPath, context_sources.ContextError) as exc:
         print(f"sky build: {exc}", file=sys.stderr)
         _emit(args, outcome="refused", ok=False, reason=str(exc), stage="kb")
         return EXIT_PROBLEM
@@ -217,8 +228,8 @@ def cmd_build(args) -> int:
             return EXIT_PROBLEM
         print(f"git block proven: {why}")
 
-        mcp = launcher.write_mcp_config(env, kb, run.directory,
-                                        catalogue=kbmap.catalogue())
+        mcp = (context_sources.mcp_config(context, run.directory) if context else
+               launcher.write_mcp_config(env, kb, run.directory, catalogue=kbmap.catalogue()))
         try:
             cmd = launcher.hand_command(args.hand, args.role, mcp, args.task or "",
                                         policy)
@@ -234,6 +245,23 @@ def cmd_build(args) -> int:
                   tools=policy.tools_for(args.role),
                   policy=str(policy.path or "built-in"))
 
+        if context:
+            # Protocol availability cannot grant roles different MCP names.
+            # Readiness and authority must both hold, including for dry-runs.
+            source = context.sources["local"]
+            needed = [f"mcp__{source['server']}__{source[op]['tool']}"
+                      for op in ("search.keyword", "graph.neighbours", "decisions.find") if op in source]
+            missing = next((tool for tool in needed if tool not in policy.tools_for(args.role)), None)
+            if missing:
+                why = f"local context tool {missing} is not granted to {args.role}; render matching policy and agent grants"
+                run.event("launch_refused", hand=args.hand, role=args.role, reason=why)
+                run.refused(why)
+                run.finish("refused")
+                print(f"sky build refused — {why}", file=sys.stderr)
+                _emit(args, outcome="refused", ok=False, stage="local-grants", reason=why,
+                      run_id=run.run_id, directory=run.directory)
+                return EXIT_PROBLEM
+
         if args.dry_run:
             print("\n--dry-run: everything above passed; the hand was not started.")
             print("  command      "
@@ -242,9 +270,14 @@ def cmd_build(args) -> int:
             print(f"  environment  {len(env.variables)} variables, "
                   f"{len(secret)} secret ({', '.join(secret)})")
             cat = kbmap.catalogue()
-            print(f"  mcp servers  {kb.name}" + (" + code" if kb.code_url else "")
-                  + (f" + catalogue ({cat.name})" if cat and cat.name != kb.name else ""))
+            if context:
+                print("  mcp servers  " + ", ".join(sorted(context.servers)))
+            else:
+                print(f"  mcp servers  {kb.name}" + (" + code" if kb.code_url else "")
+                      + (f" + catalogue ({cat.name})" if cat and cat.name != kb.name else ""))
             print(f"  run record   {run.directory}")
+            if context:
+                print(f"  local MCP grants verified for {args.role}; local context readiness checked")
             run.finish("dry-run")
             _emit(args, outcome="dry-run", ok=True, run_id=run.run_id,
                   directory=run.directory, agent_id=agent_id, kb=kb.name,
@@ -756,7 +789,12 @@ def build_parser() -> argparse.ArgumentParser:
     d.set_defaults(func=cmd_doctor)
 
     k = sub.add_parser("kb", help="which knowledge bases exist, and which one applies here")
-    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which"])
+    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search"])
+    k.add_argument("kb_value", nargs="?", help="file, document id or quoted search query")
+    k.add_argument("--root", help="explicit repository root for local KB commands")
+    k.add_argument("--type", dest="document_type", help="validated document type for put")
+    k.add_argument("-k", type=int, default=10, help="maximum search hits (1–100)")
+    k.add_argument("--write-adapter", action="store_true", help="write the local adapter and exit")
     k.set_defaults(func=cmd_kb)
 
     pol = sub.add_parser("policy", help="what each role may do, and why")

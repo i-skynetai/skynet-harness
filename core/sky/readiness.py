@@ -31,6 +31,7 @@ class State(str, Enum):
     MISSING = "missing"       # never configured
     DOWN = "down"             # configured, and the probe failed
     NA = "n/a"                # not applicable on this host
+    ABSENT = "absent"         # no context operation is mapped to this capability
 
     @property
     def usable(self) -> bool:
@@ -91,7 +92,7 @@ class Observation:
 
     def __str__(self) -> str:
         mark = {State.OK: "ok", State.DEGRADED: "degraded", State.MISSING: "MISSING",
-                State.DOWN: "DOWN", State.NA: "n/a"}[self.state]
+                State.DOWN: "DOWN", State.NA: "n/a", State.ABSENT: "absent"}[self.state]
         return f"{self.name or self.part.value:<18} {mark:<9} {self.detail}"
 
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **SH-083, second slice** — `sky kb serve|put|show|search` over the managed project's
+  local store; `--write-adapter` puts the `local` source into `.sky/context.yaml`;
+  `sky doctor` shows one row per protocol capability and a reviewer dry-run passes
+  offline against the local store. Writes are `kb.put` events on the run; the store's
+  read tools are granted to every role that reads a knowledge base, its write tools to
+  none. A plain Markdown file is accepted with `--type`.
 - **SH-067** — every tool a skill names must exist on the host. `scripts/check-allowlists.py`
   checks bindings, skills and each role's effective tools against each hand's built-in
   tools and a recorded inventory of the configured servers; an unreachable server falls

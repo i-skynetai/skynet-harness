@@ -330,6 +330,7 @@ EVENT_KINDS = (
     "git.block.checked", "hand.command", "hand.start", "hand.end",
     "intent.filed", "intent.refused",
     "agent.definition.checked", "launch_refused",
+    "kb.put",
 )
 
 RUN_EVENT = Schema(
@@ -615,6 +616,9 @@ def json_schema(schema: Schema, *, _nested: bool = False) -> dict:
     })
     if not out["required"]:
         del out["required"]
+    if schema.name == "run-event":
+        # Document emitted kinds without closing the extensible event contract.
+        out["x-known-kinds"] = list(EVENT_KINDS)
     return out
 
 

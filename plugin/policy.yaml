@@ -110,8 +110,8 @@ actions:
 # drift apart.
 #
 # A tool's id is `mcp__<server>__<tool>`. Every launch path this project ships
-# — `sky build`, and `sky setup init`'s registration — names the servers `kb`
-# and `code`, so each tool has one name here. (The plugin ships no MCP
+# — `sky build`, and `sky setup init`'s registration — names the remote servers
+# `kb` and `code`; the project-local adapter uses `sky_kb`. (The plugin ships no MCP
 # configuration of its own; an earlier second spelling for one was removed as
 # a promise with nothing behind it, SH-010.)
 #
@@ -133,6 +133,9 @@ tool_groups:
     - mcp__kb__kb_ontologies_get
     - mcp__kb__kb_jobs_status
     - mcp__kb__kb_jobs_output
+    - mcp__sky_kb__search
+    - mcp__sky_kb__neighbours
+    - mcp__sky_kb__decisions_find
   code_read:
     - mcp__code__search_definitions
     - mcp__code__get_definition
@@ -175,6 +178,16 @@ tools:
   "Bash(npm test:*)": "test.run"
   "Bash(pytest:*)": "test.run"
   "Bash(make test:*)": "test.run"
+  # Local writes belong to the runtime; ingest and decisions_record are unbound.
+  mcp__sky_kb__search:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__sky_kb__neighbours:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
+  mcp__sky_kb__decisions_find:
+    action: "kb.read"
+    reviewed_by: "@arupmmi07"
   mcp__kb__kb_search:
     action: "kb.read"
     reviewed_by: "@arupmmi07"
@@ -406,4 +419,3 @@ tickets:
   # everybody else's machine.
   prefix: ""
   board_url: ""
-

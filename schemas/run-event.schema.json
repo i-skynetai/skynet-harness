@@ -20,5 +20,11 @@
   "required": [
     "kind"
   ],
-  "additionalProperties": true
+  "additionalProperties": true,
+  "x-known-kinds": [
+    "run.start", "run.refused", "run.finish", "run.usage",
+    "git.block.checked", "hand.command", "hand.start", "hand.end",
+    "intent.filed", "intent.refused",
+    "agent.definition.checked", "launch_refused", "kb.put"
+  ]
 }
