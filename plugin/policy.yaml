@@ -297,6 +297,8 @@ tools:
 
 # Skills declare tools; roles grant skills. Procedure alignment is SH-082.
 skills:
+  discover:
+    tools: ["Read", "Grep", "Glob", "+kb_read", "+code_read"]
   analyze:
     tools: ["Read", "Grep", "Glob", "+kb_read", "+code_read"]
   plan:
@@ -360,7 +362,7 @@ roles:
   architect:
     purpose: "design, the spec gate, impact walk; produce documents, not code"
     base_tools: ["Read", "Grep", "Glob"]
-    skills: ["context", "skills", "ask", "impact", "decide", "analyze", "plan"]
+    skills: ["context", "skills", "ask", "impact", "decide", "analyze", "plan", "discover"]
     may: ["repo.read", "code.index.read", "kb.read", "ticket.read", "pr.read", "ci.read"]
     needs_human: ["ticket.comment", "kb.ingest"]
   security:

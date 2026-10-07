@@ -110,14 +110,19 @@ def current(store, plan_id):
     validate_schema(record["metadata"], SCHEMA)
     pins = record["metadata"]["pins"]
     reasons = []
+    stale_knowledge = 0
     for expected in [pins["analysis"], *pins["decisions"], *pins["knowledge"]]:
         try:
             actual = store.get(expected["id"])
         except StoreError:
             reasons.append("missing or invalid input: " + expected["id"])
         else:
+            if expected in pins["knowledge"] and actual["metadata"].get("stale") is True:
+                stale_knowledge += 1
             if actual["entry"]["digest"] != expected["digest"]:
                 reasons.append("input revision changed: " + expected["id"])
+    if stale_knowledge:
+        reasons.append(f"{stale_knowledge} knowledge pins stale")
     # Unknown checkout currency stays explicit; it does not pretend to be a
     # verified revision. Admission handling of unknown belongs to the later gate.
     actual_checkout = checkout(store.root)

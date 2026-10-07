@@ -7,9 +7,6 @@ scope: ["<module-path>"]
 module: "<module>"
 category: "pattern"
 confidence: 0
-checkout_digest: "<sha256>"
-index_digest: "<sha256>"
-stale: false
 relates_to: []
 citations: ["<file>:<line>"]
 ---
@@ -25,7 +22,7 @@ Use the matching category: implemented_decision, pattern, practice, business_rul
 
 ## Evidence and limits
 
-Each claim cites code at `file:line`; include the module and checkout/index digests.
+Each claim cites code at `file:line`; include the module. The runtime pins checkout/index digests.
 Explain confidence and any uncovered or partial retrieval. Citations locate evidence;
 they do not prove that inferred intent is correct.
 

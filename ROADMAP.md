@@ -142,8 +142,8 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-085 | [`/sky:analyze`: intent and discovery from retrieved evidence](#sh-085) | skills | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-086 | [`/sky:plan`: a plan document from an analysis](#sh-086) | skills | P1 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-087 | [`/sky:decide`: decisions recorded and found again](#sh-087) | skills | P1 | S | In review | @arupmmi07, 2026-10-06 |
-| SH-088 | [Codebase discovery: what the code already decided](#sh-088) | context | P1 | L | Ready | |
-| SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | Ready | |
+| SH-088 | [Codebase discovery: what the code already decided](#sh-088) | context | P1 | L | In review | @arupmmi07, 2026-10-07 |
+| SH-089 | [The code index and its knowledge stay current](#sh-089) | context | P1 | M | In review | @arupmmi07, 2026-10-07 |
 | SH-090 | [`sky eval`: right context, smallest context](#sh-090) | evals | P1 | L | Ready | |
 | SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | Ready | |
 | SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
@@ -749,6 +749,17 @@ measurements come from the ledger, never from the agent. `/sky:plan` (`sky kb pl
 knowledge revisions and the checkout, and reports `stale` with reasons when any moved.
 Today's module-card skill is `/sky:module`; analyze and plan are read-only skills.
 Forty-three tests.
+*Slice 7, 2026-10-07 (SH-088, SH-089):* `sky kb init --discover` asks the code index for
+the module map and builds a discovery worklist (modules by size, their files and symbols,
+a character budget per module, partial and unoutlined marked) as a run artefact; the
+`/sky:discover` skill works one module at a time and returns knowledge records that
+`sky kb knowledge put` validates: category, confidence, module in the worklist, every
+citation a file:line that resolves at the pinned checkout, never a decision. `sky kb
+refresh` marks records stale when their cited files change, asks the index to refresh
+through the runtime-only `index.refresh` capability, and short-circuits on an unchanged
+digest; an edit hook enqueues paths and a Stop hook runs the refresh. Plans report stale
+knowledge pins. Checked against the live skygraph index: eight modules, worklist written.
+Forty tests.
 
 <a id="sh-084"></a>**SH-084 — `sky kb init`: the initial discovery.** The store starts
 empty and nothing fills it; a brownfield project's documents and code index are never

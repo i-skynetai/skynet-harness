@@ -72,11 +72,13 @@
                                       },
                        "checkout_digest":  {
                                                "type":  "string",
-                                               "pattern":  "^[a-f0-9]{64}$"
+                                               "pattern":  "^[a-f0-9]{64}$",
+                                               "description":  "SHA-256 of native Git HEAD."
                                            },
                        "index_digest":  {
                                             "type":  "string",
-                                            "pattern":  "^[a-f0-9]{64}$"
+                                            "pattern":  "^[a-f0-9]{64}$",
+                                            "description":  "SHA-256 of provider version or canonical module map; provider SHA-256 digests are preserved."
                                         },
                        "stale":  {
                                      "type":  "boolean"

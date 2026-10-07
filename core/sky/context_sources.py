@@ -22,6 +22,7 @@ from .kbstore import Store, StoreError
 from .policy import PolicyError
 
 CAPABILITIES = ("search", "graph", "code", "tickets", "decisions", "ingest")
+MUTATING_OPERATIONS = {"index.refresh"}  # Runtime only; never a role grant.
 LOCAL_OPERATIONS = {"search.keyword": "search", "graph.neighbours": "neighbours",
                     "decisions.find": "decisions_find", "decisions.record": "decisions_record",
                     "ingest.document": "ingest"}
@@ -124,7 +125,7 @@ def load(cwd=None, *, root=None):
         for operation, mapping in source.items():
             if operation == "server":
                 continue
-            if ("." not in operation or operation.split(".", 1)[0] not in CAPABILITIES or
+            if ("." not in operation or (operation.split(".", 1)[0] not in CAPABILITIES and operation not in MUTATING_OPERATIONS) or
                     not isinstance(mapping, dict) or not isinstance(mapping.get("tool"), str) or not mapping["tool"]):
                 raise ContextError(f"context.yaml source {name}: invalid operation {operation}")
     return Context(root, body)

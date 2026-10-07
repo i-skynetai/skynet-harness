@@ -32,7 +32,7 @@ DECISION_SCHEMA = json.loads(r'''
 {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:sky:schema:decision","title":"decision","type":"object","additionalProperties":false,"required":["id","type","schema_version","version","title","project","scope","question","aliases","answer","rationale","status","supersedes","source_analysis","evidence_revision","relates_to","citations","sky_agent","sky_run","sky_role","sky_task","sky_kb","options","chosen_option","superseded_by"],"properties":{"id":{"type":"string","pattern":"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},"type":{"const":"decision"},"schema_version":{"const":1},"version":{"type":"integer","minimum":1},"title":{"type":"string","minLength":1},"project":{"type":"string","minLength":1},"scope":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"question":{"type":"string","minLength":1},"aliases":{"type":"array","items":{"type":"string","minLength":1}},"answer":{"type":"string","minLength":1},"rationale":{"type":"string","minLength":1},"status":{"enum":["proposed","accepted","superseded","rejected"]},"supersedes":{"type":"array","items":{"type":"string","minLength":1}},"source_analysis":{"type":"string","minLength":1},"evidence_revision":{"type":"string","minLength":1},"relates_to":{"type":"array","items":{"type":"string","minLength":1}},"citations":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"source":{"type":"string","minLength":1},"sky_agent":{"type":"string","minLength":1,"x-written-by":"runtime"},"sky_run":{"type":"string","minLength":1,"x-written-by":"runtime"},"sky_role":{"type":"string","x-written-by":"runtime"},"sky_task":{"type":"string","x-written-by":"runtime"},"sky_kb":{"type":"string","x-written-by":"runtime"},"recorded_at":{"type":"string","format":"date-time","x-written-by":"runtime"},"run_identity":{"type":"string","minLength":1,"x-written-by":"runtime"},"decided_by":{"type":"string","minLength":1,"x-written-by":"runtime"},"approval":{"type":"object","x-written-by":"runtime","additionalProperties":false,"required":["actor","session","event_id","confirmed_at"],"properties":{"actor":{"type":"string","minLength":1},"session":{"type":"string","minLength":1},"event_id":{"type":"string","minLength":1},"confirmed_at":{"type":"string","format":"date-time"},"decision_digest":{"type":"string","pattern":"[a-f0-9]{64}"},"method":{"enum":["sky kb decide accept","sky kb decide reject","sky kb decide supersede"]}}},"options":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"chosen_option":{"type":"string","minLength":1},"superseded_by":{"type":"array","items":{"type":"string","minLength":1}}},"allOf":[{"if":{"properties":{"status":{"const":"proposed"}}},"then":{"not":{"anyOf":[{"required":["approval"]},{"required":["recorded_at"]},{"required":["run_identity"]},{"required":["decided_by"]}]}},"else":{"required":["approval","recorded_at","run_identity","decided_by"]}}]}
 ''')
 KNOWLEDGE_SCHEMA = json.loads(r'''
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:sky:schema:knowledge","title":"knowledge","type":"object","additionalProperties":false,"required":["id","type","schema_version","title","project","scope","module","category","confidence","checkout_digest","index_digest","stale","relates_to","citations","sky_agent","sky_run","sky_role","sky_task","sky_kb"],"properties":{"id":{"type":"string","pattern":"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},"type":{"const":"knowledge"},"schema_version":{"const":1},"title":{"type":"string","minLength":1},"project":{"type":"string","minLength":1},"scope":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"module":{"type":"string","minLength":1},"category":{"enum":["implemented_decision","pattern","practice","business_rule","nfr"]},"confidence":{"type":"number","minimum":0,"maximum":1},"checkout_digest":{"type":"string","pattern":"^[a-f0-9]{64}$"},"index_digest":{"type":"string","pattern":"^[a-f0-9]{64}$"},"stale":{"type":"boolean"},"relates_to":{"type":"array","items":{"type":"string","minLength":1}},"citations":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"source":{"type":"string","minLength":1},"sky_agent":{"type":"string","minLength":1,"x-written-by":"runtime"},"sky_run":{"type":"string","minLength":1,"x-written-by":"runtime"},"sky_role":{"type":"string","x-written-by":"runtime"},"sky_task":{"type":"string","x-written-by":"runtime"},"sky_kb":{"type":"string","x-written-by":"runtime"}}}
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:sky:schema:knowledge","title":"knowledge","type":"object","additionalProperties":false,"required":["id","type","schema_version","title","project","scope","module","category","confidence","checkout_digest","index_digest","stale","relates_to","citations","sky_agent","sky_run","sky_role","sky_task","sky_kb"],"properties":{"id":{"type":"string","pattern":"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"},"type":{"const":"knowledge"},"schema_version":{"const":1},"title":{"type":"string","minLength":1},"project":{"type":"string","minLength":1},"scope":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"module":{"type":"string","minLength":1},"category":{"enum":["implemented_decision","pattern","practice","business_rule","nfr"]},"confidence":{"type":"number","minimum":0,"maximum":1},"checkout_digest":{"description":"SHA-256 of native Git HEAD.","type":"string","pattern":"^[a-f0-9]{64}$"},"index_digest":{"description":"SHA-256 of provider version or canonical module map; provider SHA-256 digests are preserved.","type":"string","pattern":"^[a-f0-9]{64}$"},"stale":{"type":"boolean"},"relates_to":{"type":"array","items":{"type":"string","minLength":1}},"citations":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"source":{"type":"string","minLength":1},"sky_agent":{"type":"string","minLength":1,"x-written-by":"runtime"},"sky_run":{"type":"string","minLength":1,"x-written-by":"runtime"},"sky_role":{"type":"string","x-written-by":"runtime"},"sky_task":{"type":"string","x-written-by":"runtime"},"sky_kb":{"type":"string","x-written-by":"runtime"}}}
 ''')
 
 
@@ -260,7 +260,7 @@ class Store:
             if number < 1 or not path.is_file() or number > len(path.read_text(encoding="utf-8").splitlines()):
                 raise StoreError(f"citation does not resolve: {citation}")
 
-    def put(self, metadata, body, *, stamp, approval=None, run=None):
+    def put(self, metadata, body, *, stamp, approval=None, run=None, provenance=None):
         if isinstance(metadata, dict) and metadata.get("type") == "decision":
             from .decisions import put_decision
             return put_decision(self, metadata, body, stamp=stamp, approval=approval)
@@ -312,6 +312,20 @@ class Store:
         self._citations(record)
         with self.locked():
             manifest = self.manifest()
+            runtime_provenance = provenance() if provenance is not None else {}
+            if provenance is not None:
+                if record["type"] != "knowledge" or not isinstance(runtime_provenance, dict):
+                    raise StoreError("runtime provenance is only supported for knowledge")
+                if set(runtime_provenance) - {"checkout_revision", "checkout_method", "citation_digests"}:
+                    raise StoreError("invalid runtime knowledge provenance")
+                old_knowledge = manifest["documents"].get(record["id"])
+                if old_knowledge:
+                    previous = self.get(record["id"], manifest=manifest)
+                    if previous["metadata"]["type"] != "knowledge":
+                        raise StoreError("knowledge id belongs to another record type")
+                    from .discovery import normalise
+                    if not previous["metadata"]["stale"] and normalise(previous["body"]) == normalise(body):
+                        return {**copy.deepcopy(old_knowledge), "unchanged": True}
             if record["type"] in ("analysis", "plan"):
                 from . import analysis, plans
                 module = analysis if record["type"] == "analysis" else plans
@@ -340,6 +354,7 @@ class Store:
                      "updated_at": datetime.now(timezone.utc).isoformat(),
                      "chunks": [{"id": c["id"], "offset": c["offset"], "chars": len(c["text"])}
                                 for c in chunks(record["id"], body, self.chunk_chars)]}
+            entry.update(runtime_provenance)
             manifest["documents"][record["id"]] = entry
             manifest["generation"] += 1
             self._atomic(self.safe_path(".sky/kb/manifest.json"), json.dumps(manifest, sort_keys=True, indent=2) + "\n")

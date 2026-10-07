@@ -223,10 +223,10 @@ class KBInit(unittest.TestCase):
         self.assertEqual(result["status"], "repository not indexed")
         self.assertEqual(result["covered"], [])
 
-    def test_discover_notice_does_not_create_store_or_run(self):
+    def test_discover_without_index_does_not_create_store_or_run(self):
         with patch("sky.kbinit.recorder.Run.start") as start:
-            result = self.init(discover=True)
-        self.assertEqual(result["notice"], "codebase discovery lands with SH-088")
+            with self.assertRaisesRegex(StoreError, "no code index"):
+                self.init(discover=True)
         self.assertFalse((self.root / ".sky/kb").exists())
         start.assert_not_called()
 
@@ -402,10 +402,10 @@ class InitCLI(unittest.TestCase):
         self.assertEqual((code, err), (0, ""))
         self.assertIn("code index unavailable: server unreachable", out)
 
-    def test_discover_command_only_prints_notice(self):
+    def test_discover_command_outside_managed_project_refuses(self):
         code, out, err = self.command("kb", "init", "--discover")
-        self.assertEqual((code, err), (0, ""))
-        self.assertEqual(out.strip(), kbinit.DISCOVER_NOTICE)
+        self.assertEqual(code, 1)
+        self.assertIn(".sky/project.yaml", err)
         self.assertFalse((self.root / ".sky").exists())
         self.assertFalse((self.root / "state").exists())
 

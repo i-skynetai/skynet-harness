@@ -1,0 +1,8 @@
+#!/bin/sh
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if command -v sky >/dev/null 2>&1; then
+    sky refresh-hook enqueue
+elif [ -x "$DIR/sky" ]; then
+    "$DIR/sky" refresh-hook enqueue
+fi
+exit 0

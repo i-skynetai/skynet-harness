@@ -666,6 +666,8 @@ class Policy:
             return value
 
         for tool, binding in self.bindings.items():
+            if isinstance(tool, str) and (tool == "index.refresh" or tool.endswith(("__index_refresh", "__index.refresh"))):
+                problems.append(f"binding {tool}: index.refresh is runtime-only")
             if (not isinstance(tool, str) or not tool or
                     not isinstance(binding, (str, dict)) or
                     not isinstance(self.binding(tool), str) or not self.binding(tool)):
@@ -697,6 +699,8 @@ class Policy:
                 problems.append(str(exc))
                 continue
             for tool in skill_tools[skill]:
+                if tool == "index.refresh" or tool.endswith(("__index_refresh", "__index.refresh")):
+                    problems.append(f"skill {skill}: index.refresh is runtime-only")
                 action = self.binding(tool)
                 if action is None:
                     problems.append(f"skill {skill}: tool {tool!r} has no binding")
@@ -743,6 +747,10 @@ class Policy:
             except PolicyError as exc:
                 problems.append(str(exc))
                 tools = []
+
+            for tool in tools:
+                if tool == "index.refresh" or tool.endswith(("__index_refresh", "__index.refresh")):
+                    problems.append(f"{role}: index.refresh is runtime-only")
 
             for action in may + needs:
                 if action not in self.actions:

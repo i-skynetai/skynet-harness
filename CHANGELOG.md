@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **SH-088, SH-089** — codebase discovery and freshness. `sky kb init --discover` builds a
+  discovery worklist from the code index (modules by size, files, symbols, a character
+  budget each; partial and unoutlined modules named) as a run artefact, never as
+  knowledge. The read-only `/sky:discover` skill returns knowledge records one module at
+  a time; `sky kb knowledge put` accepts one only when its category, confidence and
+  module are valid and every citation is a file:line that resolves at the pinned
+  checkout, and it refuses anything that claims to be a decision. `sky kb refresh` marks
+  records stale when their cited files change, re-pins the index identity, asks the
+  index to refresh through the runtime-only `index.refresh` capability, which no skill or
+  role may name, and does nothing when the digest is unchanged; an edit hook enqueues
+  paths and a Stop hook runs the refresh. Plans report stale knowledge pins.
+  Twenty-four skills.
 - **SH-085, SH-086** — `/sky:analyze` and `/sky:plan`. An analysis is stored through the
   runtime (`sky kb analyze put --from <file>|- --goal <goal>`) only if every finding cites
   a file:line or record that resolves and every "closed by" claim survives a re-check

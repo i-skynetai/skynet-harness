@@ -97,7 +97,7 @@ def cmd_doctor(args) -> int:
 
 def cmd_kb(args) -> int:
     """Inspect mapped KBs, or operate the project's validated local store."""
-    if args.kb_action in ("serve", "put", "show", "search", "init", "decide", "analyze", "plan"):
+    if args.kb_action in ("serve", "put", "show", "search", "init", "decide", "analyze", "plan", "knowledge", "refresh"):
         from .kbcommands import execute
         return execute(args)
     try:
@@ -814,7 +814,7 @@ def build_parser() -> argparse.ArgumentParser:
     d.set_defaults(func=cmd_doctor)
 
     k = sub.add_parser("kb", help="which knowledge bases exist, and which one applies here")
-    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search", "init", "decide", "analyze", "plan"])
+    k.add_argument("kb_action", nargs="?", default="list", choices=["list", "which", "serve", "put", "show", "search", "init", "decide", "analyze", "plan", "knowledge", "refresh"])
     k.add_argument("kb_value", nargs="?", help="file, document id or quoted search query")
     k.add_argument("decision_id", nargs="?", help="decision id for decide transitions/show")
     k.add_argument("--from", dest="proposal_from", help="proposal file or - for stdin")
@@ -824,6 +824,10 @@ def build_parser() -> argparse.ArgumentParser:
     k.add_argument("--scope", help="repository-relative decision scope filter")
     k.add_argument("--goal", help="requested goal for analyze put")
     k.add_argument("--analysis", dest="analysis_id", help="pinned input analysis for plan put")
+    k.add_argument("--module", help="knowledge module filter")
+    k.add_argument("--category", help="knowledge category filter")
+    k.add_argument("--stale", action="store_true", help="only stale knowledge")
+    k.add_argument("--paths", nargs="+", help="repository-relative changed paths for refresh")
     k.add_argument("--root", help="explicit repository root for local KB commands")
     k.add_argument("--type", dest="document_type", help="validated document type for put")
     k.add_argument("-k", type=int, default=10, help="maximum search hits (1–100)")
@@ -907,6 +911,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     g = sub.add_parser("guard", help="PreToolUse hook: judge one command")
     g.set_defaults(func=cmd_guard)
+
+    rh = sub.add_parser("refresh-hook", help="best-effort freshness observation")
+    rh.add_argument("refresh_action", choices=["enqueue", "stop"])
+    from .refresh_hooks import command as refresh_hook_command
+    rh.set_defaults(func=refresh_hook_command)
 
     lg = sub.add_parser("ledger", help="PostToolUse hook: record one tool call")
     lg.add_argument("--mcp", action="store_true", help="managed-project MCP observation")

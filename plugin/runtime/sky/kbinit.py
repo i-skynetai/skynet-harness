@@ -23,7 +23,6 @@ from .kbstore import MAX_DOCUMENT_CHARS, Store, StoreError, parse_document
 
 DEFAULT_SOURCES = ("README.md", "docs", ".sky/handovers")
 CODE_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx", ".java", ".go", ".rs", ".cs", ".cpp", ".c"}
-DISCOVER_NOTICE = "codebase discovery lands with SH-088"
 
 
 def excluded(relative):
@@ -243,7 +242,25 @@ Explicit metadata (including approval requirements) is never weakened.
 
 def initialize(root, *, add=(), sources=None, discover=False, call=None):
     if discover:
-        return {"notice": DISCOVER_NOTICE, "stored": [], "unchanged": [], "skipped": []}
+        from . import discovery
+        # Absence fails before a discovery run is created.
+        context, _ = discovery.code_source(root)
+        from .kbcommands import current_run
+        run = current_run()
+        owned = run is None
+        if owned:
+            run = recorder.Run.start(role="runtime", task="sky kb init --discover", kb="local", agent_id="runtime")
+        try:
+            work = discovery.worklist(root, run=run, context=context, call=call)
+        except Exception as exc:
+            run.refused(str(exc), operation="kb.discover")
+            if owned:
+                run.finish("refused")
+            raise
+        if owned:
+            run.finish("discovered")
+        return {"worklist": work, "worklist_path": str(run.directory / "discovery-worklist.json"),
+                "run_directory": str(run.directory)}
     store = Store(root)
     context = context_sources.load(root=store.root)  # Invalid adapters fail before any put.
     selected, skipped = enumerate_sources(store.root, add=add, sources=sources)

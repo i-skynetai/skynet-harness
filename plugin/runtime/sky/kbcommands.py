@@ -116,12 +116,21 @@ def execute(args):
             raise StoreError("--type is only supported by put")
         if action == "init" and value:
             raise StoreError("init uses --add <path>, not a positional file")
-        if action == "init" and getattr(args, "discover", False):
-            from .kbinit import DISCOVER_NOTICE
-            print(DISCOVER_NOTICE)
-            return 0
         root = context_sources.repository(explicit=args.root)
         store = Store(root)
+        if action == "knowledge":
+            return knowledge(store, args)
+        if action == "refresh":
+            from .freshness import refresh
+            result = refresh(root, paths=args.paths)
+            print("; ".join(f"{key}: {result[key]}" for key in ("checked", "stale", "refreshed", "failed")))
+            for failure in result["failures"]:
+                print(failure)
+            if result.get("run"):
+                print(f"run record: {root / '.sky/runs' / result['run']}")
+            else:
+                print("unchanged: digest short-circuit")
+            return 1 if result["failed"] else 0
         if action == "decide":
             return decide(store, args)
         if action in ("analyze", "plan"):
@@ -131,6 +140,12 @@ def execute(args):
                 raise StoreError("init uses --add <path>, not a positional file")
             from .kbinit import initialize
             result = initialize(root, add=getattr(args, "add", []), discover=getattr(args, "discover", False))
+            if "worklist" in result:
+                work = result["worklist"]
+                print(f"modules: {len(work['modules'])}; budget: {sum(item['budget'] for item in work['modules'])} characters")
+                print(f"worklist: {result['worklist_path']}")
+                print(f"run record: {result['run_directory']}")
+                return 0
             if "notice" in result:
                 print(result["notice"])
                 return 0
@@ -281,5 +296,58 @@ def workflow_document(store, args):
     if own_run:
         run.finish("stored")
     print(f"stored {entry['id']}  {entry['digest']}")
+    print(f"run record: {run.directory}")
+    return 0
+
+
+def knowledge(store, args):
+    from . import discovery
+    if args.kb_value == "list":
+        records = discovery.list_knowledge(store, module=args.module, category=args.category,
+                                            stale=True if args.stale else None)
+        print(json.dumps(records, ensure_ascii=False, sort_keys=True, indent=2))
+        return 0
+    if args.kb_value == "show":
+        print(json.dumps(discovery.show(store, args.decision_id), ensure_ascii=False, sort_keys=True, indent=2))
+        return 0
+    if args.kb_value != "put":
+        raise StoreError("knowledge requires put, list or show")
+    run = current_run()
+    own_run = run is None
+    if own_run:
+        run = recorder.Run.start(role="runtime", task="sky kb knowledge put", kb="local", agent_id="runtime")
+    try:
+        if not args.proposal_from:
+            raise StoreError("knowledge put requires --from <file>|-")
+        if args.proposal_from == "-":
+            text = sys.stdin.read(MAX_DOCUMENT_CHARS + 1)
+        else:
+            path = Path(args.proposal_from)
+            try:
+                relative = (Path.cwd() / path).absolute().relative_to(store.root).as_posix()
+            except ValueError as exc:
+                raise StoreError("input file is outside repository") from exc
+            with store.safe_path(relative).open("rb") as stream:
+                raw = stream.read(MAX_DOCUMENT_CHARS * 4 + 1)
+            if len(raw) > MAX_DOCUMENT_CHARS * 4:
+                raise StoreError("document exceeds size cap")
+            text = raw.decode("utf-8")
+        if len(text) > MAX_DOCUMENT_CHARS:
+            raise StoreError("document exceeds size cap")
+        if any((ord(char) < 32 and char not in "\r\n\t") or ord(char) == 127 for char in text):
+            raise StoreError("binary or control characters in document")
+        work_path = run.directory / "discovery-worklist.json"
+        work = json.loads(work_path.read_text(encoding="utf-8")) if work_path.exists() else None
+        if "SKY_LAUNCHED" in os.environ and work is None:
+            raise StoreError("governed discovery requires a worklist for this run")
+        entry = discovery.put_text(store, text, run=run, work=work)
+    except (StoreError, OSError, ValueError) as exc:
+        run.refused(str(exc), operation="kb.knowledge")
+        if own_run:
+            run.finish("refused")
+        raise
+    if own_run:
+        run.finish("unchanged" if entry.get("unchanged") else "stored")
+    print(f"{'unchanged' if entry.get('unchanged') else 'stored'} {entry['id']}  {entry['digest']}")
     print(f"run record: {run.directory}")
     return 0

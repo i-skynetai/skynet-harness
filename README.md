@@ -113,8 +113,8 @@ Dashed paths are planned. See [architecture](docs/architecture.md).
 - Local document storage, search, `sky kb init` and an optional code-index adapter.
 - Decision proposals and human acceptance, rejection or supersession (SH-087).
 - MCP-call ledger and context manifests showing observed calls and returned size.
-- The **twenty-one SDLC skills** in the committed baseline; **twenty-three SDLC skills**
-  in the in-review development checkout. Procedure alignment remains SH-082.
+- The **twenty-four SDLC skills** cover the development workflow.
+  Procedure alignment remains SH-082.
 
 ## Claude Code and Codex
 

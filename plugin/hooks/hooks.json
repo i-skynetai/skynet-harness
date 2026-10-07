@@ -1,36 +1,65 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/bin/sky-guard"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "mcp__.*",
-        "hooks": [{"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger-mcp"}]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "mcp__.*",
-        "hooks": [{"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger-mcp"}]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger"
-          }
-        ]
-      }
-    ]
-  }
+    "hooks":  {
+                  "PreToolUse":  [
+                                     {
+                                         "matcher":  "Bash",
+                                         "hooks":  [
+                                                       {
+                                                           "type":  "command",
+                                                           "command":  "${CLAUDE_PLUGIN_ROOT}/bin/sky-guard"
+                                                       }
+                                                   ]
+                                     }
+                                 ],
+                  "PostToolUseFailure":  [
+                                             {
+                                                 "matcher":  "mcp__.*",
+                                                 "hooks":  [
+                                                               {
+                                                                   "type":  "command",
+                                                                   "command":  "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger-mcp"
+                                                               }
+                                                           ]
+                                             }
+                                         ],
+                  "PostToolUse":  [
+                                      {
+                                          "matcher":  "mcp__.*",
+                                          "hooks":  [
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger-mcp"
+                                                        }
+                                                    ]
+                                      },
+                                      {
+                                          "matcher":  "Bash",
+                                          "hooks":  [
+                                                        {
+                                                            "type":  "command",
+                                                            "command":  "${CLAUDE_PLUGIN_ROOT}/bin/sky-ledger"
+                                                        }
+                                                    ]
+                                      },
+                                      {
+                                          "hooks":  [
+                                                        {
+                                                            "command":  "${CLAUDE_PLUGIN_ROOT}/bin/sky-refresh-enqueue",
+                                                            "type":  "command"
+                                                        }
+                                                    ],
+                                          "matcher":  "Edit|Write|MultiEdit"
+                                      }
+                                  ],
+                  "Stop":  [
+                               {
+                                   "hooks":  [
+                                                 {
+                                                     "command":  "${CLAUDE_PLUGIN_ROOT}/bin/sky-refresh",
+                                                     "type":  "command"
+                                                 }
+                                             ]
+                               }
+                           ]
+              }
 }
