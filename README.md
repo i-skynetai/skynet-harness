@@ -4,23 +4,32 @@
 [![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![licence](https://img.shields.io/badge/licence-Apache%202.0-blue)](LICENSE)
 
-*Your team's standard way to use AI coding agents.*
+*Make project knowledge and team rules part of every AI coding task.*
 
-A Claude Code plugin and a Python runtime for checked coding-agent runs. Give specialists
-clear roles, retrieve project knowledge, keep approved decisions and record what ran.
-People perform publication. Use your existing model; Codex supports managed reviews only.
-The complete session-to-session workflow is still in development.
+AI can generate code quickly. Your team still has to explain the project, repeat past
+decisions, check whether the code follows its rules and review what the agent changed.
+When each session starts from scratch, that work keeps coming back.
+
+**Skynet Harness gives your team a shared foundation for AI-assisted development:**
+project knowledge it can search, decisions it can reuse, specialist roles with checked
+permissions and a record of each managed run. Use it as your team's standard way to
+work with AI, so each developer does not have to assemble those pieces alone.
 
 ![A team shares one policy, delegates to specialists, retrieves project knowledge and keeps publication with a person](docs/images/org-value.png)
 
-## The problem
+## Why use it?
 
-Fast code generation loses value when sessions repeat questions, miss project conventions
-or produce work that needs extensive correction. Shared rules and reusable context aim
-to reduce rework and make delegation more predictable. Adopt the harness as a team
-working agreement; installation does not enforce every parent-session action.
-Measure delivery and review outcomes before claiming speed or adoption gains
-([adoption guide](docs/adoption.md)).
+Store and search project documents, reuse human-approved decisions, and launch
+specialists with defined responsibilities. Reviewers can inspect recorded tool calls
+and context alongside the agent's report.
+
+Aim for less repeated explanation, fewer corrections and more confident delegation.
+Measure results; speed and adoption gains are not yet proven ([adoption guide](docs/adoption.md)).
+
+It ships as a Claude Code plugin and a Python command-line tool. Claude specialist
+launches have checked tool lists; Codex supports managed reviews only. People approve
+decisions and perform publication. **The full automated workflow is still being built**;
+installation does not enforce every action in an ordinary session. See the limits below.
 
 ## Words you need
 
