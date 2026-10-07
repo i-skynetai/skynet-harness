@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **SH-094** — contributor onboarding and documentation consistency completed.
+  The adoption guide reflects native Codex implementation/review and available
+  offline evals; a new evaluation guide walks through the public fixture corpus
+  and explains recall, precision, character counts and baseline review. Docs
+  links are checked; planned workflow automation stays distinct from shipped
+  commands. Team speed and adoption remain outcomes to measure, not claims.
+
 - **SH-095, SH-096** — native Codex plugin dispatch and governed implementation/review
   for managed local-store projects on Codex 0.160.0. The local transport invokes the
   shared launcher; implementation needs single-use plan admission and host tool approval.

@@ -22,5 +22,6 @@ budgets, not claimed observations. A reviewed human baseline update replaces
 them with the observed report. Default tolerances are zero. Live model reasoning
 rubrics are outside this offline slice and do not gate CI.
 
-CLI wiring follows in the next slice phase; the importable evaluator and tests
-already exercise retrieval, comparison and report writing without a provider.
+CLI wiring is available as `sky eval`. See the [evaluation guide](../../docs/evaluation.md)
+for the public fixture setup, commands and interpretation. The evaluator and
+tests run retrieval, comparison and report writing without a provider.

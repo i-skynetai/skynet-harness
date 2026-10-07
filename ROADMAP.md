@@ -148,7 +148,7 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-091 | [The path is the policy's, not the person's](#sh-091) | routing | P1 | M | In review | @arupmmi07, 2026-10-07 |
 | SH-092 | [The user guide: install from the repository, upgrade, first task](#sh-092) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
 | SH-093 | [The README shows an organisation what it gets](#sh-093) | docs | P1 | M | In progress | @arupmmi07, 2026-10-06 |
-| SH-094 | [Contributor onboarding and documentation consistency](#sh-094) | docs | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-094 | [Contributor onboarding and documentation consistency](#sh-094) | docs | P1 | M | Done | codex-skynet-harness, 2026-10-07 |
 | SH-095 | [Native Codex plugin installation](#sh-095) | hosts | P1 | M | Done | codex-skynet-harness, 2026-10-07 |
 | SH-096 | [Claude and Codex governed implementation parity](#sh-096) | hosts | P1 | L | Done | codex-skynet-harness, 2026-10-07 |
 
@@ -934,6 +934,10 @@ sources* appendix; the word limit (900) and every other `check-docs.py` rule hol
 Failure cases: no claim without a row or a test behind it; no private name.
 
 <a id="sh-094"></a>**SH-094 — Contributor onboarding and documentation consistency.**
+Completed on unreleased main (manifest v2.1.2), 2026-10-07: contributor and issue/PR
+paths, a documentation index, adoption guidance, and an offline evaluation guide.
+The public fixture walkthrough and README policy commands were rerun; local
+documentation links and existing documentation-contract tests were checked.
 The first page must explain team benefits, installation, actual capabilities and
 remaining work; external contributors need a bug-report and pull-request path.
 *Done when:* README distinguishes manifest version, unreleased main and in-review

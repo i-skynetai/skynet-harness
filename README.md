@@ -34,7 +34,7 @@ installation does not enforce every action in an ordinary session. See the curre
 
 ## Words you need
 
-- **Role** — developer, reviewer, architect or security, with a checked tool list on Claude.
+- **Role** — developer, reviewer, architect or security, with checked tools on Claude or individual approvals on supported Codex runs.
 - **Policy** — shipped rules plus organisation and project layers under one permission ceiling.
 - **Managed repository** — a Git repository with `.sky/project.yaml` and `managed: true`.
 - **Outward action** — state-changing publication: push, PR, ticket comment or remote knowledge write.

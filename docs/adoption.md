@@ -13,14 +13,15 @@ time. The harness aims to make those steps repeatable across sessions.
 | Team problem | Available support | Benefit to test |
 |---|---|---|
 | Every session starts with repeated explanation | Local documents indexed by `sky kb init`, search and an optional code index | Less time gathering context |
-| A review agent acts as an implementer | Checked Claude role tool lists; Codex reviewer sandbox | Clearer delegation boundaries |
+| A review agent acts as an implementer | Checked Claude role tool lists; Codex policy-checked developer/reviewer controller | Clearer delegation boundaries |
 | The same question is decided repeatedly | Decision proposals with runtime-recorded human approval | Fewer repeated questions and conflicting choices |
 | Missing setup is discovered after starting work | `sky doctor` and launch checks | Less time diagnosing failed starts |
 | Success claims lack evidence | Runtime run records and MCP context manifests | More useful review evidence |
 
 These are expected benefits, not measured speed, cost or adoption improvements.
-The complete analyze → plan → governed workflow, automatic discovery/refresh and
-`sky eval` are still roadmap work. See [current status](../README.md#status-and-history).
+Analysis, planning, code discovery/refresh, offline `sky eval` and person-issued
+plan admission are available on main. Multi-role workflow dispatch and automatic
+ordinary-session routing remain in development. See [current status](../README.md#current-status).
 
 ## What making it the standard means
 
@@ -30,15 +31,17 @@ changes. Contributors can question the rules and propose reviewed changes.
 
 Installing the plugin does not make every action mandatory or technically enforced.
 Parent-session Edit/Write/MCP tools remain unrestricted; ordinary-session routing and
-workflow admission are planned. Claude has per-role tool boundaries; Codex supports
-managed reviewer runs only. Read [host limits](../hosts/README.md).
+automatic routing remains planned. Governed implementation requires a current,
+person-admitted plan. Claude has four supported roles; Codex supports developer
+and reviewer on Windows 0.160.0 with managed local context. Read [host limits](../hosts/README.md).
 
 ## Start with one repository
 
 1. Follow the [user guide](user-guide.md) and [offline example](../examples/README.md).
    Choose a repository with public or appropriately protected project documents.
 2. Name a policy owner and agree which supported tasks use checked launches. Start
-   with review; do not promise the unfinished workflow to the team.
+   with review, then one admitted implementation task; keep planned automation
+   separate from the workflow that has been verified.
 3. Index useful documentation, inspect search results and record exclusions. Connect
    a code index only when its coverage is understood. Keep secrets and private data
    out of public repositories and outward artifacts.
@@ -66,14 +69,21 @@ Faster code generation by itself does not establish faster delivery or safer wor
 
 ## Where evals fit
 
-**Planned: SH-090.** `sky eval` will use known tasks and expected context to measure
-retrieval recall, precision and delivered size offline. Optional live runs will assess
-analysis/plan quality against a rubric. Those scores are separate from team delivery
-metrics, and a retrieval score alone cannot prove better adoption.
+`sky eval` now checks known questions against expected context, without a model
+or network. **Recall** is the fraction of expected records retrieved; **precision**
+is the fraction of retrieved records that were expected. It also reports response
+characters and a token estimate, labelled as characters divided by four. A
+regression against the reviewed baseline exits with a failure and names the item.
 
-Today `sky context manifest <run>` reports observed retrieval events and sizes. It
-does not implement the golden-task eval runner or enforce a context budget. SH-080
-covers budget enforcement; SH-090 covers evals.
+Run the [public retrieval example](evaluation.md) before writing a golden set
+for your repository. Keep the expected records and thresholds under review;
+only a person updates the baseline. Live model reasoning rubrics are not shipped
+in this offline evaluator. Retrieval scores measure context selection, not team
+delivery speed, implementation quality or adoption.
+
+`sky context manifest <run>` separately reports observed retrieval events and
+sizes. General context-budget enforcement remains SH-080 work; the supported
+Codex controller already bounds its initial context and workflow briefing.
 
 ## How these docs are organised
 

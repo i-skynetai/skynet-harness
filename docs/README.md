@@ -16,7 +16,8 @@ following a planned command. An `In review` row is not a released feature.
 | Implement a context source | [Context protocol](context-protocol.md), [knowledge port](knowledge-port.md) |
 | Check which roles a host supports | [Host capabilities](../hosts/README.md) |
 | Review prepared publication | [Local workflow](local-workflow.md) |
-| Understand the planned 3.0 loop and evals | [Governed sessions](features/3.0-governed-sessions.md), [context-loop design](features/SH-083-context-loop.md) |
+| Measure retrieval quality offline | [Evaluation guide](evaluation.md) |
+| Understand the planned 3.0 session workflow | [Governed sessions](features/3.0-governed-sessions.md), [context-loop design](features/SH-083-context-loop.md) |
 | Report a bug, propose a feature or submit a patch | [Contributing](../CONTRIBUTING.md) |
 | Find known bugs, priorities and owners | [Roadmap](../ROADMAP.md) |
 | Read project history | [Changelog](../CHANGELOG.md) |

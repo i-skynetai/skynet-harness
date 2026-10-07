@@ -9,7 +9,7 @@ From the harness checkout use `python sky`; from a target Git repository use
 On Windows use Python in PowerShell rather than relying on executable shell shims.
 
 The plugin manifest says v2.1.2, not yet tagged; main includes unreleased 3.0 work.
-The [README status](../README.md#status-and-history), [changelog](../CHANGELOG.md) and
+The [README status](../README.md#current-status), [changelog](../CHANGELOG.md) and
 [roadmap](../ROADMAP.md) distinguish available source commands from planned work.
 See the [adoption guide](adoption.md) for benefits and a measured team rollout.
 
