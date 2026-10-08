@@ -154,7 +154,7 @@ class CodexApprovalBoundary(unittest.TestCase):
              patch.object(codexcontroller.subprocess, "run", return_value=SimpleNamespace(
                  returncode=0, stdout="codex-cli 0.160.0")), \
              patch.object(codexcontroller.subprocess, "Popen") as host:
-            with self.assertRaisesRegex(codexcontroller.Refused, "briefing exceed"):
+            with self.assertRaisesRegex(codexcontroller.Refused, "context over budget"):
                 codexcontroller.preflight(self.root, "reviewer", task="review")
             host.assert_not_called()
 

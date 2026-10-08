@@ -329,10 +329,10 @@ A retrieved candidate alone does not settle a question.
 - Tool lists and command guards are not an adversarial sandbox. People own decision
   approval and publication; the harness is not an unattended release system.
 - Context manifests record observed calls and returned size. They do not prove the
-  quality of reasoning or enforce a context budget. Offline evals are available; general enforced budgets
-  are SH-080.
+  quality of reasoning or enforce a context budget. Offline evals and runtime-owned pack budgets are available; direct remote
+  MCP response caps remain outside that path.
 - The local store is a development reference, not a hosted team knowledge service.
-  Remote ingestion remains SH-081. Codex's governed developer/reviewer controller
+  Remote handover ingestion requires explicit human confirmation. Codex's governed developer/reviewer controller
   requires local context and the probed 0.160.0 host; architect/security and other
   controller context backends remain unverified. Kimi has no managed role.
 
@@ -341,12 +341,12 @@ A retrieved candidate alone does not settle a question.
 The local store, document and code discovery, decision lifecycle, analysis,
 planning, freshness, offline evals and plan admission are available on main.
 They are unreleased work, rather than a tagged 3.0 release. Native Codex
-implementation and review use the supported path in section 7. Multi-role
-workflow dispatch and the session/team features below remain planned.
+implementation and review use the supported path in section 7. Local multi-role workflow dispatch, runtime-owned context budgets and sealed
+handover ingestion are available; see the [workflow guide](workflows.md).
+The session/team features below remain planned.
 
 | Planned command | Illustrative result | Rows |
 |---|---|---|
-| `/sky:dispatch <plan-id>` | architect/developer/reviewer/security workflow; failure stops advancement | SH-074/075/079 |
 | `sky session new <name>` / `sky session open <name>` | card and memory-isolated launch command | SH-070/076 |
 | `/sky:author <request>` / `sky policy apply <id>` | reviewed proposal then transactional activation | SH-066 |
 

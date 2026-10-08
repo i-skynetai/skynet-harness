@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **SH-074/075/079/080/081** — local declared workflows and goal routing, exact-pack
+  human context-budget approval, and sealed remote handover confirmation. Gates stop
+  on failed or ambiguous verdicts; ship prints commands only. Codex retains its
+  controller and single-use plan admission, with an explicit context task and the
+  initial briefing size carried into its local MCP server. Adapter argument mappings
+  are honored during ingestion. Direct remote response caps, named sessions and
+  bridge dispatch remain outside this slice. New workflow and budget guide included.
+
 - **SH-094** — contributor onboarding and documentation consistency completed.
   The adoption guide reflects native Codex implementation/review and available
   offline evals; a new evaluation guide walks through the public fixture corpus

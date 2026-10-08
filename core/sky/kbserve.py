@@ -6,6 +6,7 @@ decision confirmation is provided out of band, never in a tool argument.
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import PurePosixPath
 
@@ -54,10 +55,28 @@ def _scope_applies(scopes, requested):
 
 
 class Server:
-    def __init__(self, store: Store, *, stamp=None, confirm=None):
+    def __init__(self, store: Store, *, stamp=None, confirm=None, task_id=None,
+                 characters_before=0, enforce_budget=True):
         self.store = store
         self.stamp = stamp
         self.confirm = confirm
+        self.task_id = task_id or os.environ.get("SKY_TASK") or store.root.name
+        if type(characters_before) is not int or characters_before < 0:
+            raise StoreError("invalid initial context size")
+        self.delivered_characters = characters_before
+        self.enforce_budget = enforce_budget
+
+    def bounded(self, pack):
+        from . import budget
+        if not self.enforce_budget:
+            return pack
+        task = self.task_id
+        result = budget.deliver(self.store.root, pack, task_id=task,
+                                characters_before=self.delivered_characters)
+        if not result["delivered"]:
+            raise StoreError("; ".join(result["findings"]))
+        self.delivered_characters = result["manifest"]["measured_characters"]
+        return result["pack"]
 
     def search(self, query, k=10, types=None):
         words = tokens(query)
@@ -74,7 +93,7 @@ class Server:
                                  "score": score, "excerpt": excerpt,
                                  "source": meta.get("source", entry["path"]), "tenant": meta["project"],
                                  "citation": "id:" + meta["id"], "chars": len(excerpt)})
-        return sorted(hits, key=lambda h: (-h["score"], h["id"], h["chunk_id"]))[:k]
+        return self.bounded(sorted(hits, key=lambda h: (-h["score"], h["id"], h["chunk_id"]))[:k])
 
     def neighbours(self, id, edge="relates_to", depth=1, type=None):
         records = {r["metadata"]["id"]: r["metadata"] for r in self.store.records()}
@@ -94,7 +113,7 @@ class Server:
                             found.append({"id": target, "type": records[target]["type"], "edge": edge,
                                           "title": records[target]["title"]})
             frontier = next_frontier
-        return {"hits": found, "findings": sorted(set(findings))}
+        return self.bounded({"hits": found, "findings": sorted(set(findings))})
 
     def decisions_find(self, question, project=None, scope=".", k=10, evidence_revision=None):
         from .decisions import find
@@ -103,7 +122,7 @@ class Server:
         # Keep the original applicability field for existing protocol clients.
         for hit in hits:
             hit["applicable"] = hit["closes"]
-        return hits
+        return self.bounded(hits)
 
     def call(self, name, arguments):
         from .kbstore import validate_schema
@@ -156,8 +175,10 @@ class Server:
         return response
 
 
-def serve(store, input_stream, output_stream, *, stamp=None, confirm=None):
-    server = Server(store, stamp=stamp, confirm=confirm)
+def serve(store, input_stream, output_stream, *, stamp=None, confirm=None,
+          task_id=None, characters_before=0):
+    server = Server(store, stamp=stamp, confirm=confirm, task_id=task_id,
+                    characters_before=characters_before)
     while True:
         line = input_stream.readline(MAX_FRAME + 1)
         if not line:

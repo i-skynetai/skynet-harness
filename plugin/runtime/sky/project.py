@@ -28,7 +28,8 @@ PROJECT_SCHEMA = {
         "kb": {"type": ["string", "null"], "minLength": 1},
         "sessions_dir": {"type": "string", "minLength": 1, "default": ".sky/sessions"},
         "context": {"type": "object", "additionalProperties": False,
-                    "properties": {"max_chars": {"type": "integer", "minimum": 1,
+                    "properties": {"max_tokens": {"type": "integer", "minimum": 1},
+                                   "max_chars": {"type": "integer", "minimum": 1,
                                                  "default": 40000},
                                    "sources": {"type": "array", "items": {"type": "string", "minLength": 1,
                                                "pattern": r"^(?![/\\]|[A-Za-z]:)(?!.*(?:^|[/\\])\.\.(?:[/\\]|$)).+$"},
@@ -73,12 +74,16 @@ def validate_config(body, root: Path) -> dict:
             r"[A-Za-z0-9][A-Za-z0-9_.-]*(?:/[A-Za-z0-9][A-Za-z0-9_.-]*)?", result["org_plugin"]):
         raise PolicyError("project.yaml: org_plugin must name marketplace/plugin or plugin")
     context = result.get("context", {})
-    if not isinstance(context, dict) or set(context) - {"max_chars", "sources"}:
-        raise PolicyError("project.yaml: context accepts only max_chars and sources")
+    if not isinstance(context, dict) or set(context) - {"max_chars", "max_tokens", "sources"}:
+        raise PolicyError("project.yaml: context accepts only max_chars, max_tokens and sources")
     maximum = context.get("max_chars", 40000)
     if type(maximum) is not int or maximum < 1:
         raise PolicyError("project.yaml: context.max_chars must be a positive integer")
     result["context"] = {"max_chars": maximum}
+    if "max_tokens" in context:
+        if type(context["max_tokens"]) is not int or context["max_tokens"] < 1:
+            raise PolicyError("project.yaml: context.max_tokens must be a positive integer")
+        result["context"]["max_tokens"] = context["max_tokens"]
     if "sources" in context:
         sources = context["sources"]
         if not isinstance(sources, list) or any(not isinstance(s, str) or not s.strip() for s in sources):

@@ -448,11 +448,14 @@ class PolicyLayers(unittest.TestCase):
         path = Path(__file__).resolve().parents[2] / "schemas" / "project.schema.json"
         self.assertEqual(json.loads(path.read_text(encoding="utf-8")), project.schema())
 
-    def test_routing_workflows_and_sessions_dir_are_stored_without_execution(self):
-        result = self.effective(patch_body={"routing": {"code": "sky:developer"},
-                                          "workflows": {"example": ["not interpreted"]}, "sessions_dir": "cards"})
-        self.assertEqual(result.body["routing"], {"code": "sky:developer"})
-        self.assertEqual(result.body["workflows"], {"example": ["not interpreted"]})
+    def test_routing_workflows_and_sessions_dir_are_validated_without_execution(self):
+        # SH-075 now validates these declarations; merging must still not run them.
+        routing = {"code": {"contains": ["implement"], "agent": "sky:developer"}}
+        workflow = {"example": [{"id": "developer", "agent": "developer"}]}
+        result = self.effective(patch_body={"routing": routing,
+                                          "workflows": workflow, "sessions_dir": "cards"})
+        self.assertEqual(result.body["routing"], routing)
+        self.assertEqual(result.body["workflows"], workflow)
         self.assertEqual(result.body["sessions_dir"], "cards")
         self.assertFalse((self.root / "cards").exists())
 

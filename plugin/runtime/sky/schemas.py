@@ -336,6 +336,8 @@ EVENT_KINDS = (
     "kb.put",
     "decision.proposed", "decision.accepted", "decision.rejected", "decision.superseded",
     "plan.admitted", "plan.admission_consumed", "plan.admission_refused",
+    "workflow.step", "context.budget_approved",
+    "kb.ingest_approved", "kb.ingest_refused", "kb.ingest_executed",
 )
 
 RUN_EVENT = Schema(

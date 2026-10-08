@@ -14,6 +14,7 @@ from pathlib import Path
 from . import context_sources, kbserve, recorder, yamlish
 from .kbstore import MAX_DOCUMENT_CHARS, Store, StoreError, TYPES, parse_document
 from .policy import PolicyError
+from .kbmap import KBMapError
 
 
 def current_run():
@@ -89,7 +90,10 @@ def put(store, file, document_type=None):
                 raise StoreError("--type conflicts with the document's frontmatter type")
             metadata["type"] = document_type
         entry = store.put(metadata, body, stamp=run.stamp(), run=run)
-    except (StoreError, OSError, ValueError, yamlish.YamlishError) as exc:
+        if metadata["type"] == "handover":
+            from .ingestcommands import seal_handover
+            seal_handover(store, entry, run)
+    except (StoreError, OSError, ValueError, PolicyError, yamlish.YamlishError, KBMapError) as exc:
         run.refused(str(exc), operation="kb.put")
         if interactive:
             run.finish("refused", operation="kb.put")
@@ -186,7 +190,7 @@ def execute(args):
                 print(hit["excerpt"])
             print(f"{len(hits)} hit(s)")
         return 0
-    except (StoreError, context_sources.ContextError, PolicyError, OSError, ValueError, yamlish.YamlishError) as exc:
+    except (StoreError, context_sources.ContextError, PolicyError, OSError, ValueError, yamlish.YamlishError, KBMapError) as exc:
         print(f"sky kb: {exc}", file=sys.stderr)
         return 1
 

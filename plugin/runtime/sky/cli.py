@@ -18,6 +18,7 @@ import argparse
 import json
 from dataclasses import replace
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,7 +27,7 @@ from .kbmap import CONFIG_DIR, KBMap, KBMapError, NoKBForPath
 from .policy import Policy, PolicyError
 from .readiness import Kind
 from .agent_definitions import DefinitionError, check_definition
-from . import context_sources
+from . import context_sources, schemas
 
 EXIT_OK, EXIT_PROBLEM, EXIT_MISUSE = 0, 1, 2
 
@@ -147,6 +148,7 @@ def _emit(args, **summary) -> None:
     so a caller always gets a structured answer and never has to guess from an
     exit code why nothing started.
     """
+    args._summary = summary
     if getattr(args, "json", False):
         import json
         print(json.dumps({"sky": "build", **summary}, default=str), flush=True)
@@ -302,9 +304,19 @@ def cmd_build(args) -> int:
         mcp = (context_sources.mcp_config(context, run.directory) if context else
                launcher.write_mcp_config(env, kb, run.directory, catalogue=kbmap.catalogue()))
         try:
-            cmd = launcher.hand_command(args.hand, args.role, mcp, args.task or "",
-                                        policy)
-        except launcher.Refused as exc:
+            pack = launcher.context_pack(context, args.task or "", role=args.role,
+                                         hand=args.hand, policy=policy)
+            launch_prompt = pack if context and args.hand == "claude" else args.task or ""
+            # Claude receives the bounded pack as its prompt. Codex keeps the
+            # original task and its independent governed controller preflight.
+            cmd = launcher.hand_command(args.hand, args.role, mcp, launch_prompt, policy)
+            if context:
+                from . import budget
+                print("  context budget  checked (characters/4 token estimate)")
+                print("  finding: " + budget.REMOTE_FINDING)
+        except (launcher.Refused, context_sources.ContextError, ValueError, PolicyError, subprocess.SubprocessError) as exc:
+            launcher.admission_refused(args.role, run=run, reason=str(exc), cwd=Path.cwd(),
+                                       step_role=getattr(args, "step_role", None))
             run.event("launch_refused", hand=args.hand, role=args.role, reason=str(exc))
             run.refused("hand cannot enforce the role", hand=args.hand, role=args.role)
             run.finish("refused")
@@ -351,7 +363,7 @@ def cmd_build(args) -> int:
         if args.dry_run:
             print("\n--dry-run: everything above passed; the hand was not started.")
             print("  command      "
-                  + " ".join(launcher.without_prompt(cmd, args.task or "")))
+                  + " ".join(launcher.without_prompt(cmd, launch_prompt)))
             secret = [k for k in env.variables if launcher.is_secret(k)]
             print(f"  environment  {len(env.variables)} variables, "
                   f"{len(secret)} secret ({', '.join(secret)})")
@@ -371,7 +383,7 @@ def cmd_build(args) -> int:
             return EXIT_OK
 
         print(f"\nstarting {args.hand} as {args.role}…  (log: {run.directory}/hand.log)")
-        run.event("hand.start", command=launcher.without_prompt(cmd, args.task or ""))
+        run.event("hand.start", command=launcher.without_prompt(cmd, launch_prompt))
         result = launcher.start_hand(args.hand, cmd, env=env.variables, cwd=Path.cwd(),
                           log_path=run.directory / "hand.log")
         run.event("hand.end", reason=result.reason, exit_code=result.exit_code,
@@ -860,10 +872,27 @@ def cmd_ship(args) -> int:
     in the broker would be decoration.
     """
     intents = broker.read_pending(Path(args.directory or PENDING))
-    if not intents:
+    from . import ingest, ingestcommands
+    try:
+        root = context_sources.repository()
+        handovers = ingestcommands.pending(root)
+    except context_sources.NotManaged:
+        handovers = []
+    except (context_sources.ContextError, OSError, ValueError) as exc:
+        print(f"sky ship: {exc}", file=sys.stderr)
+        return EXIT_PROBLEM
+    if not intents and not handovers:
         print("nothing pending.")
         return EXIT_OK
     problems = 0
+    for path in handovers:
+        try:
+            rendered = ingest.render(root, path.relative_to(root).as_posix())
+            print("run: " + rendered["command"])
+            print("source: " + rendered["source"])
+        except (OSError, ValueError, schemas.Invalid) as exc:
+            problems += 1
+            print(f"REFUSED kb.ingest — {exc}")
     for intent, result in broker.render_all(intents):
         print()
         if isinstance(result, broker.Refused):
@@ -875,6 +904,36 @@ def cmd_ship(args) -> int:
     if problems:
         print(f"{problems} intent(s) were refused and are not shown as commands.")
     return EXIT_PROBLEM if problems else EXIT_OK
+
+
+def cmd_workflow(args):
+    from . import workflowcommands
+    return workflowcommands.execute(args, build=cmd_build, load_policy=_load_policy)
+
+
+def cmd_route(args):
+    from . import workflowcommands
+    return workflowcommands.route(args, build=cmd_build, load_policy=_load_policy)
+
+
+def cmd_budget(args):
+    from . import budget
+    run = None
+    try:
+        root = context_sources.repository()
+        run = recorder.Run.start(role="runtime", task=args.task, kb="local", agent_id="runtime")
+        result = budget.approve_pending(root, task_id=args.task, max_tokens=args.tokens, run=run,
+            confirm=lambda request: input(f"Approve {request['max_tokens']} estimated tokens for {request['task_id']} "
+                                         f"digest {request['manifest_digest']}? [y/N] ").strip().lower() == "y")
+        run.finish("approved")
+        print(f"task {result.task_id}: {result.max_tokens} estimated tokens approved; {budget.METHOD}")
+        return 0
+    except (OSError, ValueError, PolicyError, EOFError) as exc:
+        if run:
+            run.refused(str(exc), operation="budget.approve")
+            run.finish("refused")
+        print(f"sky budget: {exc}", file=sys.stderr)
+        return 1
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1030,7 +1089,32 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--ttl", type=float, default=24, help="admission lifetime in hours")
     pl.set_defaults(func=cmd_plan)
 
-    b = sub.add_parser("build", aliases=["route"], help="launch a hand for a task")
+    w = sub.add_parser("workflow", help="run ordered governed steps")
+    w.add_argument("workflow_action", choices=["run"])
+    w.add_argument("workflow_name")
+    w.add_argument("--task", required=True)
+    w.add_argument("--hand", default="claude", choices=sorted(launcher.HAND_COMMANDS))
+    w.add_argument("--dry-run", action="store_true")
+    w.set_defaults(func=cmd_workflow)
+    rt = sub.add_parser("route", help="route a goal, or launch an explicit --role")
+    rt.add_argument("goal", nargs="?")
+    rt.add_argument("--role")
+    rt.add_argument("--task", default="")
+    rt.add_argument("--hand", default="claude", choices=sorted(launcher.HAND_COMMANDS))
+    rt.add_argument("--dry-run", action="store_true")
+    rt.add_argument("--json", action="store_true")
+    rt.set_defaults(func=cmd_route)
+    bg = sub.add_parser("budget", help="human approval for a larger task context pack")
+    bg.add_argument("budget_action", choices=["approve"])
+    bg.add_argument("--task", required=True)
+    bg.add_argument("--tokens", required=True, type=int)
+    bg.set_defaults(func=cmd_budget)
+    ig = sub.add_parser("ingest", help="confirm a sealed handover for remote delivery")
+    ig.add_argument("file")
+    from .ingestcommands import execute as ingest_command
+    ig.set_defaults(func=ingest_command)
+
+    b = sub.add_parser("build", help="launch a hand for a task")
     b.add_argument("--role", default="developer")
     b.add_argument("--task", default="")
     b.add_argument("--hand", default="claude", choices=sorted(launcher.HAND_COMMANDS))

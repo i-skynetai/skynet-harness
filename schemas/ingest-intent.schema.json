@@ -1,0 +1,149 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "urn:sky:schema:ingest-intent",
+    "title":  "ingest-intent",
+    "description":  "a request for an outward action, written by a hand, carried out by a person",
+    "type":  "object",
+    "properties":  {
+                       "kind":  {
+                                    "type":  "string",
+                                    "enum":  [
+                                                 "push",
+                                                 "pr.open",
+                                                 "ticket.comment",
+                                                 "ticket.transition",
+                                                 "kb.ingest"
+                                             ],
+                                    "description":  "what is being asked for",
+                                    "x-written-by":  "model"
+                                },
+                       "summary":  {
+                                       "type":  "string",
+                                       "minLength":  1,
+                                       "description":  "one line a person can read",
+                                       "x-written-by":  "model"
+                                   },
+                       "branch":  {
+                                      "type":  "string",
+                                      "minLength":  1,
+                                      "description":  "the branch, for push and pr.open",
+                                      "x-written-by":  "model"
+                                  },
+                       "remote":  {
+                                      "type":  "string",
+                                      "minLength":  1,
+                                      "description":  "the remote, for push",
+                                      "x-written-by":  "model"
+                                  },
+                       "base":  {
+                                    "type":  "string",
+                                    "minLength":  1,
+                                    "description":  "the target branch, for pr.open",
+                                    "x-written-by":  "model"
+                                },
+                       "title":  {
+                                     "type":  "string",
+                                     "minLength":  1,
+                                     "description":  "the pull request title",
+                                     "x-written-by":  "model"
+                                 },
+                       "body":  {
+                                    "type":  "string",
+                                    "minLength":  1,
+                                    "description":  "the pull request or comment body",
+                                    "x-written-by":  "model"
+                                },
+                       "issue_key":  {
+                                         "type":  "string",
+                                         "minLength":  1,
+                                         "description":  "the ticket, for ticket.*",
+                                         "x-written-by":  "model"
+                                     },
+                       "to_state":  {
+                                        "type":  "string",
+                                        "minLength":  1,
+                                        "description":  "the state, for ticket.transition",
+                                        "x-written-by":  "model"
+                                    },
+                       "intent_id":  {
+                                         "type":  "string",
+                                         "minLength":  1,
+                                         "description":  "this request\u0027s id",
+                                         "x-written-by":  "runtime"
+                                     },
+                       "run_id":  {
+                                      "type":  "string",
+                                      "minLength":  1,
+                                      "description":  "the run that asked",
+                                      "x-written-by":  "runtime"
+                                  },
+                       "agent_id":  {
+                                        "type":  "string",
+                                        "minLength":  1,
+                                        "description":  "which agent asked",
+                                        "x-written-by":  "runtime"
+                                    },
+                       "created_at":  {
+                                          "type":  "string",
+                                          "format":  "date-time",
+                                          "description":  "when it was asked",
+                                          "x-written-by":  "runtime"
+                                      },
+                       "approved_by":  {
+                                           "type":  "string",
+                                           "minLength":  1,
+                                           "description":  "the verified person who approved it",
+                                           "x-written-by":  "runtime"
+                                       },
+                       "approved_at":  {
+                                           "type":  "string",
+                                           "format":  "date-time",
+                                           "description":  "when they did",
+                                           "x-written-by":  "runtime"
+                                       },
+                       "channel":  {
+                                       "type":  "string",
+                                       "minLength":  1,
+                                       "description":  "the door the approval arrived through",
+                                       "x-written-by":  "runtime"
+                                   },
+                       "executed":  {
+                                        "type":  "boolean",
+                                        "description":  "whether it has been carried out",
+                                        "x-written-by":  "runtime"
+                                    },
+                       "source":  {
+                                      "type":  "string",
+                                      "minLength":  1,
+                                      "description":  "canonical local handover",
+                                      "x-written-by":  "model"
+                                  },
+                       "payload":  {
+                                       "type":  "object",
+                                       "description":  "validated handover content",
+                                       "x-written-by":  "model"
+                                   },
+                       "stamp":  {
+                                     "type":  "object",
+                                     "description":  "runtime provenance",
+                                     "x-written-by":  "runtime"
+                                 },
+                       "payload_digest":  {
+                                              "type":  "string",
+                                              "minLength":  1,
+                                              "description":  "sealed payload SHA-256",
+                                              "x-written-by":  "runtime"
+                                          }
+                   },
+    "required":  [
+                     "kind",
+                     "summary",
+                     "run_id",
+                     "agent_id",
+                     "source",
+                     "payload",
+                     "stamp",
+                     "payload_digest"
+                 ],
+    "additionalProperties":  false
+}

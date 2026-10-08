@@ -128,14 +128,14 @@ ships as one release, in the order the note gives. SH-069 is unused.
 | SH-071 | [`sky bridge`: the Claude transport](#sh-071) | bridge | P1 | L | Ready | |
 | SH-072 | [One implementation owner per scope](#sh-072) | bridge | P1 | S | Ready | |
 | SH-073 | [`/sky:handover`: one local format between sessions](#sh-073) | sessions | P1 | S | Ready | |
-| SH-074 | [`/sky:dispatch`: local, then remote](#sh-074) | routing | P1 | M | Ready | |
-| SH-075 | [Declared workflows: validation](#sh-075) | policy | P1 | S | Ready | |
+| SH-074 | [`/sky:dispatch`: local, then remote](#sh-074) | routing | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-075 | [Declared workflows: validation](#sh-075) | policy | P1 | S | In progress | codex-skynet-harness, 2026-10-07 |
 | SH-076 | [One memory folder per topic](#sh-076) | sessions | P2 | S | Ready | |
 | SH-077 | [The demo knowledge base is the reference adapter](#sh-077) | demo | P2 | M | In review | @arupmmi07, 2026-10-06 |
 | SH-078 | [`sky bridge`: Codex delivery](#sh-078) | bridge | P2 | M | Ready | |
-| SH-079 | [Declared workflows: execution](#sh-079) | policy | P1 | M | Ready | |
-| SH-080 | [The context budget is enforced](#sh-080) | context | P2 | M | Ready | |
-| SH-081 | [A handover reaches the knowledge base as an intent](#sh-081) | broker | P2 | S | Ready | |
+| SH-079 | [Declared workflows: execution](#sh-079) | policy | P1 | M | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-080 | [The context budget is enforced](#sh-080) | context | P2 | M | In progress | codex-skynet-harness, 2026-10-07 |
+| SH-081 | [A handover reaches the knowledge base as an intent](#sh-081) | broker | P2 | S | In progress | codex-skynet-harness, 2026-10-07 |
 | SH-082 | [Every skill's procedure uses only tools its roles hold](#sh-082) | skills | P1 | M | Needs decision | |
 | SH-083 | [A local context store behind the protocol](#sh-083) | context | P1 | L | In progress | @arupmmi07, 2026-10-06 |
 | SH-084 | [`sky kb init`: the project's documents, indexed](#sh-084) | context | P1 | M | In review | @arupmmi07, 2026-10-06 |
@@ -612,6 +612,17 @@ a named session from the cards, send over the bridge, and record the handover it
 back. Failure cases: an ambiguous or missing route is asked, not guessed; a target
 session that is not registered, or whose card denies the mode, is refused with the
 reason.
+
+*Local slice, 2026-10-07:* `sky workflow run`, `sky route`, `sky budget approve`
+and human-confirmed `sky ingest` are implemented and fixture-tested. Unknown or
+ambiguous routes run nothing; failed gates stop advancement; ship prints only.
+Codex retains its native developer/reviewer controller, with one exact measured
+briefing and explicit task/initial-size propagation into its local context server.
+The snapshot ran 1,098 tests (29 skipped), with only three known Windows execution-
+sandbox failures; targeted workflow/Codex checks pass. Named-session transport,
+remote dispatch, the parent `/sky:dispatch` entry point and direct remote response
+caps remain outside this slice. Rows stay In progress until their full acceptance
+criteria are met. [Commands and limits](docs/workflows.md).
 
 <a id="sh-075"></a>**SH-075 — Declared workflows: validation.** The order context →
 gate → build → review → ship lives in prompts and in people. *Done when:* `workflows:`

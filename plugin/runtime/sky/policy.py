@@ -836,4 +836,17 @@ class Policy:
                 problems.append(
                     f"{name!r} is outward, reachable by {', '.join(sorted(reachable))}, "
                     f"and names no broker operation to carry it")
+        from . import workflows, launcher, dispatch
+        try:
+            declarations = (self.body or {}).get("workflows", {})
+            if isinstance(declarations, dict):
+                for name, steps in declarations.items():
+                    for step in steps if isinstance(steps, list) else ():
+                        if isinstance(step, dict) and "session" in step:
+                            problems.append(f"workflow {name} step {step.get('id', '?')}: named sessions arrive with SH-070/071")
+            workflows.validate(self.body or {}, hands=tuple(launcher.HAND_COMMANDS))
+            dispatch.route("policy lint", (self.body or {}).get("routing", {}),
+                           declarations, agents=self.roles)
+        except workflows.WorkflowError as exc:
+            problems.append(str(exc))
         return problems

@@ -16,6 +16,50 @@
 
 version: 1
 
+workflows:
+  feature:
+    - id: context
+      operation: context
+    - id: duplicate-tickets
+      operation: duplicate-check
+      capability: tickets
+      optional: true
+    - id: duplicate-prs
+      operation: duplicate-check
+      capability: prs
+      optional: true
+    - id: duplicate-kb
+      operation: duplicate-check
+      capability: kb
+      optional: true
+    - id: architect
+      agent: architect
+      gate: true
+    - id: developer
+      agent: developer
+    - id: reviewer
+      agent: reviewer
+      gate: true
+    - id: security
+      agent: security
+      gate: true
+    - id: ship
+      operation: ship
+
+routing:
+  feature:
+    contains: ["implement", "feature"]
+    workflow: feature
+  review:
+    contains: ["review"]
+    agent: reviewer
+  design:
+    contains: ["design"]
+    agent: architect
+  security:
+    contains: ["security audit"]
+    agent: security
+
 # ── what the words mean ──────────────────────────────────────────────────
 # Every action a role can request, and whether it leaves this machine.
 # `outward: true` means it changes something other people can see.

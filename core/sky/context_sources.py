@@ -285,3 +285,29 @@ def mcp_config(context, directory):
     path.write_text(json.dumps({"mcpServers": context.servers}, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     path.chmod(0o600)
     return path
+
+
+def deliver(context, pack, *, task_id, characters_before=0):
+    from . import budget
+    result = budget.deliver(context.root, pack, task_id=task_id, characters_before=characters_before)
+    if not result["delivered"]:
+        raise ContextError("; ".join(result["findings"]))
+    return result
+
+
+def call(context, source, operation, arguments, *, task_id, timeout=5):
+    """Runtime-mediated calls are capped; direct host remote calls are not."""
+    mapping = context.sources[source][operation]
+    spec = context.servers[context.sources[source]["server"]]
+    args = {**mapping.get("defaults", {}), **arguments}
+    args = {mapping.get("arguments", {}).get(key, key): value for key, value in args.items()}
+    if spec.get("command"):
+        result = stdio_call(spec, mapping["tool"], args, timeout=timeout)
+    else:
+        from . import probes
+        token = os.environ.get(spec.get("bearer_token_env_var", ""), "")
+        response = probes._rpc(spec["url"], token, "tools/call", {"name": mapping["tool"], "arguments": args})
+        if response.get("isError"):
+            raise ContextError("context tool failed: " + mapping["tool"])
+        result = json.loads(response["content"][0]["text"])
+    return deliver(context, result, task_id=task_id)["pack"]

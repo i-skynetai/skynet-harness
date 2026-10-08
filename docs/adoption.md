@@ -20,8 +20,8 @@ time. The harness aims to make those steps repeatable across sessions.
 
 These are expected benefits, not measured speed, cost or adoption improvements.
 Analysis, planning, code discovery/refresh, offline `sky eval` and person-issued
-plan admission are available on main. Multi-role workflow dispatch and automatic
-ordinary-session routing remain in development. See [current status](../README.md#current-status).
+plan admission are available on main. Local declared workflows are available; automatic ordinary-session and remote
+bridge routing remain in development. See [current status](../README.md#current-status).
 
 ## What making it the standard means
 
@@ -82,8 +82,8 @@ in this offline evaluator. Retrieval scores measure context selection, not team
 delivery speed, implementation quality or adoption.
 
 `sky context manifest <run>` separately reports observed retrieval events and
-sizes. General context-budget enforcement remains SH-080 work; the supported
-Codex controller already bounds its initial context and workflow briefing.
+sizes. Runtime-owned packs and local server responses are bounded; direct remote
+responses remain measured without a cap. See the [workflow guide](workflows.md).
 
 ## How these docs are organised
 
